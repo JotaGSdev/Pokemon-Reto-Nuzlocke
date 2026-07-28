@@ -1006,11 +1006,11 @@ class BalancedNuzlockeEngine {
     } else {
       active.currentHp = 0;
       soundEngine.playFaint();
-      this.updateUI();
-      
+
       const step = this.getStoryLine()[this.storyStep];
-      this.log(`💀 ¡DERROTA! ${active.nickname} cayó contra ${this.currentEnemy.speciesName}. ${active.nickname} HA MUERTO.`);
-      
+      const deadName = active.nickname;
+
+      // Guardar en el Cementerio
       this.graveyard.push({
         nickname: active.nickname,
         speciesName: active.speciesName,
@@ -1019,12 +1019,28 @@ class BalancedNuzlockeEngine {
         location: step ? step.loc : 'Kanto'
       });
 
+      // Remover permanentemente del equipo activo
+      this.team.splice(this.activeIdx, 1);
+
+      // Si hay Pokémon en el PC, promover uno para tomar su lugar
+      if (this.pcBox.length > 0) {
+        const sub = this.pcBox.shift();
+        sub.currentHp = sub.maxHp;
+        this.team.push(sub);
+        this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! ${sub.nickname} entra automáticamente desde el PC a su lugar.`);
+      } else {
+        this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! Hueco libre en el equipo.`);
+      }
+
+      this.updateUI();
+
       setTimeout(() => {
-        const survivor = this.team.find(p => p.currentHp > 0);
-        if (!survivor) {
+        if (this.team.length === 0) {
           this.showSummaryModal(false);
         } else {
-          this.autoSwitch();
+          this.activeIdx = 0;
+          this.updateUI();
+          this.setButtons(true, false, true);
         }
       }, 800);
     }
