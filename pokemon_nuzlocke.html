@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Rojo Fuego - Nuzlocke Kanto Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b0c10;
+      --gba-frame: #1f2338;
+      --textbox-bg: #fdfae6;
+      --ui-border: #282c37;
+      --primary-red: #d32f2f;
+      --hp-green: #2ecc71;
+      --hp-yellow: #f1c40f;
+      --hp-red: #e74c3c;
+      --accent-gold: #ffc107;
+      --badge-glow: #00e5ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    body {
+      font-family: 'Press Start 2P', monospace;
+      background-color: var(--bg-main);
+      background-image: radial-gradient(#1f2338 1px, transparent 0);
+      background-size: 24px 24px;
+      color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    #game-container {
+      width: 760px;
+      background: var(--gba-frame);
+      border: 8px solid #0d0f17;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.95);
+      position: relative;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(5, 7, 12, 0.94);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      border-radius: 12px;
+      color: #fff;
+    }
+
+    .modal-card {
+      background: var(--textbox-bg);
+      color: #111;
+      border: 4px solid var(--ui-border);
+      border-radius: 10px;
+      padding: 18px;
+      width: 95%;
+      max-width: 620px;
+      text-align: center;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .modal-card h2 { font-size: 12px; margin-bottom: 12px; color: #a00000; text-transform: uppercase; }
+    .modal-card p { font-size: 8px; margin-bottom: 12px; line-height: 1.6; }
+
+    .input-group {
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 14px;
+    }
+
+    .input-group input {
+      font-family: 'Press Start 2P', monospace; font-size: 9px;
+      padding: 8px; border: 2px solid var(--ui-border); border-radius: 5px;
+      width: 45%; text-align: center; outline: none; background: #fff;
+    }
+
+    .starters-grid {
+      display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+    }
+
+    .starter-btn {
+      background: #fff; border: 3px solid var(--ui-border); border-radius: 8px;
+      padding: 8px; cursor: pointer; width: 100px; text-align: center;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .starter-btn:hover { background: #e3f2fd; border-color: #1976d2; transform: translateY(-3px); }
+    .starter-btn img { width: 60px; height: 60px; image-rendering: pixelated; }
+    .starter-btn span { font-size: 7px; display: block; margin-top: 6px; font-weight: bold; }
+
+    header {
+      background: var(--primary-red); color: white; padding: 10px 14px; font-size: 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      border: 3px solid var(--ui-border); border-radius: 8px 8px 0 0;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3);
+    }
+
+    .sound-toggle-btn {
+      background: #222; color: #fff; border: 1px solid #fff; border-radius: 4px;
+      padding: 3px 6px; font-size: 7px; cursor: pointer; font-family: inherit;
+    }
+
+    #badge-bar {
+      background: #12141d;
+      border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
+      padding: 6px 12px; display: flex; justify-content: space-around; align-items: center;
+    }
+
+    .badge-icon {
+      width: 26px; height: 26px; border-radius: 50%; background: #2a2e3f;
+      border: 2px solid #444; display: flex; align-items: center; justify-content: center;
+      font-size: 8px; color: #666; transition: all 0.3s ease; opacity: 0.4;
+    }
+    .badge-icon.obtained {
+      opacity: 1; border-color: var(--accent-gold); box-shadow: 0 0 10px var(--badge-glow);
+      background: radial-gradient(circle, #ffe082 0%, #ffb300 100%); color: #000; font-weight: bold;
+    }
+
+    #quest-bar {
+      background: #161822; color: #00e5ff; font-size: 7px; padding: 8px 12px;
+      border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    #battle-screen {
+      height: 240px;
+      background: linear-gradient(to bottom, #74c798 50%, #cadc89 50%);
+      position: relative;
+      border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
+      overflow: hidden;
+    }
+
+    .shiny-sparkle {
+      position: absolute; width: 100%; height: 100%;
+      pointer-events: none; z-index: 10;
+      background: radial-gradient(circle, rgba(255,235,59,0.3) 0%, transparent 70%);
+      animation: flashShiny 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes flashShiny { 0% { opacity: 0.2; } 100% { opacity: 0.8; } }
+
+    .combatant { position: absolute; width: 200px; }
+    #foe { top: 12px; right: 20px; }
+    #player { bottom: 12px; left: 20px; }
+
+    .hud {
+      background: var(--textbox-bg); border: 3px solid var(--ui-border);
+      border-radius: 6px; padding: 6px; font-size: 7px;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+    }
+
+    .hp-bar-outer {
+      width: 100%; height: 8px; background: #444; border-radius: 4px;
+      margin-top: 4px; border: 1px solid #000; overflow: hidden;
+    }
+
+    .hp-bar-inner {
+      height: 100%; width: 100%; background: var(--hp-green); transition: width 0.3s ease;
+    }
+
+    .sprite-box { position: relative; display: inline-block; width: 95px; height: 95px; }
+
+    .sprite { width: 95px; height: 95px; display: block; margin: 0 auto; image-rendering: pixelated; }
+
+    .sprite.shiny-effect {
+      filter: drop-shadow(0 0 10px #ffe600) hue-rotate(45deg);
+    }
+
+    .shiny-tag {
+      position: absolute; top: -4px; right: -4px; background: #ffe600; color: #000;
+      font-size: 6px; padding: 2px 4px; border-radius: 4px; border: 1px solid #000; font-weight: bold;
+    }
+
+    #dupes-banner {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      background: #ff9800; color: #000; padding: 4px 10px; font-size: 6px;
+      border: 2px solid #000; border-radius: 4px; display: none; z-index: 20;
+    }
+
+    #team-bar {
+      display: flex; gap: 4px; padding: 6px; background: #111;
+      border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
+    }
+
+    .team-slot {
+      flex: 1; background: #222; border: 2px solid #444; height: 34px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 6px; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px;
+      text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .team-slot.active { border-color: var(--accent-gold); background: #333; font-weight: bold; }
+    .team-slot.dead { border-color: var(--hp-red); opacity: 0.35; text-decoration: line-through; background: #2a0000; }
+    .team-slot:hover:not(.dead) { background: #3a3a3a; }
+
+    #textbox {
+      height: 60px; background: var(--textbox-bg);
+      border: 3px solid var(--ui-border); padding: 10px 14px;
+      font-size: 8px; line-height: 1.6; display: flex; align-items: center;
+    }
+
+    #controls {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      padding: 10px; background: #181a24;
+      border: 3px solid var(--ui-border); border-radius: 0 0 8px 8px;
+    }
+
+    button.game-btn {
+      padding: 10px 4px; font-family: 'Press Start 2P', monospace;
+      font-size: 7px; border: 2px solid var(--ui-border);
+      border-radius: 5px; cursor: pointer; background: #e0e0e0;
+      box-shadow: inset -2px -2px 0px #888; transition: background 0.1s;
+    }
+    button.game-btn:hover:not(:disabled) { background: #fff; }
+    button.game-btn:active:not(:disabled) { box-shadow: inset 2px 2px 0px #888; }
+    button.game-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    button.btn-restart { background: #ff4444; color: #fff; }
+    button.btn-graveyard { background: #7b1fa2; color: #fff; }
+    button.btn-legend { background: #0288d1; color: #fff; }
+
+    .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; text-align: left; font-size: 6px; }
+    .pc-box { border: 2px solid #444; background: #fff; padding: 6px; height: 180px; overflow-y: auto; }
+    .pc-item { padding: 5px; margin-bottom: 4px; border: 1px solid #ccc; background: #f9f9f9; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+    .pc-item button { font-family: inherit; font-size: 6px; padding: 3px 6px; cursor: pointer; }
+
+    .graveyard-list { text-align: left; max-height: 220px; overflow-y: auto; background: #222; color: #ff8a80; padding: 10px; border-radius: 6px; font-size: 7px; margin-top: 10px; }
+    .grave-item { border-bottom: 1px dashed #555; padding: 6px 0; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="setup-modal" class="overlay">
+    <div class="modal-card">
+      <h2>Pokémon Rojo Fuego - Kanto Nuzlocke</h2>
+      <p>Configura tu partida Nuzlocke convencional:</p>
+      
+      <div class="input-group">
+        <input type="text" id="player-name-input" placeholder="Tu Nombre" maxlength="10" value="RED">
+        <input type="text" id="rival-name-input" placeholder="Nombre Rival" maxlength="10" value="BLUE">
+      </div>
+
+      <p>Selecciona tu Pokémon inicial:</p>
+      <div class="starters-grid">
+        <div class="starter-btn" onclick="game.selectStarter(1)">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur">
+          <span>Bulbasaur</span>
+        </div>
+        <div class="starter-btn" onclick="game.selectStarter(4)">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander">
+          <span>Charmander</span>
+        </div>
+        <div class="starter-btn" onclick="game.selectStarter(7)">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle">
+          <span>Squirtle</span>
+        </div>
+        <div class="starter-btn" onclick="game.selectStarter(25)">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu">
+          <span>Pikachu</span>
+        </div>
+        <div class="starter-btn" onclick="game.selectStarter(133)">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee">
+          <span>Eevee</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="nickname-modal" class="overlay" style="display:none;">
+    <div class="modal-card">
+      <h2>¡Mote Obligatorio!</h2>
+      <p id="nick-prompt">Nuzlocke Rule:</p>
+      <input type="text" id="nick-input" style="width:80%; padding:8px; font-family:inherit; font-size:8px; margin-bottom:10px;" maxlength="10">
+      <button class="game-btn" onclick="game.confirmNickname()">Confirmar Mote</button>
+    </div>
+  </div>
+
+  <div id="pc-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:620px;">
+      <h2>Sistema de Almacenamiento PC</h2>
+      <div class="pc-grid">
+        <div><strong>Equipo Activo (Máx 6)</strong><div id="pc-team-list" class="pc-box"></div></div>
+        <div><strong>Caja del PC</strong><div id="pc-box-list" class="pc-box"></div></div>
+      </div>
+      <button class="game-btn" style="margin-top:12px;" onclick="game.closePC()">Cerrar PC</button>
+    </div>
+  </div>
+
+  <div id="graveyard-modal" class="overlay" style="display:none;">
+    <div class="modal-card">
+      <h2>🪦 Cementerio de Héroes Caídos</h2>
+      <p>Pokémon que perecieron en el cumplimiento del Nuzlocke:</p>
+      <div id="graveyard-list" class="graveyard-list"></div>
+      <button class="game-btn" style="margin-top:12px; width:100%;" onclick="game.closeGraveyard()">Cerrar Cementerio</button>
+    </div>
+  </div>
+
+  <div id="summary-modal" class="overlay" style="display:none;">
+    <div class="modal-card">
+      <h2 id="summary-title">FIN DEL NUZLOCKE</h2>
+      <p id="summary-subtitle"></p>
+      <div id="summary-stats" style="text-align:left; font-size:7px; background:#fff; padding:10px; border:2px solid #000; margin:10px 0;"></div>
+      <button class="game-btn btn-restart" style="width:100%; padding:10px;" onclick="location.reload()">Reiniciar Nueva Partida</button>
+    </div>
+  </div>
+
+  <header>
+    <span>Entrenador: <strong id="header-player">RED</strong></span>
+    <span id="loc-text">Pueblo Paleta</span>
+    <div style="display:flex; gap:6px;">
+      <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">🔊 SFX: ON</button>
+      <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">🎵 Música: ON</button>
+    </div>
+  </header>
+
+  <div id="badge-bar">
+    <div class="badge-icon" id="badge-0" title="Medalla Roca (Brock)">🪨</div>
+    <div class="badge-icon" id="badge-1" title="Medalla Cascada (Misty)">💧</div>
+    <div class="badge-icon" id="badge-2" title="Medalla Trueno (Lt. Surge)">⚡</div>
+    <div class="badge-icon" id="badge-3" title="Medalla Arcoíris (Erika)">🌈</div>
+    <div class="badge-icon" id="badge-4" title="Medalla Alma (Koga)">☠️</div>
+    <div class="badge-icon" id="badge-5" title="Medalla Pantano (Sabrina)">👁️</div>
+    <div class="badge-icon" id="badge-6" title="Medalla Volcán (Blaine)">🔥</div>
+    <div class="badge-icon" id="badge-7" title="Medalla Tierra (Giovanni)">🌎</div>
+  </div>
+
+  <div id="quest-bar">
+    <span id="quest-title">Cargando Nuzlocke...</span>
+    <span id="cap-limit">LevelCap: Lv.5</span>
+  </div>
+
+  <div id="battle-screen">
+    <div id="dupes-banner">🔄 DUPLICADO DETECTADO ➔ RE-SORTEANDO</div>
+    <div id="shiny-sparkle" class="shiny-sparkle" style="display:none;"></div>
+
+    <div id="foe" class="combatant">
+      <div class="hud">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong id="foe-nick">---</strong>
+          <span id="foe-lvl">Lv.0</span>
+        </div>
+        <div class="hp-bar-outer"><div id="foe-hp" class="hp-bar-inner"></div></div>
+      </div>
+      <div class="sprite-box">
+        <img id="foe-sprite" class="sprite" src="" alt="Foe">
+        <span id="foe-shiny-tag" class="shiny-tag" style="display:none;">✨ SHINY</span>
+      </div>
+    </div>
+
+    <div id="player" class="combatant">
+      <div class="sprite-box">
+        <img id="player-sprite" class="sprite" src="" alt="Player">
+        <span id="player-shiny-tag" class="shiny-tag" style="display:none;">✨ SHINY</span>
+      </div>
+      <div class="hud">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong id="player-nick">---</strong>
+          <span id="player-lvl">Lv.0</span>
+        </div>
+        <div class="hp-bar-outer"><div id="player-hp" class="hp-bar-inner"></div></div>
+        <div style="font-size:6px; text-align:right; margin-top:3px;">
+          HP: <span id="player-hp-val">0/0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="team-bar">
+    <div class="team-slot" id="slot-0">-</div>
+    <div class="team-slot" id="slot-1">-</div>
+    <div class="team-slot" id="slot-2">-</div>
+    <div class="team-slot" id="slot-3">-</div>
+    <div class="team-slot" id="slot-4">-</div>
+    <div class="team-slot" id="slot-5">-</div>
+  </div>
+
+  <div id="textbox">Iniciando aventura completa Nuzlocke en Kanto...</div>
+
+  <div id="controls">
+    <button class="game-btn" id="btn-atk" onclick="game.instantAttack()">⚔️ Atacar</button>
+    <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">🔴 Capturar</button>
+    <button class="game-btn" id="btn-pc" onclick="game.openPC()">💻 PC Equipo</button>
+    <button class="game-btn btn-graveyard" id="btn-grave" onclick="game.openGraveyard()">🪦 Cementerio</button>
+  </div>
+</div>
+
+<script>
+// Synthesized Audio Engine using Web Audio API
+// Synthesized Audio Engine & OST BGM Sequencer using Web Audio API
+class ChiptuneAudioEngine {
+  constructor() {
+    this.enabled = true;
+    this.bgmEnabled = true;
+    this.ctx = null;
+    this.currentBgmTrack = null;
+    this.bgmTimer = null;
+    this.bgmNoteIdx = 0;
+  }
+
+  initContext() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggleSound() {
+    this.enabled = !this.enabled;
+    document.getElementById('sound-btn').innerText = `🔊 SFX: ${this.enabled ? 'ON' : 'OFF'}`;
+  }
+
+  toggleBGM() {
+    this.bgmEnabled = !this.bgmEnabled;
+    document.getElementById('bgm-btn').innerText = `🎵 Música: ${this.bgmEnabled ? 'ON' : 'OFF'}`;
+    if (!this.bgmEnabled) {
+      this.stopBGM();
+    } else if (this.currentBgmTrack) {
+      this.playBGM(this.currentBgmTrack);
+    }
+  }
+
+  playTone(freq, duration, type = 'square', gainVal = 0.1) {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  playHit() { this.playTone(180, 0.12, 'sawtooth', 0.15); }
+  playSuperEffective() {
+    this.playTone(300, 0.08, 'square', 0.12);
+    setTimeout(() => this.playTone(450, 0.08, 'square', 0.12), 90);
+    setTimeout(() => this.playTone(600, 0.15, 'square', 0.15), 180);
+  }
+  playCritical() { this.playTone(120, 0.25, 'sawtooth', 0.2); }
+  playShiny() {
+    [523, 659, 783, 1046, 1318].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.12, 'sine', 0.15), i * 70);
+    });
+  }
+  playCatch() {
+    this.playTone(400, 0.1, 'triangle', 0.15);
+    setTimeout(() => this.playTone(800, 0.2, 'triangle', 0.18), 120);
+  }
+  playBadge() {
+    [440, 554, 659, 880].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.18, 'square', 0.15), i * 120);
+    });
+  }
+  playFaint() {
+    [300, 240, 180, 120].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.15, 'sawtooth', 0.15), i * 100);
+    });
+  }
+
+  playBGM(trackName) {
+    this.currentBgmTrack = trackName;
+    if (!this.bgmEnabled) return;
+    this.initContext();
+    this.stopBGM();
+
+    const tracks = {
+      route: {
+        tempo: 150,
+        lead: [261, 329, 392, 523, 493, 440, 392, 349, 329, 392, 440, 523, 587, 523, 493, 392],
+        bass: [130, 164, 196, 164, 146, 174, 220, 174]
+      },
+      boss: {
+        tempo: 125,
+        lead: [440, 440, 523, 440, 587, 523, 440, 349, 392, 440, 523, 659, 587, 523, 440, 392],
+        bass: [110, 130, 146, 130, 110, 130, 146, 164]
+      },
+      league: {
+        tempo: 115,
+        lead: [523, 659, 783, 1046, 987, 880, 783, 659, 698, 783, 880, 1046, 1174, 1046, 987, 880],
+        bass: [130, 164, 196, 261, 220, 174, 196, 261]
+      }
+    };
+
+    const trk = tracks[trackName] || tracks.route;
+    this.bgmNoteIdx = 0;
+
+    const playStep = () => {
+      if (!this.bgmEnabled || !this.ctx) return;
+      try {
+        const leadFreq = trk.lead[this.bgmNoteIdx % trk.lead.length];
+        const bassFreq = trk.bass[this.bgmNoteIdx % trk.bass.length];
+
+        const oscL = this.ctx.createOscillator();
+        const gainL = this.ctx.createGain();
+        oscL.type = 'square';
+        oscL.frequency.setValueAtTime(leadFreq, this.ctx.currentTime);
+        gainL.gain.setValueAtTime(0.035, this.ctx.currentTime);
+        gainL.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (trk.tempo / 1000) * 0.85);
+        oscL.connect(gainL);
+        gainL.connect(this.ctx.destination);
+        oscL.start();
+        oscL.stop(this.ctx.currentTime + (trk.tempo / 1000) * 0.85);
+
+        const oscB = this.ctx.createOscillator();
+        const gainB = this.ctx.createGain();
+        oscB.type = 'triangle';
+        oscB.frequency.setValueAtTime(bassFreq, this.ctx.currentTime);
+        gainB.gain.setValueAtTime(0.045, this.ctx.currentTime);
+        gainB.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (trk.tempo / 1000) * 0.85);
+        oscB.connect(gainB);
+        gainB.connect(this.ctx.destination);
+        oscB.start();
+        oscB.stop(this.ctx.currentTime + (trk.tempo / 1000) * 0.85);
+
+        this.bgmNoteIdx++;
+      } catch(e) {}
+    };
+
+    playStep();
+    this.bgmTimer = setInterval(playStep, trk.tempo);
+  }
+
+  stopBGM() {
+    if (this.bgmTimer) {
+      clearInterval(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+  }
+}
+
+const soundEngine = new ChiptuneAudioEngine();
+
+const ROUTE_ENCOUNTERS = {
+  "Ruta 1": [{ id: 16, name: "PIDGEY", rate: 0.5 }, { id: 19, name: "RATTATA", rate: 0.5 }],
+  "Ruta 22": [{ id: 19, name: "RATTATA", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 56, name: "MANKEY", rate: 0.2 }],
+  "Ruta 2": [{ id: 16, name: "PIDGEY", rate: 0.4 }, { id: 19, name: "RATTATA", rate: 0.4 }, { id: 10, name: "CATERPIE", rate: 0.2 }],
+  "Bosque Verde": [{ id: 10, name: "CATERPIE", rate: 0.35 }, { id: 13, name: "WEEDLE", rate: 0.35 }, { id: 25, name: "PIKACHU", rate: 0.15 }, { id: 11, name: "METAPOD", rate: 0.15 }],
+  "Ruta 3": [{ id: 21, name: "SPEAROW", rate: 0.35 }, { id: 29, name: "NIDORAN♀", rate: 0.25 }, { id: 32, name: "NIDORAN♂", rate: 0.25 }, { id: 39, name: "JIGGLYPUFF", rate: 0.15 }],
+  "Monte Moon": [{ id: 41, name: "ZUBAT", rate: 0.4 }, { id: 74, name: "GEODUDE", rate: 0.3 }, { id: 46, name: "PARAS", rate: 0.15 }, { id: 35, name: "CLEFAIRY", rate: 0.15 }],
+  "Ruta 4": [{ id: 19, name: "RATTATA", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 23, name: "EKANS", rate: 0.2 }],
+  "Ruta 24-25": [{ id: 43, name: "ODDISH", rate: 0.35 }, { id: 69, name: "BELLSPROUT", rate: 0.35 }, { id: 63, name: "ABRA", rate: 0.15 }, { id: 48, name: "VENONAT", rate: 0.15 }],
+  "Ruta 5-6": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 16, name: "PIDGEY", rate: 0.4 }, { id: 43, name: "ODDISH", rate: 0.2 }],
+  "Cueva Diglett": [{ id: 50, name: "DIGLETT", rate: 0.8 }, { id: 51, name: "DUGTRIO", rate: 0.2 }],
+  "Túnel Roca": [{ id: 66, name: "MACHOP", rate: 0.35 }, { id: 74, name: "GEODUDE", rate: 0.35 }, { id: 41, name: "ZUBAT", rate: 0.3 }],
+  "Ruta 12-15": [{ id: 84, name: "DODUO", rate: 0.35 }, { id: 48, name: "VENONAT", rate: 0.35 }, { id: 143, name: "SNORLAX", rate: 0.1 }, { id: 102, name: "EXEGGCUTE", rate: 0.2 }],
+  "Mansión Pokémon": [{ id: 77, name: "PONYTA", rate: 0.4 }, { id: 109, name: "KOFFING", rate: 0.4 }, { id: 126, name: "MAGMAR", rate: 0.2 }],
+  "Calle Victoria": [{ id: 42, name: "GOLBAT", rate: 0.35 }, { id: 67, name: "MACHOKE", rate: 0.35 }, { id: 105, name: "MAROWAK", rate: 0.3 }]
+};
+
+class BalancedNuzlockeEngine {
+  constructor() {
+    this.playerName = "RED";
+    this.rivalName = "BLUE";
+    this.playerStarterId = 1;
+    this.rivalStarterId = 4;
+    
+    this.team = [];
+    this.pcBox = [];
+    this.graveyard = [];
+    this.activeIdx = 0;
+    this.storyStep = 0;
+    this.badges = 0;
+    this.typeMatchups = {};
+    this.capturedZones = new Set();
+    this.caughtSpecies = new Set();
+    
+    this.currentEnemy = null;
+    this.isBoss = false;
+    this.bossTeam = [];
+    this.pendingCatch = null;
+
+    this.shinyOdds = 64; // ~1.56% Shiny Chance para mayor diversión
+  }
+
+  getStoryLine() {
+    return [
+      // 1. Pallet / Starter Rival 1
+      { type: 'rival', loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.rivalStarterId, lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
+      { type: 'route', loc: 'Ruta 1', cap: 7, quest: 'Captura y entrena en Ruta 1', item: 'Pokéball x3' },
+      { type: 'rival', loc: 'Ruta 22', title: `Rival ${this.rivalName} #2`, team: [{ id: 16, lvl: 9 }, { id: this.rivalStarterId, lvl: 9 }], cap: 9, quest: `Combate 2 con ${this.rivalName}`, item: 'Poción Max' },
+      { type: 'route', loc: 'Ruta 2', cap: 11, quest: 'Avanza por la Ruta 2', item: 'Superpoción' },
+      { type: 'route', loc: 'Bosque Verde', cap: 13, quest: 'Atraviesa Bosque Verde', item: 'Antídoto' },
+      
+      // Gym 1 Brock
+      { type: 'gym', loc: 'Ciudad Plateada', title: 'Líder Brock', team: [{ id: 74, lvl: 12 }, { id: 95, lvl: 14 }], cap: 14, badgeIdx: 0, quest: 'Gimnasio 1: Desafía a Brock (Medalla Roca)' },
+      
+      // Mt Moon & Cerulean
+      { type: 'route', loc: 'Ruta 3', cap: 17, quest: 'Camino hacia Monte Moon', item: 'Superpoción' },
+      { type: 'rocket', loc: 'Monte Moon', title: 'Equipo Rocket Grunt', team: [{ id: 41, lvl: 13 }, { id: 19, lvl: 14 }], cap: 19, quest: 'Enfrenta al Equipo Rocket en Monte Moon' },
+      { type: 'route', loc: 'Monte Moon', cap: 19, quest: 'Captura en las profundidades de Monte Moon' },
+      { type: 'gym', loc: 'Ciudad Celeste', title: 'Líder Misty', team: [{ id: 120, lvl: 18 }, { id: 121, lvl: 21 }], cap: 21, badgeIdx: 1, quest: 'Gimnasio 2: Desafía a Misty (Medalla Cascada)' },
+      
+      // Nugget Bridge & SS Anne
+      { type: 'rival', loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.rivalStarterId, lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
+      { type: 'route', loc: 'Ruta 24-25', cap: 24, quest: 'Explora la Ruta 24 y 25' },
+      { type: 'rival', loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.rivalStarterId, lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
+      
+      // Gym 3 Surge
+      { type: 'gym', loc: 'Ciudad Carmín', title: 'Líder Lt. Surge', team: [{ id: 100, lvl: 21 }, { id: 25, lvl: 18 }, { id: 26, lvl: 24 }], cap: 24, badgeIdx: 2, quest: 'Gimnasio 3: Desafía a Lt. Surge (Medalla Trueno)' },
+      
+      // Diglett Cave & Rock Tunnel
+      { type: 'route', loc: 'Cueva Diglett', cap: 27, quest: 'Atraviesa la Cueva Diglett' },
+      { type: 'route', loc: 'Túnel Roca', cap: 29, quest: 'Cruza el Túnel Roca sin destello' },
+      
+      // Celadon Rocket & Erika
+      { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
+      { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
+      
+      // Pokemon Tower & Fuchsia
+      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon en Pueblo Lavanda' },
+      { type: 'route', loc: 'Ruta 12-15', cap: 38, quest: 'Avanza hacia la Zona Fucsia' },
+      { type: 'gym', loc: 'Ciudad Fucsia', title: 'Líder Koga', team: [{ id: 109, lvl: 37 }, { id: 89, lvl: 39 }, { id: 110, lvl: 43 }], cap: 43, badgeIdx: 4, quest: 'Gimnasio 5: Desafía a Koga (Medalla Alma)' },
+      
+      // Silph Co & Sabrina
+      { type: 'rocket', loc: 'Silph Co.', title: 'Jefe Giovanni #2', team: [{ id: 33, lvl: 37 }, { id: 111, lvl: 37 }, { id: 31, lvl: 41 }, { id: 115, lvl: 39 }], cap: 43, quest: 'Libera Silph Co. de Giovanni' },
+      { type: 'gym', loc: 'Ciudad Azafrán', title: 'Líder Sabrina', team: [{ id: 64, lvl: 38 }, { id: 122, lvl: 37 }, { id: 49, lvl: 38 }, { id: 65, lvl: 43 }], cap: 43, badgeIdx: 5, quest: 'Gimnasio 6: Desafía a Sabrina (Medalla Pantano)' },
+      
+      // Legendary Challenge Articuno & Zapdos
+      { type: 'legendary', loc: 'Islas Espuma', title: 'Desafío Legendario: ARTICUNO', team: [{ id: 144, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Articuno!' },
+      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Zapdos!' },
+      
+      // Cinnabar & Blaine
+      { type: 'route', loc: 'Mansión Pokémon', cap: 47, quest: 'Investiga la Mansión Pokémon en Isla Canela' },
+      { type: 'gym', loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 47, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
+      
+      // Legendary Moltres & Giovanni 8
+      { type: 'legendary', loc: 'Monte Ember', title: 'Desafío Legendario: MOLTRES', team: [{ id: 146, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Moltres!' },
+      { type: 'gym', loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 50 }], cap: 50, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
+      
+      // Victory Road & Elite 4
+      { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Atraviesa la Calle Victoria' },
+      { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.rivalStarterId, lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
+      
+      // Elite Four
+      { type: 'e4', loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
+      { type: 'e4', loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
+      { type: 'e4', loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
+      { type: 'e4', loc: 'Alto Mando #4', title: 'Lance (Dragón)', team: [{ id: 130, lvl: 56 }, { id: 148, lvl: 54 }, { id: 148, lvl: 54 }, { id: 142, lvl: 58 }, { id: 149, lvl: 60 }], cap: 60, quest: 'Alto Mando 4: Enfrenta al Gran Lance' },
+      
+      // CHAMPION
+      { type: 'champion', loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: (this.rivalStarterId === 4 ? 6 : this.rivalStarterId === 7 ? 9 : 3), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
+    ];
+  }
+
+  determineRivalStarter(playerChoice) {
+    // Si elige uno de los 3 principales, el rival siempre elige la especie DÉBIL al inicial del jugador:
+    // Bulbasaur (1) -> Rival elige Squirtle (7) [débil contra Planta]
+    // Charmander (4) -> Rival elige Bulbasaur (1) [débil contra Fuego]
+    // Squirtle (7) -> Rival elige Charmander (4) [débil contra Agua]
+    if (playerChoice === 1) return 7;
+    if (playerChoice === 4) return 1;
+    if (playerChoice === 7) return 4;
+
+    // Si se elige Pikachu (25) o Eevee (133), se sortea con 25% de probabilidad entre los 4 restantes:
+    const startersPool = [1, 4, 7, 25, 133];
+    const remainingPool = startersPool.filter(id => id !== playerChoice);
+    return remainingPool[Math.floor(Math.random() * remainingPool.length)];
+  }
+
+  async loadTypeMatchups() {
+    try {
+      const res = await fetch('https://pokeapi.co/api/v2/type/');
+      const data = await res.json();
+      for (let t of data.results) {
+        const tRes = await fetch(t.url);
+        const tData = await tRes.json();
+        this.typeMatchups[t.name] = {
+          double_to: tData.damage_relations.double_damage_to.map(x => x.name),
+          half_to: tData.damage_relations.half_damage_to.map(x => x.name)
+        };
+      }
+    } catch(e) {
+      // Fallback base type matchups
+      this.typeMatchups = {
+        fire: { double_to: ['grass', 'ice', 'bug'], half_to: ['water', 'fire', 'rock', 'dragon'] },
+        water: { double_to: ['fire', 'ground', 'rock'], half_to: ['water', 'grass', 'dragon'] },
+        grass: { double_to: ['water', 'ground', 'rock'], half_to: ['fire', 'grass', 'poison', 'flying', 'bug', 'dragon'] },
+        electric: { double_to: ['water', 'flying'], half_to: ['electric', 'grass', 'dragon'] }
+      };
+    }
+  }
+
+  async selectStarter(id) {
+    this.playerName = document.getElementById('player-name-input').value.trim() || "RED";
+    this.rivalName = document.getElementById('rival-name-input').value.trim() || "BLUE";
+    document.getElementById('header-player').innerText = this.playerName;
+
+    this.playerStarterId = id;
+    this.rivalStarterId = this.determineRivalStarter(id);
+
+    await this.loadTypeMatchups();
+
+    document.getElementById('setup-modal').style.display = 'none';
+    const pkmn = await this.fetchPokemon(id, 5);
+    this.pendingCatch = pkmn;
+    this.showNickModal(`Mote para tu inicial (${pkmn.speciesName}):`);
+  }
+
+  async fetchPokemon(idOrName, lvl, forceShiny = false) {
+    let data = null;
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
+      if (res.ok) data = await res.json();
+    } catch(e) {}
+
+    const isShiny = forceShiny || (Math.floor(Math.random() * this.shinyOdds) === 0);
+
+    if (data) {
+      const getStat = (n) => data.stats.find(s => s.stat.name === n)?.base_stat || 50;
+      const maxHp = Math.floor(((2 * getStat('hp') + 31) * lvl) / 100) + lvl + 10;
+      
+      const frontSprite = isShiny 
+        ? (data.sprites.front_shiny || data.sprites.front_default)
+        : data.sprites.front_default;
+      const backSprite = isShiny 
+        ? (data.sprites.back_shiny || data.sprites.back_default || frontSprite)
+        : (data.sprites.back_default || frontSprite);
+
+      return {
+        id: data.id,
+        speciesName: data.name.toUpperCase(),
+        nickname: data.name.toUpperCase(),
+        level: lvl,
+        maxHp: maxHp,
+        currentHp: maxHp,
+        attack: getStat('attack'),
+        defense: getStat('defense'),
+        types: data.types.map(t => t.type.name),
+        isShiny: isShiny,
+        frontSprite: frontSprite,
+        backSprite: backSprite
+      };
+    } else {
+      // Local robust fallback if offline
+      const numId = typeof idOrName === 'number' ? idOrName : 25;
+      const sName = String(idOrName).toUpperCase();
+      const maxHp = Math.floor((120 * lvl) / 100) + lvl + 10;
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
+      return {
+        id: numId,
+        speciesName: sName,
+        nickname: sName,
+        level: lvl,
+        maxHp: maxHp,
+        currentHp: maxHp,
+        attack: 60,
+        defense: 55,
+        types: ['normal'],
+        isShiny: isShiny,
+        frontSprite: spriteUrl,
+        backSprite: spriteUrl
+      };
+    }
+  }
+
+  showNickModal(msg) {
+    document.getElementById('nick-prompt').innerText = msg;
+    document.getElementById('nickname-modal').style.display = 'flex';
+  }
+
+  confirmNickname() {
+    const input = document.getElementById('nick-input');
+    const nick = input.value.trim() || this.pendingCatch.speciesName;
+    this.pendingCatch.nickname = nick;
+    
+    this.caughtSpecies.add(this.pendingCatch.speciesName);
+
+    if (this.team.length < 6) this.team.push(this.pendingCatch);
+    else this.pcBox.push(this.pendingCatch);
+
+    document.getElementById('nickname-modal').style.display = 'none';
+    input.value = "";
+
+    const step = this.getStoryLine()[this.storyStep];
+    if (step && step.type === 'route' && !this.pendingCatch.isShiny) {
+      this.capturedZones.add(step.loc);
+    }
+
+    this.healAliveTeam();
+    this.currentEnemy = null;
+
+    if (step && step.type === 'route') {
+      this.log(`¡${nick} capturado en ${step.loc}! Avanzando por descarte...`);
+      this.updateUI();
+      setTimeout(() => {
+        this.storyStep++;
+        this.initCurrentStep();
+      }, 750);
+    } else {
+      this.updateUI();
+      this.initCurrentStep();
+    }
+  }
+
+  async normalizeTeamLevels(targetCap) {
+    for (let p of this.team) {
+      if (p.currentHp > 0) {
+        p.level = targetCap;
+        p.maxHp = Math.floor(((2 * p.attack + 31) * targetCap) / 100) + targetCap + 10;
+        p.currentHp = p.maxHp;
+        await this.checkEvolution(p);
+      }
+    }
+  }
+
+  async initCurrentStep() {
+    const storyLine = this.getStoryLine();
+    const step = storyLine[this.storyStep];
+    
+    if (!step) {
+      this.showSummaryModal(true);
+      return;
+    }
+
+    await this.normalizeTeamLevels(step.cap);
+
+    document.getElementById('loc-text').innerText = step.loc;
+    document.getElementById('quest-title').innerText = step.quest;
+    document.getElementById('cap-limit').innerText = `LevelCap: Lv.${step.cap}`;
+
+    if (step.item) {
+      this.log(`¡Recogiste automáticamente ${step.item}!`);
+    }
+
+    if (step.type === 'route') {
+      soundEngine.playBGM('route');
+      this.isBoss = false;
+
+      // Si la ruta ya fue capturada/explorada, avanzar por descarte sin generar combate salvaje
+      if (this.capturedZones.has(step.loc)) {
+        this.currentEnemy = null;
+        this.log(`📍 ${step.loc}: Ruta ya explorada. ¡Avanzando automáticamente por descarte!`);
+        this.updateUI();
+        setTimeout(() => {
+          this.storyStep++;
+          this.initCurrentStep();
+        }, 750);
+        return;
+      }
+
+      this.spawnWildPokemon(step);
+    } else if (step.type === 'e4' || step.type === 'champion') {
+      soundEngine.playBGM('league');
+      this.isBoss = true;
+      this.startBossBattle(step);
+    } else {
+      soundEngine.playBGM('boss');
+      this.isBoss = true;
+      this.startBossBattle(step);
+    }
+  }
+
+  async spawnWildPokemon(step) {
+    const table = ROUTE_ENCOUNTERS[step.loc] || ROUTE_ENCOUNTERS["Ruta 1"];
+    let unownedTable = table.filter(p => !this.caughtSpecies.has(p.name));
+
+    let dupesTriggered = false;
+    if (unownedTable.length > 0 && unownedTable.length < table.length) {
+      dupesTriggered = true;
+    }
+
+    // If all are caught on this route, fallback to table but allow catch exception
+    const activeTable = unownedTable.length > 0 ? unownedTable : table;
+
+    const rand = Math.random();
+    let cum = 0, selected = activeTable[0];
+    for (let p of activeTable) {
+      cum += (1 / activeTable.length);
+      if (rand <= cum) { selected = p; break; }
+    }
+
+    this.currentEnemy = await this.fetchPokemon(selected.id, step.cap);
+
+    if (dupesTriggered) {
+      const banner = document.getElementById('dupes-banner');
+      banner.style.display = 'block';
+      setTimeout(() => banner.style.display = 'none', 1800);
+    }
+
+    if (this.currentEnemy.isShiny) {
+      soundEngine.playShiny();
+      document.getElementById('shiny-sparkle').style.display = 'block';
+      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', 1500);
+    }
+
+    const canCatch = !this.capturedZones.has(step.loc) || this.currentEnemy.isShiny;
+    this.setButtons(true, canCatch, true);
+
+    const shinyText = this.currentEnemy.isShiny ? ' ✨ SHINY' : '';
+    const dupesText = dupesTriggered ? ' (Regla Duplicados Activa)' : '';
+    this.log(`¡${this.currentEnemy.speciesName}${shinyText} salvaje (Lv.${step.cap}) en ${step.loc}!${dupesText}`);
+    this.updateUI();
+  }
+
+  async startBossBattle(step) {
+    this.bossTeam = [...step.team];
+    this.log(`¡Combate con ${step.title}!`);
+    await this.loadNextBossPokemon();
+  }
+
+  async loadNextBossPokemon() {
+    if (this.bossTeam.length === 0) {
+      this.log("¡Batalla ganada!");
+      const step = this.getStoryLine()[this.storyStep];
+
+      if (step.badgeIdx !== undefined) {
+        this.badges++;
+        soundEngine.playBadge();
+        const bIcon = document.getElementById(`badge-${step.badgeIdx}`);
+        if (bIcon) bIcon.className = 'badge-icon obtained';
+      }
+
+      this.healAliveTeam();
+      this.currentEnemy = null;
+      this.storyStep++;
+      setTimeout(() => this.initCurrentStep(), 700);
+      return;
+    }
+
+    const next = this.bossTeam.shift();
+    this.currentEnemy = await this.fetchPokemon(next.id, next.lvl);
+    
+    if (this.currentEnemy.isShiny) {
+      soundEngine.playShiny();
+    }
+
+    this.setButtons(true, false, true);
+    this.updateUI();
+  }
+
+  calcTypeMultiplier(atkTypes, defTypes) {
+    let mult = 1.0;
+    for (let a of atkTypes) {
+      const rel = this.typeMatchups[a];
+      if (rel) {
+        for (let d of defTypes) {
+          if (rel.double_to.includes(d)) mult *= 1.6;
+          if (rel.half_to.includes(d)) mult *= 0.6;
+        }
+      }
+    }
+    return mult;
+  }
+
+  calcWinRate(atk, def, mult) {
+    const lvlDiff = atk.level - def.level;
+    // Dificultad ajustada para permitir un avance fluido y divertido
+    let base = 72 + (lvlDiff * 6) + ((mult - 1) * 45);
+    return Math.min(Math.max(base, 40), 96);
+  }
+
+  instantAttack() {
+    const active = this.team[this.activeIdx];
+    if (!active || active.currentHp <= 0 || !this.currentEnemy) return;
+
+    this.setButtons(false, false, false);
+
+    const playerMult = this.calcTypeMultiplier(active.types, this.currentEnemy.types);
+    const winRate = this.calcWinRate(active, this.currentEnemy, playerMult);
+
+    const roll = Math.random() * 100;
+    const isPlayerVictory = roll <= winRate;
+
+    if (playerMult > 1.2) soundEngine.playSuperEffective();
+    else soundEngine.playHit();
+
+    if (isPlayerVictory) {
+      this.currentEnemy.currentHp = 0;
+      this.updateUI();
+      const multLabel = playerMult > 1.2 ? ' [¡Super Eficaz!]' : playerMult < 0.8 ? ' [Poco Eficaz]' : '';
+      this.log(`⚔️ ¡VICTORIA! ${active.nickname} vence a ${this.currentEnemy.speciesName}${multLabel} (${Math.round(winRate)}% probabilidad).`);
+
+      setTimeout(async () => {
+        if (this.isBoss) {
+          await this.loadNextBossPokemon();
+        } else {
+          const step = this.getStoryLine()[this.storyStep];
+          if (step && step.type === 'route' && !this.currentEnemy.isShiny) {
+            this.capturedZones.add(step.loc);
+          }
+          this.healAliveTeam();
+          this.currentEnemy = null;
+          this.storyStep++;
+          this.initCurrentStep();
+        }
+      }, 700);
+
+    } else {
+      active.currentHp = 0;
+      soundEngine.playFaint();
+      this.updateUI();
+      
+      const step = this.getStoryLine()[this.storyStep];
+      this.log(`💀 ¡DERROTA! ${active.nickname} cayó contra ${this.currentEnemy.speciesName}. ${active.nickname} HA MUERTO.`);
+      
+      this.graveyard.push({
+        nickname: active.nickname,
+        speciesName: active.speciesName,
+        level: active.level,
+        killedBy: this.currentEnemy.speciesName,
+        location: step ? step.loc : 'Kanto'
+      });
+
+      setTimeout(() => {
+        const survivor = this.team.find(p => p.currentHp > 0);
+        if (!survivor) {
+          this.showSummaryModal(false);
+        } else {
+          this.autoSwitch();
+        }
+      }, 800);
+    }
+  }
+
+  catchPokemon() {
+    if (this.isBoss || !this.currentEnemy) return;
+    const step = this.getStoryLine()[this.storyStep];
+
+    this.setButtons(false, false, false);
+    // Probabilidad de captura muy alta (85% - 95%)
+    const winRate = (1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * 20 + 85;
+
+    soundEngine.playCatch();
+    this.log(`Lanzaste Pokéball a ${this.currentEnemy.speciesName} (${Math.round(winRate)}% probabilidad)...`);
+
+    // Marcar la ruta como intentada/consumida (Regla Nuzlocke: 1 solo encuentro por ruta)
+    if (!this.currentEnemy.isShiny) {
+      this.capturedZones.add(step.loc);
+    }
+
+    setTimeout(() => {
+      if (Math.random() * 100 <= winRate) {
+        soundEngine.playBadge();
+        this.pendingCatch = this.currentEnemy;
+        this.currentEnemy = null;
+        this.showNickModal(`¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`);
+      } else {
+        soundEngine.playHit();
+        this.log(`❌ ¡La Pokéball falló y ${this.currentEnemy.speciesName} escapó! Has perdido el único intento de captura en ${step.loc}.`);
+        this.currentEnemy = null;
+        setTimeout(() => {
+          this.healAliveTeam();
+          this.storyStep++;
+          this.initCurrentStep();
+        }, 1200);
+      }
+    }, 600);
+  }
+
+  async checkEvolution(p) {
+    try {
+      const spRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${p.id}/`);
+      if (!spRes.ok) return;
+      const spData = await spRes.json();
+      const evoRes = await fetch(spData.evolution_chain.url);
+      const evoData = await evoRes.json();
+
+      let node = evoData.chain;
+      while (node && node.species.name !== p.speciesName.toLowerCase()) {
+        node = node.evolves_to[0];
+      }
+
+      if (node && node.evolves_to.length > 0) {
+        const next = node.evolves_to[0];
+        const minLvl = next.evolution_details[0]?.min_level || 16;
+
+        if (p.level >= minLvl) {
+          this.log(`¡${p.nickname} está evolucionando!`);
+          const evo = await this.fetchPokemon(next.species.name, p.level, p.isShiny);
+          
+          p.id = evo.id;
+          p.speciesName = evo.speciesName;
+          p.frontSprite = evo.frontSprite;
+          p.backSprite = evo.backSprite;
+          p.types = evo.types;
+          this.caughtSpecies.add(p.speciesName);
+
+          this.log(`¡Felicidades! Evolucionó a ${p.speciesName}!`);
+        }
+      }
+    } catch(e) {}
+  }
+
+  healAliveTeam() {
+    this.team.forEach(p => { if (p.currentHp > 0) p.currentHp = p.maxHp; });
+    this.updateUI();
+  }
+
+  autoSwitch() {
+    const nextIdx = this.team.findIndex(p => p.currentHp > 0);
+    if (nextIdx !== -1) {
+      this.activeIdx = nextIdx;
+      this.log(`¡Entra al combate ${this.team[this.activeIdx].nickname}!`);
+      this.updateUI();
+      this.setButtons(true, false, true);
+    }
+  }
+
+  openPC() {
+    const t = document.getElementById('pc-team-list');
+    const b = document.getElementById('pc-box-list');
+    t.innerHTML = ''; b.innerHTML = '';
+
+    this.team.forEach((p, idx) => {
+      const shinyMark = p.isShiny ? '✨' : '';
+      const deadMark = p.currentHp === 0 ? ' [MUERTO]' : '';
+      t.innerHTML += `
+        <div class="pc-item">
+          <span>${shinyMark}${p.nickname} (N.${p.level})${deadMark}</span>
+          ${this.team.length > 1 && p.currentHp > 0 ? `<button onclick="game.depositToBox(${idx})">Guardar</button>` : ''}
+        </div>`;
+    });
+
+    this.pcBox.forEach((p, idx) => {
+      const shinyMark = p.isShiny ? '✨' : '';
+      b.innerHTML += `
+        <div class="pc-item">
+          <span>${shinyMark}${p.nickname} (N.${p.level})</span>
+          ${this.team.length < 6 ? `<button onclick="game.withdrawToTeam(${idx})">Sacar</button>` : ''}
+        </div>`;
+    });
+
+    document.getElementById('pc-modal').style.display = 'flex';
+  }
+
+  depositToBox(idx) {
+    if (this.team.length <= 1) return;
+    const [removed] = this.team.splice(idx, 1);
+    this.pcBox.push(removed);
+    this.activeIdx = 0;
+    this.openPC();
+    this.updateUI();
+  }
+
+  withdrawToTeam(idx) {
+    if (this.team.length >= 6) return;
+    const [removed] = this.pcBox.splice(idx, 1);
+    this.team.push(removed);
+    this.openPC();
+    this.updateUI();
+  }
+
+  closePC() {
+    document.getElementById('pc-modal').style.display = 'none';
+    this.updateUI();
+  }
+
+  openGraveyard() {
+    const list = document.getElementById('graveyard-list');
+    list.innerHTML = '';
+
+    if (this.graveyard.length === 0) {
+      list.innerHTML = '<div>No hay bajas registradas. ¡Tu equipo sigue intacto!</div>';
+    } else {
+      this.graveyard.forEach(g => {
+        list.innerHTML += `
+          <div class="grave-item">
+            <span>🪦 <strong>${g.nickname}</strong> (${g.speciesName} Lv.${g.level})</span>
+            <span>Caído en ${g.location} por ${g.killedBy}</span>
+          </div>`;
+      });
+    }
+    document.getElementById('graveyard-modal').style.display = 'flex';
+  }
+
+  closeGraveyard() {
+    document.getElementById('graveyard-modal').style.display = 'none';
+  }
+
+  showSummaryModal(isVictory) {
+    const title = document.getElementById('summary-title');
+    const sub = document.getElementById('summary-subtitle');
+    const stats = document.getElementById('summary-stats');
+
+    if (isVictory) {
+      title.innerText = "🏆 ¡VICTORIA NUZLOCKE!";
+      title.style.color = "#2ecc71";
+      sub.innerText = `¡Felicidades ${this.playerName}! Derrotaste al Alto Mando y al Campeón ${this.rivalName}. ¡Eres el nuevo Campeón Nuzlocke de Kanto!`;
+      soundEngine.playBadge();
+    } else {
+      title.innerText = "💀 GAME OVER";
+      title.style.color = "#e74c3c";
+      sub.innerText = `Todo tu equipo ha sido exterminado en el desafío Nuzlocke.`;
+      soundEngine.playFaint();
+    }
+
+    stats.innerHTML = `
+      <div><strong>Entrenador:</strong> ${this.playerName} | <strong>Rival:</strong> ${this.rivalName}</div>
+      <div><strong>Medallas Obtenidas:</strong> ${this.badges} / 8</div>
+      <div><strong>Supervivientes:</strong> ${this.team.filter(p => p.currentHp > 0).length}</div>
+      <div><strong>Bajas Totales (Cementerio):</strong> ${this.graveyard.length}</div>
+      <div><strong>Especies Capturadas Únicas:</strong> ${this.caughtSpecies.size}</div>
+    `;
+    document.getElementById('summary-modal').style.display = 'flex';
+  }
+
+  updateUI() {
+    if (this.currentEnemy) {
+      document.getElementById('foe').style.display = 'block';
+      document.getElementById('foe-nick').innerText = this.currentEnemy.nickname;
+      document.getElementById('foe-lvl').innerText = `Lv.${this.currentEnemy.level}`;
+      
+      const foeImg = document.getElementById('foe-sprite');
+      foeImg.src = this.currentEnemy.frontSprite;
+      if (this.currentEnemy.isShiny) foeImg.className = 'sprite shiny-effect';
+      else foeImg.className = 'sprite';
+
+      document.getElementById('foe-shiny-tag').style.display = this.currentEnemy.isShiny ? 'inline-block' : 'none';
+
+      const pct = (this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100;
+      document.getElementById('foe-hp').style.width = `${pct}%`;
+    } else {
+      document.getElementById('foe').style.display = 'none';
+    }
+
+    const active = this.team[this.activeIdx];
+    if (active) {
+      document.getElementById('player').style.display = 'block';
+      document.getElementById('player-nick').innerText = active.nickname;
+      document.getElementById('player-lvl').innerText = `Lv.${active.level}`;
+
+      const plyrImg = document.getElementById('player-sprite');
+      plyrImg.src = active.backSprite;
+      if (active.isShiny) plyrImg.className = 'sprite shiny-effect';
+      else plyrImg.className = 'sprite';
+
+      document.getElementById('player-shiny-tag').style.display = active.isShiny ? 'inline-block' : 'none';
+
+      document.getElementById('player-hp-val').innerText = `${active.currentHp}/${active.maxHp}`;
+      const pct = (active.currentHp / active.maxHp) * 100;
+      const hpBar = document.getElementById('player-hp');
+      hpBar.style.width = `${pct}%`;
+      hpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    }
+
+    for (let i = 0; i < 6; i++) {
+      const slot = document.getElementById(`slot-${i}`);
+      if (this.team[i]) {
+        const shinyMark = this.team[i].isShiny ? '✨' : '';
+        slot.innerText = `${shinyMark}${this.team[i].nickname} L${this.team[i].level}`;
+        slot.className = `team-slot ${i === this.activeIdx ? 'active' : ''} ${this.team[i].currentHp === 0 ? 'dead' : ''}`;
+        slot.onclick = () => { if (this.team[i].currentHp > 0) { this.activeIdx = i; this.updateUI(); } };
+      } else {
+        slot.innerText = "-";
+        slot.className = "team-slot";
+        slot.onclick = null;
+      }
+    }
+  }
+
+  setButtons(atk, catchBtn, pc) {
+    document.getElementById('btn-atk').disabled = !atk;
+    document.getElementById('btn-catch').disabled = !catchBtn;
+    document.getElementById('btn-pc').disabled = !pc;
+  }
+
+  log(msg) { document.getElementById('textbox').innerText = msg; }
+}
+
+const game = new BalancedNuzlockeEngine();
+</script>
+</body>
+</html>
