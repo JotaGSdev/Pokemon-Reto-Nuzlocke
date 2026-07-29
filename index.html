@@ -837,7 +837,7 @@ class BalancedNuzlockeEngine {
       // Gimnasio 4: Erika (Ciudad Azulona)
       { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
       { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
-      { type: 'gift', loc: 'Mansión Azulona', title: 'Regalo Nuzlocke: EEVEE', giftId: 133, cap: 32, quest: 'Regalo: Recibe a Eevee en el ático de la Mansión Azulona' },
+      { type: 'gift_choice', loc: 'Mansión Azulona', title: 'Regalo Mansión Azulona: Elección de Eeveelución', choices: [{ id: 134, name: 'VAPOREON (Piedra Agua)' }, { id: 135, name: 'JOLTEON (Piedra Trueno)' }, { id: 136, name: 'FLAREON (Piedra Fuego)' }, { id: 133, name: 'EEVEE (Forma Base)' }], cap: 32, quest: 'Elige tu Eeveelución favorita (Vaporeon, Jolteon, Flareon o Eevee)' },
       { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Siph Scope' },
       
       // Rutas Centrales & Snorlax
@@ -1070,6 +1070,9 @@ class BalancedNuzlockeEngine {
     
     this.caughtSpecies.add(this.pendingCatch.speciesName);
 
+    // Garantizar salud al 100% para todo Pokémon capturado o de regalo
+    this.pendingCatch.currentHp = this.pendingCatch.maxHp;
+
     if (this.team.length < 6) this.team.push(this.pendingCatch);
     else this.pcBox.push(this.pendingCatch);
 
@@ -1172,20 +1175,30 @@ class BalancedNuzlockeEngine {
     }
   }
 
-  showGiftChoiceModal(step) {
-    document.getElementById('gift-title').innerText = step.title;
-    document.getElementById('gift-prompt').innerText = step.quest;
+  async showGiftChoiceModal(step) {
+    document.getElementById('gift-title').innerText = `🎁 ${step.title}`;
+    document.getElementById('gift-prompt').innerText = "¡Elige el Pokémon que más te guste para añadirlo a tu aventura!";
     const container = document.getElementById('gift-options');
-    container.innerHTML = '';
+    container.innerHTML = '<div style="color:#aaa; font-size:7px;">Cargando opciones...</div>';
 
-    step.choices.forEach(choice => {
-      container.innerHTML += `
-        <div class="starter-btn" onclick="game.selectGiftChoice(${choice.id}, ${step.cap})">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${choice.id}.png" alt="${choice.name}">
-          <span>${choice.name}</span>
-        </div>`;
-    });
+    const cards = [];
+    for (let choice of step.choices) {
+      const animSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${choice.id}.gif`;
+      const staticSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${choice.id}.png`;
+      
+      const pkmnData = await this.fetchPokemon(choice.id, step.cap);
+      const typeBadges = this.getTypeBadgeHTML(pkmnData.types);
 
+      cards.push(`
+        <div class="starter-btn" style="flex-direction:column; padding:12px 10px; min-width:130px;" onclick="game.selectGiftChoice(${choice.id}, ${step.cap})">
+          <img src="${animSprite}" alt="${choice.name}" style="width:52px; height:52px; image-rendering:pixelated; margin-bottom:6px;" onerror="this.src='${staticSprite}'">
+          <span style="font-weight:bold; color:#ffea00; font-size:7.5px; margin-bottom:4px;">${choice.name}</span>
+          <div>${typeBadges}</div>
+          <button class="game-btn" style="margin-top:8px; padding:6px 10px; font-size:6px; background:#4caf50; color:#fff; width:100%;">Elegir Éste</button>
+        </div>`);
+    }
+
+    container.innerHTML = cards.join('');
     document.getElementById('gift-modal').style.display = 'flex';
   }
 
@@ -1354,7 +1367,8 @@ class BalancedNuzlockeEngine {
 
             if (catchRoll <= catchChance) {
               soundEngine.playBadge();
-              this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y lograste capturarlo (${catchChance}% probabilidad).`);
+              defeatedEnemy.currentHp = defeatedEnemy.maxHp;
+              this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo al 100% HP (${catchChance}% probabilidad).`);
               this.pendingCatch = defeatedEnemy;
               this.currentEnemy = null;
               setTimeout(() => {
