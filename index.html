@@ -7,11 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-main: #0b0c10;
-      --gba-frame: #1f2338;
+      --bg-main: #0a0c14;
+      --gba-frame: #16192b;
       --textbox-bg: #fdfae6;
-      --ui-border: #282c37;
-      --primary-red: #d32f2f;
+      --ui-border: #232738;
+      --primary-red: #c62828;
       --hp-green: #2ecc71;
       --hp-yellow: #f1c40f;
       --hp-red: #e74c3c;
@@ -24,37 +24,37 @@
     body {
       font-family: 'Press Start 2P', monospace;
       background-color: var(--bg-main);
-      background-image: radial-gradient(#1f2338 1px, transparent 0);
+      background-image: radial-gradient(#1e2338 1.5px, transparent 0);
       background-size: 24px 24px;
       color: #111;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 12px;
+      padding: 16px;
     }
 
     #game-container {
-      width: 760px;
-      background: var(--gba-frame);
-      border: 8px solid #0d0f17;
+      width: 780px;
+      background: linear-gradient(145deg, #1b1f33, #121524);
+      border: 8px solid #080a12;
       border-radius: 20px;
       padding: 16px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.95);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.95), inset 0 0 15px rgba(255,255,255,0.05);
       position: relative;
     }
 
     .overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 7, 12, 0.94);
+      background: rgba(5, 7, 14, 0.94);
       z-index: 100;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       padding: 15px;
-      border-radius: 12px;
+      border-radius: 14px;
       color: #fff;
     }
 
@@ -62,17 +62,17 @@
       background: var(--textbox-bg);
       color: #111;
       border: 4px solid var(--ui-border);
-      border-radius: 10px;
-      padding: 18px;
+      border-radius: 12px;
+      padding: 20px;
       width: 95%;
       max-width: 620px;
       text-align: center;
       max-height: 92vh;
       overflow-y: auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.85);
     }
 
-    .modal-card h2 { font-size: 12px; margin-bottom: 12px; color: #a00000; text-transform: uppercase; }
+    .modal-card h2 { font-size: 12px; margin-bottom: 12px; color: #a00000; text-transform: uppercase; letter-spacing: 0.5px; }
     .modal-card p { font-size: 8px; margin-bottom: 12px; line-height: 1.6; }
 
     .input-group {
@@ -81,146 +81,161 @@
 
     .input-group input {
       font-family: 'Press Start 2P', monospace; font-size: 9px;
-      padding: 8px; border: 2px solid var(--ui-border); border-radius: 5px;
+      padding: 10px; border: 2px solid var(--ui-border); border-radius: 6px;
       width: 45%; text-align: center; outline: none; background: #fff;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .starters-grid {
-      display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+      display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 10px;
     }
 
     .starter-btn {
-      background: #fff; border: 3px solid var(--ui-border); border-radius: 8px;
-      padding: 8px; cursor: pointer; width: 100px; text-align: center;
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      background: #fff; border: 3px solid var(--ui-border); border-radius: 10px;
+      padding: 8px; cursor: pointer; width: 104px; text-align: center;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
-    .starter-btn:hover { background: #e3f2fd; border-color: #1976d2; transform: translateY(-3px); }
-    .starter-btn img { width: 60px; height: 60px; image-rendering: pixelated; }
+    .starter-btn:hover { background: #eef7ff; border-color: #1976d2; transform: translateY(-4px); box-shadow: 0 8px 16px rgba(25,118,210,0.25); }
+    .starter-btn img { width: 64px; height: 64px; image-rendering: pixelated; }
     .starter-btn span { font-size: 7px; display: block; margin-top: 6px; font-weight: bold; }
 
     header {
-      background: var(--primary-red); color: white; padding: 10px 14px; font-size: 8px;
+      background: linear-gradient(180deg, #d32f2f 0%, #b71c1c 100%);
+      color: white; padding: 10px 14px; font-size: 8px;
       display: flex; justify-content: space-between; align-items: center;
-      border: 3px solid var(--ui-border); border-radius: 8px 8px 0 0;
+      border: 3px solid var(--ui-border); border-radius: 10px 10px 0 0;
       box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3);
     }
 
-    .sound-toggle-btn {
-      background: #222; color: #fff; border: 1px solid #fff; border-radius: 4px;
-      padding: 3px 6px; font-size: 7px; cursor: pointer; font-family: inherit;
+    .loc-badge {
+      background: rgba(0,0,0,0.35); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
     }
+
+    .sound-toggle-btn {
+      background: #1a1c29; color: #fff; border: 1px solid #444; border-radius: 5px;
+      padding: 4px 8px; font-size: 7px; cursor: pointer; font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .sound-toggle-btn:hover { background: #2e334a; border-color: #ffc107; }
 
     #badge-bar {
-      background: #12141d;
+      background: #10121d;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
-      padding: 6px 12px; display: flex; justify-content: space-around; align-items: center;
+      padding: 8px 14px; display: flex; justify-content: space-around; align-items: center;
+      border-bottom: 2px solid #1a1e2d;
     }
 
-    .badge-icon {
-      width: 26px; height: 26px; border-radius: 50%; background: #2a2e3f;
-      border: 2px solid #444; display: flex; align-items: center; justify-content: center;
-      font-size: 8px; color: #666; transition: all 0.3s ease; opacity: 0.4;
+    .badge-slot {
+      width: 36px; height: 36px; border-radius: 50%; background: #1c2030;
+      border: 2px solid #333a50; display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .badge-icon.obtained {
-      opacity: 1; border-color: var(--accent-gold); box-shadow: 0 0 10px var(--badge-glow);
-      background: radial-gradient(circle, #ffe082 0%, #ffb300 100%); color: #000; font-weight: bold;
+    .badge-slot img {
+      width: 24px; height: 24px; image-rendering: pixelated;
+      filter: grayscale(100%) opacity(0.3); transition: all 0.3s ease;
+    }
+    .badge-slot.obtained {
+      border-color: #ffea00; box-shadow: 0 0 12px rgba(255, 234, 0, 0.6);
+      background: radial-gradient(circle, #3d3b19 0%, #1c2030 100%);
+    }
+    .badge-slot.obtained img {
+      filter: grayscale(0%) opacity(1) drop-shadow(0 0 4px #ffea00);
+      transform: scale(1.15);
     }
 
     #quest-bar {
-      background: #161822; color: #00e5ff; font-size: 7px; padding: 8px 12px;
+      background: #151826; color: #00e5ff; font-size: 7px; padding: 8px 14px;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
       display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 2px solid #202538;
     }
 
     #battle-screen {
-      height: 240px;
-      background: linear-gradient(to bottom, #74c798 50%, #cadc89 50%);
+      height: 250px;
+      background: linear-gradient(to bottom, #6ec68d 0%, #8ac760 50%, #b3d674 100%);
       position: relative;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
       overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
     }
 
-    .shiny-sparkle {
-      position: absolute; width: 100%; height: 100%;
-      pointer-events: none; z-index: 10;
-      background: radial-gradient(circle, rgba(255,235,59,0.3) 0%, transparent 70%);
-      animation: flashShiny 0.8s ease-in-out infinite alternate;
+    .battle-ground-foe {
+      position: absolute; top: 75px; right: 15px; width: 180px; height: 36px;
+      background: rgba(0,0,0,0.12); border-radius: 50%; pointer-events: none;
     }
-    @keyframes flashShiny { 0% { opacity: 0.2; } 100% { opacity: 0.8; } }
+    .battle-ground-player {
+      position: absolute; bottom: 15px; left: 25px; width: 190px; height: 38px;
+      background: rgba(0,0,0,0.12); border-radius: 50%; pointer-events: none;
+    }
 
-    .combatant { position: absolute; width: 200px; }
+    .combatant { position: absolute; width: 210px; }
     #foe { top: 12px; right: 20px; }
     #player { bottom: 12px; left: 20px; }
 
     .hud {
       background: var(--textbox-bg); border: 3px solid var(--ui-border);
-      border-radius: 6px; padding: 6px; font-size: 7px;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+      border-radius: 8px; padding: 7px 9px; font-size: 7px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
     }
 
     .hp-bar-outer {
-      width: 100%; height: 8px; background: #444; border-radius: 4px;
-      margin-top: 4px; border: 1px solid #000; overflow: hidden;
+      width: 100%; height: 9px; background: #333; border-radius: 5px;
+      margin-top: 5px; border: 1.5px solid #000; overflow: hidden;
     }
 
     .hp-bar-inner {
-      height: 100%; width: 100%; background: var(--hp-green); transition: width 0.3s ease;
+      height: 100%; width: 100%; background: var(--hp-green); transition: width 0.3s ease, background 0.3s ease;
     }
 
-    .sprite-box { position: relative; display: inline-block; width: 95px; height: 95px; }
+    .sprite-box { position: relative; display: flex; justify-content: center; align-items: center; width: 100px; height: 100px; }
 
-    .sprite { width: 95px; height: 95px; display: block; margin: 0 auto; image-rendering: pixelated; }
-
-    .sprite.shiny-effect {
-      filter: drop-shadow(0 0 12px #ffe600) brightness(1.05);
-    }
-
-    .shiny-tag {
-      position: absolute; top: -4px; right: -4px; background: #ffe600; color: #000;
-      font-size: 6px; padding: 2px 4px; border-radius: 4px; border: 1px solid #000; font-weight: bold;
-    }
+    .sprite { width: 100px; height: 100px; display: block; margin: 0 auto; image-rendering: pixelated; filter: none; }
 
     #dupes-banner {
       position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-      background: #ff9800; color: #000; padding: 4px 10px; font-size: 6px;
-      border: 2px solid #000; border-radius: 4px; display: none; z-index: 20;
+      background: #ff9800; color: #000; padding: 5px 12px; font-size: 6px;
+      border: 2px solid #000; border-radius: 6px; display: none; z-index: 20;
+      font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     #team-bar {
-      display: flex; gap: 4px; padding: 6px; background: #111;
+      display: flex; gap: 5px; padding: 8px; background: #0e101a;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
     }
 
     .team-slot {
-      flex: 1; background: #222; border: 2px solid #444; height: 34px;
+      flex: 1; background: #1e2233; border: 2px solid #3d435e; height: 36px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 6px; color: #fff; border-radius: 4px; cursor: pointer; padding: 2px;
+      font-size: 6px; color: #fff; border-radius: 6px; cursor: pointer; padding: 2px;
       text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .team-slot.active { border-color: var(--accent-gold); background: #333; font-weight: bold; }
-    .team-slot.dead { border-color: var(--hp-red); opacity: 0.35; text-decoration: line-through; background: #2a0000; }
-    .team-slot:hover:not(.dead) { background: #3a3a3a; }
+    .team-slot.active { border-color: var(--accent-gold); background: #2d334d; font-weight: bold; box-shadow: inset 0 0 6px rgba(255, 193, 7, 0.3); }
+    .team-slot.dead { border-color: var(--hp-red); opacity: 0.35; text-decoration: line-through; background: #2a0808; }
+    .team-slot:hover:not(.dead) { background: #2b3047; }
 
     #textbox {
-      height: 60px; background: var(--textbox-bg);
-      border: 3px solid var(--ui-border); padding: 10px 14px;
+      height: 64px; background: var(--textbox-bg);
+      border: 3px solid var(--ui-border); padding: 10px 16px;
       font-size: 8px; line-height: 1.6; display: flex; align-items: center;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
     }
 
     #controls {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-      padding: 10px; background: #181a24;
-      border: 3px solid var(--ui-border); border-radius: 0 0 8px 8px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      padding: 12px; background: #161826;
+      border: 3px solid var(--ui-border); border-radius: 0 0 10px 10px;
     }
 
     button.game-btn {
-      padding: 10px 4px; font-family: 'Press Start 2P', monospace;
+      padding: 12px 6px; font-family: 'Press Start 2P', monospace;
       font-size: 7px; border: 2px solid var(--ui-border);
-      border-radius: 5px; cursor: pointer; background: #e0e0e0;
-      box-shadow: inset -2px -2px 0px #888; transition: background 0.1s;
+      border-radius: 6px; cursor: pointer; background: #e0e0e0;
+      box-shadow: inset -2px -2px 0px #999; transition: background 0.1s, transform 0.05s;
     }
-    button.game-btn:hover:not(:disabled) { background: #fff; }
-    button.game-btn:active:not(:disabled) { box-shadow: inset 2px 2px 0px #888; }
+    button.game-btn:hover:not(:disabled) { background: #fff; transform: translateY(-1px); }
+    button.game-btn:active:not(:disabled) { box-shadow: inset 2px 2px 0px #666; transform: translateY(1px); }
     button.game-btn:disabled { opacity: 0.35; cursor: not-allowed; }
     button.btn-restart { background: #ff4444; color: #fff; }
     button.btn-graveyard { background: #7b1fa2; color: #fff; }
@@ -233,6 +248,69 @@
 
     .graveyard-list { text-align: left; max-height: 220px; overflow-y: auto; background: #222; color: #ff8a80; padding: 10px; border-radius: 6px; font-size: 7px; margin-top: 10px; }
     .grave-item { border-bottom: 1px dashed #555; padding: 6px 0; display: flex; justify-content: space-between; }
+
+    .combat-preview-bar {
+      background: #111424; color: #fff; font-size: 7px;
+      padding: 7px 14px; border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a1e2d;
+    }
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 6px;
+      font-weight: 900;
+      font-family: 'Press Start 2P', monospace;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1.5px solid #111111;
+      text-shadow: 1px 1.5px 0px #000000;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 4px rgba(0,0,0,0.35);
+      margin: 0 2px;
+    }
+
+    .summary-stats-box {
+      background: #111422; color: #fff; border: 3px solid var(--ui-border);
+      border-radius: 10px; padding: 14px; font-size: 7px; margin-bottom: 14px;
+      line-height: 1.8; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .summary-stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 8px;
+    }
+    .summary-badge-row {
+      display: flex; gap: 6px; align-items: center; margin-top: 6px;
+    }
+    .summary-badge-row img {
+      width: 24px; height: 24px; image-rendering: pixelated;
+    }
+    .summary-badge-row img.dimmed {
+      filter: grayscale(100%) opacity(0.25);
+    }
+
+    .summary-hall-box {
+      background: #181b2c; border: 3px solid var(--ui-border);
+      border-radius: 10px; padding: 14px; text-align: left;
+    }
+    .summary-hall-title {
+      font-size: 8px; color: #ffea00; margin-bottom: 10px; font-weight: bold; text-align: center;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .hall-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .hall-card {
+      background: #0f111d; border: 2px solid #333a50; border-radius: 8px;
+      padding: 8px; text-align: center; font-size: 6px; color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .hall-card img {
+      width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 4px;
+    }
+    .hall-card .name { font-weight: bold; color: #ffea00; margin-bottom: 2px; }
+    .hall-card .sub { font-size: 5px; color: #aaa; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -271,6 +349,7 @@
           <span>Eevee</span>
         </div>
       </div>
+      <p style="font-size: 7px; color: #d32f2f; margin-top: 12px; font-weight: bold;">🎵 (Haz clic en cualquier lugar para activar la música Pokémon 8-Bit)</p>
     </div>
   </div>
 
@@ -304,32 +383,35 @@
   </div>
 
   <div id="summary-modal" class="overlay" style="display:none;">
-    <div class="modal-card">
-      <h2 id="summary-title">FIN DEL NUZLOCKE</h2>
-      <p id="summary-subtitle"></p>
-      <div id="summary-stats" style="text-align:left; font-size:7px; background:#fff; padding:10px; border:2px solid #000; margin:10px 0;"></div>
-      <button class="game-btn btn-restart" style="width:100%; padding:10px;" onclick="location.reload()">Reiniciar Nueva Partida</button>
+    <div class="modal-card" style="max-width:720px; padding:22px;">
+      <h2 id="summary-title" style="font-size:13px; margin-bottom:6px;">FIN DEL NUZLOCKE</h2>
+      <p id="summary-subtitle" style="font-size:8px; margin-bottom:14px; color:#ddd;"></p>
+      
+      <div id="summary-stats-card" class="summary-stats-box"></div>
+      <div id="summary-hall-of-fame" class="summary-hall-box"></div>
+
+      <button class="game-btn btn-restart" style="width:100%; padding:14px; margin-top:14px; font-size:8px; background:#ff4444; color:#fff;" onclick="location.reload()">🔄 Reiniciar Nueva Partida</button>
     </div>
   </div>
 
   <header>
     <span>Entrenador: <strong id="header-player">RED</strong></span>
-    <span id="loc-text">Pueblo Paleta</span>
+    <span id="loc-text" class="loc-badge">Pueblo Paleta</span>
     <div style="display:flex; gap:6px;">
-      <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">🔊 SFX: ON</button>
-      <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">🎵 Música: ON</button>
+      <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">SFX: ON</button>
+      <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">Música: ON</button>
     </div>
   </header>
 
   <div id="badge-bar">
-    <div class="badge-icon" id="badge-0" title="Medalla Roca (Brock)">🪨</div>
-    <div class="badge-icon" id="badge-1" title="Medalla Cascada (Misty)">💧</div>
-    <div class="badge-icon" id="badge-2" title="Medalla Trueno (Lt. Surge)">⚡</div>
-    <div class="badge-icon" id="badge-3" title="Medalla Arcoíris (Erika)">🌈</div>
-    <div class="badge-icon" id="badge-4" title="Medalla Alma (Koga)">☠️</div>
-    <div class="badge-icon" id="badge-5" title="Medalla Pantano (Sabrina)">👁️</div>
-    <div class="badge-icon" id="badge-6" title="Medalla Volcán (Blaine)">🔥</div>
-    <div class="badge-icon" id="badge-7" title="Medalla Tierra (Giovanni)">🌎</div>
+    <div class="badge-slot" id="badge-0" title="Medalla Roca (Brock)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/1.png" alt="Roca"></div>
+    <div class="badge-slot" id="badge-1" title="Medalla Cascada (Misty)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/2.png" alt="Cascada"></div>
+    <div class="badge-slot" id="badge-2" title="Medalla Trueno (Lt. Surge)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/3.png" alt="Trueno"></div>
+    <div class="badge-slot" id="badge-3" title="Medalla Arcoíris (Erika)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/4.png" alt="Arcoíris"></div>
+    <div class="badge-slot" id="badge-4" title="Medalla Alma (Koga)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/5.png" alt="Alma"></div>
+    <div class="badge-slot" id="badge-5" title="Medalla Pantano (Sabrina)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/6.png" alt="Pantano"></div>
+    <div class="badge-slot" id="badge-6" title="Medalla Volcán (Blaine)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/7.png" alt="Volcán"></div>
+    <div class="badge-slot" id="badge-7" title="Medalla Tierra (Giovanni)"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/8.png" alt="Tierra"></div>
   </div>
 
   <div id="quest-bar">
@@ -337,9 +419,17 @@
     <span id="cap-limit">LevelCap: Lv.5</span>
   </div>
 
+  <div id="combat-preview" class="combat-preview-bar">
+    <div id="preview-matchup">--- vs ---</div>
+    <div>Prob. Victoria: <strong id="preview-win-val" style="color:#ffea00;">--%</strong></div>
+  </div>
+
   <div id="battle-screen">
-    <div id="dupes-banner">🔄 DUPLICADO DETECTADO ➔ RE-SORTEANDO</div>
+    <div id="dupes-banner">DUPLICADO DETECTADO ➔ RE-SORTEANDO</div>
     <div id="shiny-sparkle" class="shiny-sparkle" style="display:none;"></div>
+
+    <div class="battle-ground-foe"></div>
+    <div class="battle-ground-player"></div>
 
     <div id="foe" class="combatant">
       <div class="hud">
@@ -351,14 +441,12 @@
       </div>
       <div class="sprite-box">
         <img id="foe-sprite" class="sprite" src="" alt="Foe">
-        <span id="foe-shiny-tag" class="shiny-tag" style="display:none;">✨ SHINY</span>
       </div>
     </div>
 
     <div id="player" class="combatant">
       <div class="sprite-box">
         <img id="player-sprite" class="sprite" src="" alt="Player">
-        <span id="player-shiny-tag" class="shiny-tag" style="display:none;">✨ SHINY</span>
       </div>
       <div class="hud">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -385,9 +473,9 @@
   <div id="textbox">Iniciando aventura completa Nuzlocke en Kanto...</div>
 
   <div id="controls">
-    <button class="game-btn" id="btn-atk" onclick="game.instantAttack()">⚔️ Atacar</button>
-    <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">🔴 Capturar</button>
-    <button class="game-btn" id="btn-pc" onclick="game.openPC()">💻 PC Equipo</button>
+    <button class="game-btn" id="btn-atk" onclick="game.instantAttack()">Atacar</button>
+    <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">Capturar</button>
+    <button class="game-btn" id="btn-pc" onclick="game.openPC()">PC Equipo</button>
     <button class="game-btn btn-graveyard" id="btn-grave" onclick="game.openGraveyard()">🪦 Cementerio</button>
   </div>
 </div>
@@ -482,20 +570,25 @@ class ChiptuneAudioEngine {
     this.stopBGM();
 
     const tracks = {
+      title: {
+        tempo: 135,
+        lead: [523.25, 523.25, 523.25, 523.25, 415.30, 466.16, 523.25, 0, 466.16, 523.25, 659.25, 783.99, 880.00, 783.99, 659.25, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25, 493.88, 523.25],
+        bass: [130.81, 164.81, 196.00, 164.81, 130.81, 164.81, 196.00, 261.63]
+      },
       route: {
-        tempo: 150,
-        lead: [261, 329, 392, 523, 493, 440, 392, 349, 329, 392, 440, 523, 587, 523, 493, 392],
-        bass: [130, 164, 196, 164, 146, 174, 220, 174]
+        tempo: 130,
+        lead: [392.00, 523.25, 659.25, 783.99, 659.25, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25, 392.00, 440.00, 493.88, 523.25, 659.25, 587.33, 523.25, 493.88, 523.25],
+        bass: [130.81, 196.00, 261.63, 196.00, 146.83, 196.00, 246.94, 196.00]
       },
       boss: {
-        tempo: 125,
-        lead: [440, 440, 523, 440, 587, 523, 440, 349, 392, 440, 523, 659, 587, 523, 440, 392],
-        bass: [110, 130, 146, 130, 110, 130, 146, 164]
+        tempo: 105,
+        lead: [659.25, 659.25, 659.25, 622.25, 659.25, 622.25, 659.25, 783.99, 698.46, 659.25, 587.33, 523.25, 493.88, 523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33, 523.25],
+        bass: [164.81, 196.00, 220.00, 196.00, 164.81, 220.00, 246.94, 220.00]
       },
       league: {
-        tempo: 115,
-        lead: [523, 659, 783, 1046, 987, 880, 783, 659, 698, 783, 880, 1046, 1174, 1046, 987, 880],
-        bass: [130, 164, 196, 261, 220, 174, 196, 261]
+        tempo: 100,
+        lead: [880.00, 880.00, 830.61, 880.00, 987.77, 880.00, 830.61, 783.99, 698.46, 783.99, 880.00, 1046.50, 987.77, 880.00, 783.99, 659.25],
+        bass: [220.00, 174.61, 196.00, 220.00, 261.63, 220.00, 196.00, 174.61]
       }
     };
 
@@ -588,6 +681,42 @@ class BalancedNuzlockeEngine {
     this.pendingCatch = null;
 
     this.shinyOdds = 64; // ~1.56% Shiny Chance para mayor diversión
+    this.e4DefeatedCount = 0;
+  }
+
+  getTypeBadgeHTML(types) {
+    const typeGradients = {
+      fire: 'linear-gradient(180deg, #F75231 0%, #B82200 100%)',
+      water: 'linear-gradient(180deg, #539DDF 0%, #1B65AD 100%)',
+      grass: 'linear-gradient(180deg, #5FBD58 0%, #2A8324 100%)',
+      electric: 'linear-gradient(180deg, #F2CB55 0%, #C4900B 100%)',
+      ice: 'linear-gradient(180deg, #75D0C1 0%, #308A7C 100%)',
+      fighting: 'linear-gradient(180deg, #D3425F 0%, #8C1C30 100%)',
+      poison: 'linear-gradient(180deg, #B763CF 0%, #76238C 100%)',
+      ground: 'linear-gradient(180deg, #DA7C4D 0%, #9E461B 100%)',
+      flying: 'linear-gradient(180deg, #A1BBEC 0%, #5672B2 100%)',
+      psychic: 'linear-gradient(180deg, #FA7179 0%, #B82B33 100%)',
+      bug: 'linear-gradient(180deg, #92BC2C 0%, #5B8209 100%)',
+      rock: 'linear-gradient(180deg, #C9BB8A 0%, #7E7042 100%)',
+      ghost: 'linear-gradient(180deg, #5F6DBC 0%, #2E3A82 100%)',
+      dragon: 'linear-gradient(180deg, #0C69C8 0%, #023D7A 100%)',
+      steel: 'linear-gradient(180deg, #5695A3 0%, #26515A 100%)',
+      fairy: 'linear-gradient(180deg, #EE90E6 0%, #A5459C 100%)',
+      dark: 'linear-gradient(180deg, #595761 0%, #2A2830 100%)',
+      normal: 'linear-gradient(180deg, #A0A29F 0%, #60625F 100%)'
+    };
+    const namesES = {
+      fire: 'FUEGO', water: 'AGUA', grass: 'PLANTA', electric: 'ELÉCTRICO',
+      ice: 'HIELO', fighting: 'LUCHA', poison: 'VENENO', ground: 'TIERRA',
+      flying: 'VOLADOR', psychic: 'PSÍQUICO', bug: 'BICHO', rock: 'ROCA',
+      ghost: 'FANTASMA', dragon: 'DRAGÓN', steel: 'ACERO', fairy: 'HADA',
+      dark: 'SINIESTRO', normal: 'NORMAL'
+    };
+    return types.map(t => {
+      const g = typeGradients[t] || 'linear-gradient(180deg, #777 0%, #444 100%)';
+      const n = namesES[t] || t.toUpperCase();
+      return `<span class="type-pill" style="background:${g}">${n}</span>`;
+    }).join(' ');
   }
 
   getStoryLine() {
@@ -649,7 +778,8 @@ class BalancedNuzlockeEngine {
       { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Atraviesa la Calle Victoria' },
       { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.rivalStarterId, lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
       
-      // Elite Four
+      // Legendary Challenge Mewtwo & Elite Four
+      { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 60 }], cap: 60, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
       { type: 'e4', loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
       { type: 'e4', loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
       { type: 'e4', loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
@@ -717,29 +847,45 @@ class BalancedNuzlockeEngine {
   async fetchPokemon(idOrName, lvl, forceShiny = false) {
     let data = null;
     try {
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
-      if (res.ok) data = await res.json();
+      let res = await fetch(`https://pokeapi.co/api/v2/pokemon/${idOrName}`);
+      if (res.ok) {
+        data = await res.json();
+        // Si la PokéAPI devuelve una variante regional (ID > 151), forzar la especie original de Kanto (ID 1-151)
+        if (data.id > 151 && data.species && data.species.url) {
+          const parts = data.species.url.split('/').filter(Boolean);
+          const baseId = parseInt(parts[parts.length - 1], 10);
+          if (baseId >= 1 && baseId <= 151) {
+            const baseRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${baseId}`);
+            if (baseRes.ok) data = await baseRes.json();
+          }
+        }
+      }
     } catch(e) {}
 
     const isShiny = forceShiny || (Math.floor(Math.random() * this.shinyOdds) === 0);
 
-    if (data) {
+    if (data && data.id <= 151) {
+      const kantoId = data.id;
       const getStat = (n) => data.stats.find(s => s.stat.name === n)?.base_stat || 50;
       const maxHp = Math.floor(((2 * getStat('hp') + 31) * lvl) / 100) + lvl + 10;
       
       const anim = data.sprites?.versions?.['generation-v']?.['black-white']?.animated;
-      
+
+      // Sprites dinámicos exclusivamente originales de Kanto (Gen 5 / PokéAPI Kanto)
       const frontSprite = isShiny 
-        ? (anim?.front_shiny || data.sprites.front_shiny || data.sprites.front_default)
-        : (anim?.front_default || data.sprites.front_default);
+        ? (anim?.front_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${kantoId}.png`)
+        : (anim?.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${kantoId}.png`);
+
       const backSprite = isShiny 
-        ? (anim?.back_shiny || data.sprites.back_shiny || data.sprites.back_default || frontSprite)
-        : (anim?.back_default || data.sprites.back_default || frontSprite);
+        ? (anim?.back_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${kantoId}.png`)
+        : (anim?.back_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${kantoId}.png`);
+
+      const cleanName = data.name.split('-')[0].toUpperCase();
 
       return {
-        id: data.id,
-        speciesName: data.name.toUpperCase(),
-        nickname: data.name.toUpperCase(),
+        id: kantoId,
+        speciesName: cleanName,
+        nickname: cleanName,
         level: lvl,
         maxHp: maxHp,
         currentHp: maxHp,
@@ -751,16 +897,19 @@ class BalancedNuzlockeEngine {
         backSprite: backSprite
       };
     } else {
-      // Local robust fallback if offline
-      const numId = typeof idOrName === 'number' ? idOrName : 25;
-      const sName = String(idOrName).toUpperCase();
+      // Local robust fallback 100% Kanto (1..151)
+      const rawNum = typeof idOrName === 'number' ? idOrName : 25;
+      const numId = (rawNum >= 1 && rawNum <= 151) ? rawNum : 25;
+      const sName = String(idOrName).split('-')[0].toUpperCase();
       const maxHp = Math.floor((120 * lvl) / 100) + lvl + 10;
+
       const frontSprite = isShiny
-        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${numId}.png`
-        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/shiny/${numId}.gif`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${numId}.gif`;
+
       const backSprite = isShiny
-        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${numId}.png`
-        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${numId}.png`;
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/shiny/${numId}.gif`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${numId}.gif`;
 
       return {
         id: numId,
@@ -805,8 +954,8 @@ class BalancedNuzlockeEngine {
     this.healAliveTeam();
     this.currentEnemy = null;
 
-    if (step && step.type === 'route') {
-      this.log(`¡${nick} capturado en ${step.loc}! Avanzando por descarte...`);
+    if (step && (step.type === 'route' || step.type === 'legendary')) {
+      this.log(`¡${nick} capturado en ${step.loc}! Avanzando en la aventura...`);
       this.updateUI();
       setTimeout(() => {
         this.storyStep++;
@@ -929,11 +1078,15 @@ class BalancedNuzlockeEngine {
       this.log("¡Batalla ganada!");
       const step = this.getStoryLine()[this.storyStep];
 
+      if (step && (step.type === 'e4' || step.type === 'champion')) {
+        this.e4DefeatedCount++;
+      }
+
       if (step.badgeIdx !== undefined) {
         this.badges++;
         soundEngine.playBadge();
         const bIcon = document.getElementById(`badge-${step.badgeIdx}`);
-        if (bIcon) bIcon.className = 'badge-icon obtained';
+        if (bIcon) bIcon.className = 'badge-slot obtained';
       }
 
       this.healAliveTeam();
@@ -950,7 +1103,9 @@ class BalancedNuzlockeEngine {
       soundEngine.playShiny();
     }
 
-    this.setButtons(true, false, true);
+    const step = this.getStoryLine()[this.storyStep];
+    const canCatch = step && step.type === 'legendary';
+    this.setButtons(true, canCatch, true);
     this.updateUI();
   }
 
@@ -998,6 +1153,25 @@ class BalancedNuzlockeEngine {
 
       setTimeout(async () => {
         if (this.isBoss) {
+          const step = this.getStoryLine()[this.storyStep];
+          if (step && step.type === 'legendary') {
+            const catchRoll = Math.random() * 100;
+            const catchChance = 60; // 60% de probabilidad de capturarlo tras vencerlo
+            const defeatedLegendary = this.currentEnemy;
+
+            if (catchRoll <= catchChance) {
+              soundEngine.playBadge();
+              this.log(`🏆 ¡VICTORIA Y CAPTURA LEGENDARIA! Derrotaste a ${defeatedLegendary.speciesName} y lograste capturarlo (${catchChance}% probabilidad).`);
+              this.pendingCatch = defeatedLegendary;
+              this.currentEnemy = null;
+              setTimeout(() => {
+                this.showNickModal(`¡Capturaste al Legendario ${this.pendingCatch.speciesName}! Asigna un mote:`);
+              }, 750);
+              return;
+            } else {
+              this.log(`⚔️ ¡VICTORIA! Venciste a ${defeatedLegendary.speciesName}, pero no pudiste capturarlo y se marchó (${catchChance}% probabilidad de captura).`);
+            }
+          }
           await this.loadNextBossPokemon();
         } else {
           const step = this.getStoryLine()[this.storyStep];
@@ -1020,12 +1194,15 @@ class BalancedNuzlockeEngine {
 
       // Guardar en el Cementerio
       this.graveyard.push({
+        id: active.id,
         nickname: active.nickname,
         speciesName: active.speciesName,
         level: active.level,
         killedBy: this.currentEnemy.speciesName,
         location: step ? step.loc : 'Kanto',
-        isShiny: active.isShiny
+        isShiny: active.isShiny,
+        sprite: active.frontSprite,
+        types: active.types
       });
 
       // Remover permanentemente del equipo activo
@@ -1056,18 +1233,18 @@ class BalancedNuzlockeEngine {
   }
 
   catchPokemon() {
-    if (this.isBoss || !this.currentEnemy) return;
     const step = this.getStoryLine()[this.storyStep];
+    const isLegendary = step && step.type === 'legendary';
+    if ((this.isBoss && !isLegendary) || !this.currentEnemy) return;
 
     this.setButtons(false, false, false);
-    // Probabilidad de captura muy alta (85% - 95%)
-    const winRate = (1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * 20 + 85;
+    // Probabilidad de captura: salvajes ~85-95%, legendarios 50%
+    const winRate = isLegendary ? 50 : Math.round((1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * 20 + 85);
 
     soundEngine.playCatch();
-    this.log(`Lanzaste Pokéball a ${this.currentEnemy.speciesName} (${Math.round(winRate)}% probabilidad)...`);
+    this.log(`Lanzaste Pokéball a ${this.currentEnemy.speciesName} (${winRate}% probabilidad)...`);
 
-    // Marcar la ruta como intentada/consumida (Regla Nuzlocke: 1 solo encuentro por ruta)
-    if (!this.currentEnemy.isShiny) {
+    if (!isLegendary && !this.currentEnemy.isShiny) {
       this.capturedZones.add(step.loc);
     }
 
@@ -1079,13 +1256,18 @@ class BalancedNuzlockeEngine {
         this.showNickModal(`¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`);
       } else {
         soundEngine.playHit();
-        this.log(`❌ ¡La Pokéball falló y ${this.currentEnemy.speciesName} escapó! Has perdido el único intento de captura en ${step.loc}.`);
-        this.currentEnemy = null;
-        setTimeout(() => {
-          this.healAliveTeam();
-          this.storyStep++;
-          this.initCurrentStep();
-        }, 1200);
+        if (isLegendary) {
+          this.log(`❌ ¡El Legendario ${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
+          this.setButtons(true, true, true);
+        } else {
+          this.log(`❌ ¡La Pokéball falló y ${this.currentEnemy.speciesName} escapó! Has perdido el único intento de captura en ${step.loc}.`);
+          this.currentEnemy = null;
+          setTimeout(() => {
+            this.healAliveTeam();
+            this.storyStep++;
+            this.initCurrentStep();
+          }, 1200);
+        }
       }
     }, 600);
   }
@@ -1214,45 +1396,102 @@ class BalancedNuzlockeEngine {
   showSummaryModal(isVictory) {
     const title = document.getElementById('summary-title');
     const sub = document.getElementById('summary-subtitle');
-    const stats = document.getElementById('summary-stats');
+    const statsBox = document.getElementById('summary-stats-card');
+    const hallBox = document.getElementById('summary-hall-of-fame');
 
     if (isVictory) {
-      title.innerText = "🏆 ¡VICTORIA NUZLOCKE!";
+      title.innerText = "🏆 ¡VICTORIA NUZLOCKE EN KANTO!";
       title.style.color = "#2ecc71";
-      sub.innerText = `¡Felicidades ${this.playerName}! Derrotaste al Alto Mando y al Campeón ${this.rivalName}. ¡Eres el nuevo Campeón Nuzlocke de Kanto!`;
+      sub.innerText = `¡Felicidades ${this.playerName}! Venciste a todos los Líderes de Gimnasio, al Alto Mando y al Campeón ${this.rivalName}.`;
       soundEngine.playBadge();
     } else {
-      title.innerText = "💀 GAME OVER";
+      title.innerText = "💀 FIN DE LA AVENTURA (GAME OVER)";
       title.style.color = "#e74c3c";
-      sub.innerText = `Todo tu equipo ha sido exterminado en el desafío Nuzlocke.`;
+      sub.innerText = `Tu equipo completo pereció en el reto Nuzlocke. Rendimos homenaje a tus caídos.`;
       soundEngine.playFaint();
     }
 
-    stats.innerHTML = `
-      <div><strong>Entrenador:</strong> ${this.playerName} | <strong>Rival:</strong> ${this.rivalName}</div>
-      <div><strong>Medallas Obtenidas:</strong> ${this.badges} / 8</div>
-      <div><strong>Supervivientes:</strong> ${this.team.filter(p => p.currentHp > 0).length}</div>
-      <div><strong>Bajas Totales (Cementerio):</strong> ${this.graveyard.length}</div>
-      <div><strong>Especies Capturadas Únicas:</strong> ${this.caughtSpecies.size}</div>
+    // Render PokéAPI Badges Row
+    let badgesHTML = '';
+    for (let i = 1; i <= 8; i++) {
+      const isUnlocked = (i - 1) < this.badges;
+      const dimmedClass = isUnlocked ? '' : 'dimmed';
+      badgesHTML += `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/${i}.png" class="${dimmedClass}" title="Medalla ${i}">`;
+    }
+
+    const e4Label = this.e4DefeatedCount >= 5 ? '🏆 CAMPEÓN SUPREMO (5/5)' : `${Math.min(this.e4DefeatedCount, 4)} / 4 Derrotados`;
+
+    statsBox.innerHTML = `
+      <div><strong>Entrenador:</strong> <span style="color:#ffc107;">${this.playerName}</span> | <strong>Rival:</strong> <span style="color:#ff5252;">${this.rivalName}</span></div>
+      <div class="summary-stats-grid">
+        <div><strong>Medallas Kanto:</strong> ${this.badges} / 8</div>
+        <div><strong>Alto Mando Vencidos:</strong> ${e4Label}</div>
+        <div>💀 <strong>Bajas Totales (Cementerio):</strong> ${this.graveyard.length}</div>
+        <div><strong>Especies Capturadas:</strong> ${this.caughtSpecies.size}</div>
+      </div>
+      <div style="margin-top:10px;">
+        <span style="font-weight:bold;">Colección de Medallas Obtenidas:</span>
+        <div class="summary-badge-row">${badgesHTML}</div>
+      </div>
     `;
+
+    if (isVictory) {
+      hallBox.innerHTML = `
+        <div class="summary-hall-title">🏆 HALL OF FAME - EQUIPO CAMPEÓN DE KANTO</div>
+        <div class="hall-grid">
+          ${this.team.map(p => {
+            const shinyMark = p.isShiny ? '✨ ' : '';
+            const typeBadges = this.getTypeBadgeHTML(p.types);
+            return `
+              <div class="hall-card" style="border-color:#ffea00;">
+                <img src="${p.frontSprite}" alt="${p.nickname}">
+                <div class="name">${shinyMark}${p.nickname}</div>
+                <div>Nv. ${p.level} (${p.speciesName})</div>
+                <div style="margin-top:4px;">${typeBadges}</div>
+              </div>`;
+          }).join('')}
+        </div>`;
+    } else {
+      // Show last 6 fallen heroes from graveyard
+      const lastFallen = this.graveyard.slice(-6).reverse();
+      hallBox.innerHTML = `
+        <div class="summary-hall-title" style="color:#ff5252;">💀 ÚLTIMOS 6 HÉROES CAÍDOS EN COMBATE</div>
+        <div class="hall-grid">
+          ${lastFallen.length > 0 ? lastFallen.map(g => {
+            const shinyMark = g.isShiny ? '✨ ' : '';
+            const fallbackSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${g.id || 25}.gif`;
+            const typeBadges = g.types ? this.getTypeBadgeHTML(g.types) : '';
+            return `
+              <div class="hall-card" style="border-color:#e74c3c;">
+                <img src="${g.sprite || fallbackSprite}" alt="${g.nickname}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${g.id || 25}.png'">
+                <div class="name">${shinyMark}${g.nickname}</div>
+                <div>Nv. ${g.level} (${g.speciesName})</div>
+                <div class="sub">Caído en: ${g.location}</div>
+                <div class="sub" style="color:#ff8a80;">Por: ${g.killedBy}</div>
+                <div style="margin-top:4px;">${typeBadges}</div>
+              </div>`;
+          }).join('') : '<div style="grid-column: span 3; text-align:center; color:#aaa;">No se registraron bajas.</div>'}
+        </div>`;
+    }
+
     document.getElementById('summary-modal').style.display = 'flex';
   }
 
   updateUI() {
     if (this.currentEnemy) {
       document.getElementById('foe').style.display = 'block';
-      document.getElementById('foe-nick').innerText = this.currentEnemy.nickname;
+      const foeStar = this.currentEnemy.isShiny ? '✨ ' : '';
+      document.getElementById('foe-nick').innerText = `${foeStar}${this.currentEnemy.nickname}`;
       document.getElementById('foe-lvl').innerText = `Lv.${this.currentEnemy.level}`;
       
       const foeImg = document.getElementById('foe-sprite');
       foeImg.src = this.currentEnemy.frontSprite;
-      if (this.currentEnemy.isShiny) foeImg.className = 'sprite shiny-effect';
-      else foeImg.className = 'sprite';
-
-      document.getElementById('foe-shiny-tag').style.display = this.currentEnemy.isShiny ? 'inline-block' : 'none';
+      foeImg.className = 'sprite';
 
       const pct = (this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100;
-      document.getElementById('foe-hp').style.width = `${pct}%`;
+      const foeHpBar = document.getElementById('foe-hp');
+      foeHpBar.style.width = `${pct}%`;
+      foeHpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
     } else {
       document.getElementById('foe').style.display = 'none';
     }
@@ -1260,27 +1499,42 @@ class BalancedNuzlockeEngine {
     const active = this.team[this.activeIdx];
     if (active) {
       document.getElementById('player').style.display = 'block';
-      document.getElementById('player-nick').innerText = active.nickname;
+      const playerStar = active.isShiny ? '✨ ' : '';
+      document.getElementById('player-nick').innerText = `${playerStar}${active.nickname}`;
       document.getElementById('player-lvl').innerText = `Lv.${active.level}`;
 
       const plyrImg = document.getElementById('player-sprite');
       plyrImg.src = active.backSprite;
-      if (active.isShiny) plyrImg.className = 'sprite shiny-effect';
-      else plyrImg.className = 'sprite';
-
-      document.getElementById('player-shiny-tag').style.display = active.isShiny ? 'inline-block' : 'none';
+      plyrImg.className = 'sprite';
 
       document.getElementById('player-hp-val').innerText = `${active.currentHp}/${active.maxHp}`;
       const pct = (active.currentHp / active.maxHp) * 100;
       const hpBar = document.getElementById('player-hp');
       hpBar.style.width = `${pct}%`;
       hpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+
+      // Preview de Combate previo a atacar: Tipos y Porcentaje de Victoria
+      if (this.currentEnemy) {
+        const playerMult = this.calcTypeMultiplier(active.types, this.currentEnemy.types);
+        const winRate = Math.round(this.calcWinRate(active, this.currentEnemy, playerMult));
+        const multText = playerMult > 1.2 ? 'Super Eficaz (x1.6)' : playerMult < 0.8 ? 'Poco Eficaz (x0.6)' : 'Eficacia Normal';
+        const playerTypeBadges = this.getTypeBadgeHTML(active.types);
+        const foeTypeBadges = this.getTypeBadgeHTML(this.currentEnemy.types);
+
+        document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${multText}]</span>`;
+        document.getElementById('preview-win-val').innerText = `${winRate}%`;
+        document.getElementById('btn-atk').innerText = `Atacar (${winRate}%)`;
+      } else {
+        document.getElementById('preview-matchup').innerHTML = `--- vs ---`;
+        document.getElementById('preview-win-val').innerText = `--%`;
+        document.getElementById('btn-atk').innerText = `Atacar`;
+      }
     }
 
     for (let i = 0; i < 6; i++) {
       const slot = document.getElementById(`slot-${i}`);
       if (this.team[i]) {
-        const shinyMark = this.team[i].isShiny ? '✨' : '';
+        const shinyMark = this.team[i].isShiny ? '✨ ' : '';
         slot.innerText = `${shinyMark}${this.team[i].nickname} L${this.team[i].level}`;
         slot.className = `team-slot ${i === this.activeIdx ? 'active' : ''} ${this.team[i].currentHp === 0 ? 'dead' : ''}`;
         slot.onclick = () => { if (this.team[i].currentHp > 0) { this.activeIdx = i; this.updateUI(); } };
@@ -1302,6 +1556,18 @@ class BalancedNuzlockeEngine {
 }
 
 const game = new BalancedNuzlockeEngine();
+
+// Auto-reproducir la música de apertura Pokémon 8-bit en la pantalla de inicio con la primera interacción
+const startInitialBGM = () => {
+  soundEngine.initContext();
+  if (soundEngine.bgmEnabled && !soundEngine.currentBgmTrack) {
+    soundEngine.playBGM('title');
+  }
+};
+
+['click', 'keydown', 'touchstart', 'pointerdown'].forEach(evt => {
+  window.addEventListener(evt, startInitialBGM, { once: true });
+});
 </script>
 </body>
 </html>
