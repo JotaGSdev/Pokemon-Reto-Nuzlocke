@@ -1,4 +1,6 @@
-</p> # Pokémon Nuzlocke Challenge
+</p>
+
+### Pokémon Nuzlocke Challenge
 
 <div align="center">
 
