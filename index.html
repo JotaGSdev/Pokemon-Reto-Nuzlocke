@@ -160,13 +160,27 @@
       box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
     }
 
-    .battle-ground-foe {
-      position: absolute; top: 75px; right: 15px; width: 180px; height: 36px;
-      background: rgba(0,0,0,0.12); border-radius: 50%; pointer-events: none;
+    .shadow-platform {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.22);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      z-index: 1;
+      pointer-events: none;
     }
-    .battle-ground-player {
-      position: absolute; bottom: 15px; left: 25px; width: 190px; height: 38px;
-      background: rgba(0,0,0,0.12); border-radius: 50%; pointer-events: none;
+    .foe-shadow {
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 105px;
+      height: 24px;
+    }
+    .player-shadow {
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 135px;
+      height: 28px;
     }
 
     .combatant { position: absolute; width: 210px; }
@@ -189,12 +203,12 @@
     }
 
     .sprite-box { position: relative; display: flex; justify-content: center; align-items: flex-end; }
-    #foe .sprite-box { width: 100px; height: 100px; margin-top: 4px; }
-    #player .sprite-box { width: 130px; height: 120px; margin-bottom: 2px; }
+    #foe .sprite-box { width: 110px; height: 105px; margin: 4px auto 0 auto; }
+    #player .sprite-box { width: 140px; height: 125px; margin: 0 auto 2px auto; }
 
-    .sprite { display: block; margin: 0 auto; image-rendering: pixelated; filter: none; }
-    #foe-sprite { width: 90px; height: 90px; object-fit: contain; }
-    #player-sprite { width: 125px; height: 125px; object-fit: contain; transform: scale(1.25); transform-origin: bottom center; }
+    .sprite { display: block; margin: 0 auto; image-rendering: pixelated; filter: none; z-index: 2; position: relative; }
+    #foe-sprite { width: 95px; height: 95px; object-fit: contain; }
+    #player-sprite { width: 130px; height: 130px; object-fit: contain; transform: scale(1.25); transform-origin: bottom center; }
 
     #dupes-banner {
       position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -448,9 +462,6 @@
     <div id="dupes-banner">DUPLICADO DETECTADO ➔ RE-SORTEANDO</div>
     <div id="shiny-sparkle" class="shiny-sparkle" style="display:none;"></div>
 
-    <div class="battle-ground-foe"></div>
-    <div class="battle-ground-player"></div>
-
     <div id="foe" class="combatant">
       <div class="hud">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -460,12 +471,14 @@
         <div class="hp-bar-outer"><div id="foe-hp" class="hp-bar-inner"></div></div>
       </div>
       <div class="sprite-box">
+        <div class="shadow-platform foe-shadow"></div>
         <img id="foe-sprite" class="sprite" src="" alt="Foe">
       </div>
     </div>
 
     <div id="player" class="combatant">
       <div class="sprite-box">
+        <div class="shadow-platform player-shadow"></div>
         <img id="player-sprite" class="sprite" src="" alt="Player">
       </div>
       <div class="hud">
