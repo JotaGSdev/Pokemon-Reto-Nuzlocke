@@ -1044,14 +1044,28 @@ class BalancedNuzlockeEngine {
     }
   }
 
+  getRandomNickname() {
+    const list = [
+      "Chispas", "Titan", "Zeus", "Kaiser", "Shadow", "Blaze", "Rocket", "Furia",
+      "Valiente", "Omega", "Thor", "Nero", "Roko", "Atlas", "Apolo", "Draco",
+      "Pixel", "Heroe", "Rayo", "Cometa", "Buster", "Vortex", "Kratos", "Drake",
+      "Flash", "Choco", "Capitan", "Bambam", "Chester", "Fierro", "Rambo", "Spike",
+      "Tornado", "Zigzag", "Bruno", "Paco", "Macho", "Pichon", "Rocky", "Rex"
+    ];
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
   showNickModal(msg) {
     document.getElementById('nick-prompt').innerText = msg;
+    const input = document.getElementById('nick-input');
+    const randomDefault = this.getRandomNickname();
+    input.placeholder = `Ej: ${randomDefault} (vacío = aleatorio)`;
     document.getElementById('nickname-modal').style.display = 'flex';
   }
 
   confirmNickname() {
     const input = document.getElementById('nick-input');
-    const nick = input.value.trim() || this.pendingCatch.speciesName;
+    const nick = input.value.trim() || this.getRandomNickname();
     this.pendingCatch.nickname = nick;
     
     this.caughtSpecies.add(this.pendingCatch.speciesName);
