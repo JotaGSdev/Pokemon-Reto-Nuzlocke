@@ -1,4 +1,4 @@
-# 🔴 Pokémon Rojo Fuego - Kanto Nuzlocke Challenge
+# 🔴 Pokémon Nuzlocke Challenge
 
 <div align="center">
 
