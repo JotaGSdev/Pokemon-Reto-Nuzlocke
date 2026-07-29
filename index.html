@@ -1070,17 +1070,13 @@ class BalancedNuzlockeEngine {
     this.healAliveTeam();
     this.currentEnemy = null;
 
-    if (step && (step.type === 'route' || step.type === 'legendary')) {
-      this.log(`¡${nick} capturado en ${step.loc}! Avanzando en la aventura...`);
-      this.updateUI();
-      setTimeout(() => {
-        this.storyStep++;
-        this.initCurrentStep();
-      }, 750);
-    } else {
-      this.updateUI();
+    this.log(`¡${nick} registrado con éxito en tu equipo/PC! Avanzando en la aventura...`);
+    this.updateUI();
+
+    setTimeout(() => {
+      this.storyStep++;
       this.initCurrentStep();
-    }
+    }, 750);
   }
 
   async normalizeTeamLevels(targetCap) {
