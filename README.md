@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 <p align="center">
-  <b>Una experiencia web interactiva, adictiva y táctica estilo GBA retro para revivir el clásico desafío Pokémon Nuzlocke en Kanto.</b><br>
+  <b>Una experiencia web interactiva, adictiva y táctica estilo GBA retro para revivir el clásico desafío Pokémon Nuzlocke en Kanto e Islas Sete.</b><br>
   <i>Juega directamente en tu navegador, sin emuladores, sin descargas.</i>
 </p>
 
@@ -22,6 +22,8 @@
 
 ## 🌟 Destacados del Juego
 
+- 🗺️ **52 Zonas de Captura Únicas (Kanto + Islas Sete 1-3)**: Explora las 38 rutas/cuevas/ciudades con agua de Kanto continental más las 14 zonas exclusivas del archipiélago de las **Islas Sete**.
+- 🎁 **6 Eventos de Regalo y Encuentros Estáticos**: Consigue al Inicial en Pueblo Paleta, Eevee en la Mansión Azulona, Snorlax dormido con la Poké Flauta, Lapras en Silph Co., Hitmonlee/Hitmonchan en el Dojo Karate y los Fósiles (Omanyte/Kabuto/Aerodactyl) en el Laboratorio de Isla Canela.
 - 🏅 **Medallas Oficiales de PokéAPI**: Visualiza las 8 medallas auténticas de Kanto (Roca, Cascada, Trueno, Arcoíris, Alma, Pantano, Volcán y Tierra) que se iluminan al derrotar a cada Líder de Gimnasio.
 - 🏷️ **Cápsulas de Tipo Estilo GBA**: Badges de tipo auténticos (`FUEGO`, `AGUA`, `PLANTA`, `ELÉCTRICO`, `HIELO`, etc.) con degradados brillantes, bordes retro y tipografía pixel-art.
 - ⚔️ **Calculadora de Daño y Porcentajes en Vivo**: Previsualiza la efectividad elemental (`Super Eficaz x1.6`, `Poco Eficaz x0.6`) y la probabilidad exacta de victoria antes de cada ataque.
@@ -36,7 +38,8 @@
 | Regla | Descripción |
 | :--- | :--- |
 | 💀 **Muerte Permanente** | Si un Pokémon llega a 0 HP en combate, perece permanentemente y es enviado al **Cementerio**. |
-| 📍 **Primer Encuentro por Ruta** | Solo puedes capturar el primer Pokémon que aparezca en cada ruta o zona de Kanto. |
+| 📍 **52 Encuentros por Zona** | Solo puedes capturar el primer Pokémon que aparezca en cada una de las 52 zonas únicas (Kanto + Islas Sete 1-3). |
+| 🎁 **Regalos y Estáticos** | Se permiten hasta 6 eventos especiales de regalo/estáticos (Eevee, Lapras, Snorlax, Dojo Karate, Fósiles). |
 | 🏷️ **Mote Obligatorio** | Es obligatorio asignar un apodo a cada compañero capturado. |
 | 🔄 **Cláusula de Duplicados** | Si ya posees la especie en tu equipo o PC, el juego re-sortea automáticamente el encuentro. |
 | ✨ **Cláusula Shiny** | Los Pokémon Shiny ignoran la restricción de ruta y siempre se pueden capturar. |
@@ -48,7 +51,7 @@
 ## 🕹️ Mecánicas de Juego
 
 1. **Configuración de Partida**: Elige tu nombre, el nombre de tu rival y tu Pokémon Inicial de Kanto (**Bulbasaur**, **Charmander**, **Squirtle**, **Pikachu** o **Eevee**).
-2. **Navegación por Rutas y Gimnasios**: Atraviesa Kanto en orden de la historia original hasta la Liga Pokémon.
+2. **Navegación por Rutas, Cuevas e Islas**: Atraviesa Kanto e Islas Sete en orden de la historia original hasta la Liga Pokémon.
 3. **Combates Tácticos**: Evalúa los tipos de tu Pokémon frente al rival y presiona **Atacar** aprovechando las ventajas de tipo.
 4. **Sistema de Almacenamiento PC**: Organiza tu equipo activo de 6 integrantes e intercambia Pokémon desde las Cajas.
 5. **Encuentros con el Alto Mando**: Enfréntate a Lorelei, Bruno, Agatha, Lance y a tu Rival por el título de Campeón de Kanto.

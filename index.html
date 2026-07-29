@@ -188,9 +188,13 @@
       height: 100%; width: 100%; background: var(--hp-green); transition: width 0.3s ease, background 0.3s ease;
     }
 
-    .sprite-box { position: relative; display: flex; justify-content: center; align-items: center; width: 100px; height: 100px; }
+    .sprite-box { position: relative; display: flex; justify-content: center; align-items: flex-end; }
+    #foe .sprite-box { width: 100px; height: 100px; margin-top: 4px; }
+    #player .sprite-box { width: 130px; height: 120px; margin-bottom: 2px; }
 
-    .sprite { width: 100px; height: 100px; display: block; margin: 0 auto; image-rendering: pixelated; filter: none; }
+    .sprite { display: block; margin: 0 auto; image-rendering: pixelated; filter: none; }
+    #foe-sprite { width: 90px; height: 90px; object-fit: contain; }
+    #player-sprite { width: 125px; height: 125px; object-fit: contain; transform: scale(1.25); transform-origin: bottom center; }
 
     #dupes-banner {
       position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -273,44 +277,52 @@
     }
 
     .summary-stats-box {
-      background: #111422; color: #fff; border: 3px solid var(--ui-border);
+      background: #101424; color: #e2e8f0; border: 2px solid #29324e;
       border-radius: 10px; padding: 14px; font-size: 7px; margin-bottom: 14px;
-      line-height: 1.8; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      line-height: 1.8; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .summary-stats-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 8px;
     }
     .summary-badge-row {
-      display: flex; gap: 6px; align-items: center; margin-top: 6px;
+      display: flex; gap: 6px; align-items: center; margin-top: 8px;
     }
     .summary-badge-row img {
-      width: 24px; height: 24px; image-rendering: pixelated;
+      width: 26px; height: 26px; image-rendering: pixelated; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
     .summary-badge-row img.dimmed {
-      filter: grayscale(100%) opacity(0.25);
+      filter: grayscale(100%) opacity(0.2);
     }
 
     .summary-hall-box {
-      background: #181b2c; border: 3px solid var(--ui-border);
-      border-radius: 10px; padding: 14px; text-align: left;
+      background: #090b14; border: 2px solid #ffd700;
+      border-radius: 12px; padding: 14px; text-align: left;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
     }
     .summary-hall-title {
-      font-size: 8px; color: #ffea00; margin-bottom: 10px; font-weight: bold; text-align: center;
-      letter-spacing: 0.5px; text-transform: uppercase;
+      font-size: 9px; color: #ffd700; margin-bottom: 12px; font-weight: bold; text-align: center;
+      letter-spacing: 0.5px; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,215,0,0.5), 1px 1px 0 #000;
     }
     .hall-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
     }
     .hall-card {
-      background: #0f111d; border: 2px solid #333a50; border-radius: 8px;
-      padding: 8px; text-align: center; font-size: 6px; color: #fff;
+      background: linear-gradient(180deg, #1c223a 0%, #0d101d 100%);
+      border: 2px solid #ffd700; border-radius: 8px;
+      padding: 10px 6px; text-align: center; font-size: 6px; color: #fff;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,215,0,0.06);
     }
-    .hall-card img {
-      width: 56px; height: 56px; image-rendering: pixelated; margin-bottom: 4px;
+    .hall-card-img-box {
+      width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at center, rgba(255,215,0,0.2) 0%, transparent 70%);
+      border-radius: 50%; margin-bottom: 6px;
     }
-    .hall-card .name { font-weight: bold; color: #ffea00; margin-bottom: 2px; }
-    .hall-card .sub { font-size: 5px; color: #aaa; margin-top: 2px; }
+    .hall-card-img-box img {
+      width: 56px; height: 56px; image-rendering: pixelated; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.6));
+    }
+    .hall-card .name { font-weight: bold; color: #ffd700; margin-bottom: 3px; font-size: 7px; text-shadow: 1px 1px 0 #000; }
+    .hall-card .sub { font-size: 5px; color: #cbd5e1; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -359,6 +371,14 @@
       <p id="nick-prompt">Nuzlocke Rule:</p>
       <input type="text" id="nick-input" style="width:80%; padding:8px; font-family:inherit; font-size:8px; margin-bottom:10px;" maxlength="10">
       <button class="game-btn" onclick="game.confirmNickname()">Confirmar Mote</button>
+    </div>
+  </div>
+
+  <div id="gift-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:560px;">
+      <h2 id="gift-title">¡Regalo Pokémon!</h2>
+      <p id="gift-prompt">Elige tu recompensa Nuzlocke:</p>
+      <div id="gift-options" class="starters-grid" style="margin-top:14px;"></div>
     </div>
   </div>
 
@@ -642,6 +662,8 @@ class ChiptuneAudioEngine {
 const soundEngine = new ChiptuneAudioEngine();
 
 const ROUTE_ENCOUNTERS = {
+  // Kanto Mainland (38 Zonas)
+  "Pueblo Paleta (Agua)": [{ id: 72, name: "TENTACOOL", rate: 0.4 }, { id: 120, name: "STARYU", rate: 0.3 }, { id: 129, name: "MAGIKARP", rate: 0.3 }],
   "Ruta 1": [{ id: 16, name: "PIDGEY", rate: 0.5 }, { id: 19, name: "RATTATA", rate: 0.5 }],
   "Ruta 22": [{ id: 19, name: "RATTATA", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 56, name: "MANKEY", rate: 0.2 }],
   "Ruta 2": [{ id: 16, name: "PIDGEY", rate: 0.4 }, { id: 19, name: "RATTATA", rate: 0.4 }, { id: 10, name: "CATERPIE", rate: 0.2 }],
@@ -649,13 +671,52 @@ const ROUTE_ENCOUNTERS = {
   "Ruta 3": [{ id: 21, name: "SPEAROW", rate: 0.35 }, { id: 29, name: "NIDORAN♀", rate: 0.25 }, { id: 32, name: "NIDORAN♂", rate: 0.25 }, { id: 39, name: "JIGGLYPUFF", rate: 0.15 }],
   "Monte Moon": [{ id: 41, name: "ZUBAT", rate: 0.4 }, { id: 74, name: "GEODUDE", rate: 0.3 }, { id: 46, name: "PARAS", rate: 0.15 }, { id: 35, name: "CLEFAIRY", rate: 0.15 }],
   "Ruta 4": [{ id: 19, name: "RATTATA", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 23, name: "EKANS", rate: 0.2 }],
-  "Ruta 24-25": [{ id: 43, name: "ODDISH", rate: 0.35 }, { id: 69, name: "BELLSPROUT", rate: 0.35 }, { id: 63, name: "ABRA", rate: 0.15 }, { id: 48, name: "VENONAT", rate: 0.15 }],
-  "Ruta 5-6": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 16, name: "PIDGEY", rate: 0.4 }, { id: 43, name: "ODDISH", rate: 0.2 }],
+  "Ciudad Celeste (Agua)": [{ id: 54, name: "PSYDUCK", rate: 0.4 }, { id: 60, name: "POLIWAG", rate: 0.3 }, { id: 118, name: "GOLDEEN", rate: 0.3 }],
+  "Ruta 24": [{ id: 43, name: "ODDISH", rate: 0.35 }, { id: 69, name: "BELLSPROUT", rate: 0.35 }, { id: 63, name: "ABRA", rate: 0.15 }, { id: 48, name: "VENONAT", rate: 0.15 }],
+  "Ruta 25": [{ id: 16, name: "PIDGEY", rate: 0.35 }, { id: 10, name: "CATERPIE", rate: 0.35 }, { id: 63, name: "ABRA", rate: 0.15 }, { id: 69, name: "BELLSPROUT", rate: 0.15 }],
+  "Ruta 5": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 16, name: "PIDGEY", rate: 0.4 }, { id: 43, name: "ODDISH", rate: 0.2 }],
+  "Ruta 6": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 16, name: "PIDGEY", rate: 0.4 }, { id: 54, name: "PSYDUCK", rate: 0.2 }],
+  "Ciudad Carmín (Agua)": [{ id: 72, name: "TENTACOOL", rate: 0.4 }, { id: 90, name: "SHELLDER", rate: 0.3 }, { id: 98, name: "KRABBY", rate: 0.3 }],
+  "Ruta 11": [{ id: 96, name: "DROWZEE", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 23, name: "EKANS", rate: 0.2 }],
   "Cueva Diglett": [{ id: 50, name: "DIGLETT", rate: 0.8 }, { id: 51, name: "DUGTRIO", rate: 0.2 }],
+  "Ruta 9": [{ id: 19, name: "RATTATA", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.4 }, { id: 22, name: "FEAROW", rate: 0.2 }],
+  "Ruta 10": [{ id: 100, name: "VOLTORB", rate: 0.4 }, { id: 81, name: "MAGNEMITE", rate: 0.3 }, { id: 66, name: "MACHOP", rate: 0.3 }],
   "Túnel Roca": [{ id: 66, name: "MACHOP", rate: 0.35 }, { id: 74, name: "GEODUDE", rate: 0.35 }, { id: 41, name: "ZUBAT", rate: 0.3 }],
-  "Ruta 12-15": [{ id: 84, name: "DODUO", rate: 0.35 }, { id: 48, name: "VENONAT", rate: 0.35 }, { id: 143, name: "SNORLAX", rate: 0.1 }, { id: 102, name: "EXEGGCUTE", rate: 0.2 }],
+  "Torre Pokémon": [{ id: 92, name: "GASTLY", rate: 0.6 }, { id: 93, name: "HAUNTER", rate: 0.2 }, { id: 104, name: "CUBONE", rate: 0.2 }],
+  "Ruta 8": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 37, name: "VULPIX", rate: 0.3 }, { id: 58, name: "GROWLITHE", rate: 0.3 }],
+  "Ruta 7": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 37, name: "VULPIX", rate: 0.3 }, { id: 39, name: "JIGGLYPUFF", rate: 0.3 }],
+  "Ciudad Azulona (Agua)": [{ id: 54, name: "PSYDUCK", rate: 0.5 }, { id: 79, name: "SLOWPOKE", rate: 0.5 }],
+  "Ruta 16": [{ id: 84, name: "DODUO", rate: 0.4 }, { id: 20, name: "RATICATE", rate: 0.4 }, { id: 21, name: "SPEAROW", rate: 0.2 }],
+  "Ruta 17": [{ id: 84, name: "DODUO", rate: 0.4 }, { id: 22, name: "FEAROW", rate: 0.3 }, { id: 20, name: "RATICATE", rate: 0.3 }],
+  "Ruta 18": [{ id: 84, name: "DODUO", rate: 0.4 }, { id: 22, name: "FEAROW", rate: 0.3 }, { id: 20, name: "RATICATE", rate: 0.3 }],
+  "Ruta 12": [{ id: 43, name: "ODDISH", rate: 0.4 }, { id: 48, name: "VENONAT", rate: 0.4 }, { id: 102, name: "EXEGGCUTE", rate: 0.2 }],
+  "Ruta 13": [{ id: 132, name: "DITTO", rate: 0.3 }, { id: 70, name: "WEEPINBELL", rate: 0.35 }, { id: 44, name: "GLOOM", rate: 0.35 }],
+  "Ruta 14": [{ id: 48, name: "VENONAT", rate: 0.4 }, { id: 49, name: "VENOMOTH", rate: 0.3 }, { id: 70, name: "WEEPINBELL", rate: 0.3 }],
+  "Ruta 15": [{ id: 17, name: "PIDGEOTTO", rate: 0.4 }, { id: 48, name: "VENONAT", rate: 0.3 }, { id: 49, name: "VENOMOTH", rate: 0.3 }],
+  "Zona Safari": [{ id: 123, name: "SCYTHER", rate: 0.2 }, { id: 127, name: "PINSIR", rate: 0.2 }, { id: 128, name: "TAUROS", rate: 0.2 }, { id: 115, name: "KANGASKHAN", rate: 0.2 }, { id: 147, name: "DRATINI", rate: 0.2 }],
+  "Ciudad Fucsia (Agua)": [{ id: 129, name: "MAGIKARP", rate: 0.4 }, { id: 118, name: "GOLDEEN", rate: 0.3 }, { id: 130, name: "GYARADOS", rate: 0.3 }],
+  "Ruta 19": [{ id: 72, name: "TENTACOOL", rate: 0.5 }, { id: 116, name: "HORSEA", rate: 0.5 }],
+  "Ruta 20": [{ id: 72, name: "TENTACOOL", rate: 0.4 }, { id: 120, name: "STARYU", rate: 0.3 }, { id: 90, name: "SHELLDER", rate: 0.3 }],
+  "Islas Espuma": [{ id: 86, name: "SEEL", rate: 0.4 }, { id: 87, name: "DEWGONG", rate: 0.3 }, { id: 90, name: "SHELLDER", rate: 0.3 }],
   "Mansión Pokémon": [{ id: 77, name: "PONYTA", rate: 0.4 }, { id: 109, name: "KOFFING", rate: 0.4 }, { id: 126, name: "MAGMAR", rate: 0.2 }],
-  "Calle Victoria": [{ id: 42, name: "GOLBAT", rate: 0.35 }, { id: 67, name: "MACHOKE", rate: 0.35 }, { id: 105, name: "MAROWAK", rate: 0.3 }]
+  "Central Energía": [{ id: 100, name: "VOLTORB", rate: 0.4 }, { id: 125, name: "ELECTABUZZ", rate: 0.3 }, { id: 82, name: "MAGNETON", rate: 0.3 }],
+  "Calle Victoria": [{ id: 67, name: "MACHOKE", rate: 0.4 }, { id: 105, name: "MAROWAK", rate: 0.3 }, { id: 42, name: "GOLBAT", rate: 0.3 }],
+
+  // Islas Sete (Sevii Islands 1-3) (14 Zonas)
+  "Isla Prima (Playa Tesoro)": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 114, name: "TANGELA", rate: 0.3 }, { id: 53, name: "PERSIAN", rate: 0.3 }],
+  "Monte Ember": [{ id: 218, name: "SLUGMA", rate: 0.4 }, { id: 77, name: "PONYTA", rate: 0.3 }, { id: 66, name: "MACHOP", rate: 0.3 }],
+  "Isla Secunda (Cabo Secundo)": [{ id: 21, name: "SPEAROW", rate: 0.4 }, { id: 22, name: "FEAROW", rate: 0.3 }, { id: 54, name: "PSYDUCK", rate: 0.3 }],
+  "Isla Tertia (Bosque Bayas)": [{ id: 48, name: "VENONAT", rate: 0.4 }, { id: 97, name: "HYPNO", rate: 0.3 }, { id: 17, name: "PIDGEOTTO", rate: 0.3 }],
+  "Camino Enlace (Isla Tertia)": [{ id: 52, name: "MEOWTH", rate: 0.4 }, { id: 44, name: "GLOOM", rate: 0.3 }, { id: 70, name: "WEEPINBELL", rate: 0.3 }],
+  "Puerto Tertia (Agua)": [{ id: 72, name: "TENTACOOL", rate: 0.4 }, { id: 98, name: "KRABBY", rate: 0.3 }, { id: 116, name: "HORSEA", rate: 0.3 }],
+  "Isla Quarta (Cueva Glaciada)": [{ id: 220, name: "SWINUB", rate: 0.4 }, { id: 225, name: "DELIBIRD", rate: 0.3 }, { id: 42, name: "GOLBAT", rate: 0.3 }],
+  "Isla Quarta (Agua)": [{ id: 194, name: "WOOPER", rate: 0.4 }, { id: 183, name: "MARILL", rate: 0.3 }, { id: 54, name: "PSYDUCK", rate: 0.3 }],
+  "Isla Quinta (Pradera Quinta)": [{ id: 161, name: "SENTRET", rate: 0.4 }, { id: 187, name: "HOPPIP", rate: 0.3 }, { id: 52, name: "MEOWTH", rate: 0.3 }],
+  "Isla Quinta (Cueva Perdida)": [{ id: 92, name: "GASTLY", rate: 0.5 }, { id: 200, name: "MISDREAVUS", rate: 0.3 }, { id: 42, name: "GOLBAT", rate: 0.2 }],
+  "Isla Sexta (Vía Verde)": [{ id: 193, name: "YANMA", rate: 0.4 }, { id: 177, name: "NATU", rate: 0.3 }, { id: 70, name: "WEEPINBELL", rate: 0.3 }],
+  "Isla Sexta (Cueva Cambiante)": [{ id: 41, name: "ZUBAT", rate: 0.4 }, { id: 179, name: "MAREEP", rate: 0.3 }, { id: 167, name: "SPINARAK", rate: 0.3 }],
+  "Isla Séptima (Cañón Sétima)": [{ id: 231, name: "PHANPY", rate: 0.4 }, { id: 227, name: "SKARMORY", rate: 0.3 }, { id: 246, name: "LARVITAR", rate: 0.3 }],
+  "Cueva Celeste": [{ id: 111, name: "RHYHORN", rate: 0.3 }, { id: 113, name: "CHANSEY", rate: 0.3 }, { id: 132, name: "DITTO", rate: 0.2 }, { id: 26, name: "RAICHU", rate: 0.2 }]
 };
 
 class BalancedNuzlockeEngine {
@@ -721,71 +782,113 @@ class BalancedNuzlockeEngine {
 
   getStoryLine() {
     return [
-      // 1. Pallet / Starter Rival 1
+      // Capítulo 1: Inicio en Kanto
       { type: 'rival', loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.rivalStarterId, lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
-      { type: 'route', loc: 'Ruta 1', cap: 7, quest: 'Captura y entrena en Ruta 1', item: 'Pokéball x3' },
+      { type: 'route', loc: 'Pueblo Paleta (Agua)', cap: 6, quest: 'Zona 1: Pesca/Surf en Pueblo Paleta' },
+      { type: 'route', loc: 'Ruta 1', cap: 7, quest: 'Zona 2: Captura y entrena en Ruta 1', item: 'Pokéball x3' },
       { type: 'rival', loc: 'Ruta 22', title: `Rival ${this.rivalName} #2`, team: [{ id: 16, lvl: 9 }, { id: this.rivalStarterId, lvl: 9 }], cap: 9, quest: `Combate 2 con ${this.rivalName}`, item: 'Poción Max' },
-      { type: 'route', loc: 'Ruta 2', cap: 11, quest: 'Avanza por la Ruta 2', item: 'Superpoción' },
-      { type: 'route', loc: 'Bosque Verde', cap: 13, quest: 'Atraviesa Bosque Verde', item: 'Antídoto' },
+      { type: 'route', loc: 'Ruta 22', cap: 9, quest: 'Zona 3: Captura en Ruta 22' },
+      { type: 'route', loc: 'Ruta 2', cap: 11, quest: 'Zona 4: Avanza por la Ruta 2', item: 'Superpoción' },
+      { type: 'route', loc: 'Bosque Verde', cap: 13, quest: 'Zona 5: Atraviesa Bosque Verde', item: 'Antídoto' },
       
-      // Gym 1 Brock
+      // Gimnasio 1: Brock (Ciudad Plateada)
       { type: 'gym', loc: 'Ciudad Plateada', title: 'Líder Brock', team: [{ id: 74, lvl: 12 }, { id: 95, lvl: 14 }], cap: 14, badgeIdx: 0, quest: 'Gimnasio 1: Desafía a Brock (Medalla Roca)' },
-      
-      // Mt Moon & Cerulean
-      { type: 'route', loc: 'Ruta 3', cap: 17, quest: 'Camino hacia Monte Moon', item: 'Superpoción' },
+      { type: 'route', loc: 'Ruta 3', cap: 17, quest: 'Zona 6: Camino hacia Monte Moon', item: 'Superpoción' },
       { type: 'rocket', loc: 'Monte Moon', title: 'Equipo Rocket Grunt', team: [{ id: 41, lvl: 13 }, { id: 19, lvl: 14 }], cap: 19, quest: 'Enfrenta al Equipo Rocket en Monte Moon' },
-      { type: 'route', loc: 'Monte Moon', cap: 19, quest: 'Captura en las profundidades de Monte Moon' },
+      { type: 'route', loc: 'Monte Moon', cap: 19, quest: 'Zona 7: Captura en las profundidades de Monte Moon' },
+      { type: 'route', loc: 'Ruta 4', cap: 20, quest: 'Zona 8: Explora la Ruta 4' },
+
+      // Gimnasio 2: Misty (Ciudad Celeste)
+      { type: 'route', loc: 'Ciudad Celeste (Agua)', cap: 21, quest: 'Zona 9: Pesca/Surf en Ciudad Celeste' },
       { type: 'gym', loc: 'Ciudad Celeste', title: 'Líder Misty', team: [{ id: 120, lvl: 18 }, { id: 121, lvl: 21 }], cap: 21, badgeIdx: 1, quest: 'Gimnasio 2: Desafía a Misty (Medalla Cascada)' },
-      
-      // Nugget Bridge & SS Anne
       { type: 'rival', loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.rivalStarterId, lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
-      { type: 'route', loc: 'Ruta 24-25', cap: 24, quest: 'Explora la Ruta 24 y 25' },
+      { type: 'route', loc: 'Ruta 24', cap: 23, quest: 'Zona 10: Atraviesa la Ruta 24' },
+      { type: 'route', loc: 'Ruta 25', cap: 24, quest: 'Zona 11: Explora la Ruta 25 hacia el Cabo Celeste' },
+      { type: 'route', loc: 'Ruta 5', cap: 24, quest: 'Zona 12: Desciende por la Ruta 5' },
+      { type: 'route', loc: 'Ruta 6', cap: 24, quest: 'Zona 13: Avanza por la Ruta 6 hacia Ciudad Carmín' },
+      { type: 'route', loc: 'Ciudad Carmín (Agua)', cap: 24, quest: 'Zona 14: Pesca/Surf en Puerto Carmín' },
       { type: 'rival', loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.rivalStarterId, lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
-      
-      // Gym 3 Surge
+
+      // Gimnasio 3: Lt. Surge (Ciudad Carmín)
       { type: 'gym', loc: 'Ciudad Carmín', title: 'Líder Lt. Surge', team: [{ id: 100, lvl: 21 }, { id: 25, lvl: 18 }, { id: 26, lvl: 24 }], cap: 24, badgeIdx: 2, quest: 'Gimnasio 3: Desafía a Lt. Surge (Medalla Trueno)' },
-      
-      // Diglett Cave & Rock Tunnel
-      { type: 'route', loc: 'Cueva Diglett', cap: 27, quest: 'Atraviesa la Cueva Diglett' },
-      { type: 'route', loc: 'Túnel Roca', cap: 29, quest: 'Cruza el Túnel Roca sin destello' },
-      
-      // Celadon Rocket & Erika
+      { type: 'route', loc: 'Ruta 11', cap: 26, quest: 'Zona 15: Explora la Ruta 11' },
+      { type: 'route', loc: 'Cueva Diglett', cap: 27, quest: 'Zona 16: Atraviesa la Cueva Diglett' },
+      { type: 'route', loc: 'Ruta 9', cap: 28, quest: 'Zona 17: Avanza por la Ruta 9' },
+      { type: 'route', loc: 'Ruta 10', cap: 29, quest: 'Zona 18: Recorre la Ruta 10' },
+      { type: 'route', loc: 'Túnel Roca', cap: 29, quest: 'Zona 19: Cruza el Túnel Roca sin destello' },
+      { type: 'route', loc: 'Torre Pokémon', cap: 31, quest: 'Zona 20: Investiga la Torre Pokémon en Pueblo Lavanda' },
+      { type: 'route', loc: 'Ruta 8', cap: 31, quest: 'Zona 21: Atraviesa la Ruta 8' },
+      { type: 'route', loc: 'Ruta 7', cap: 31, quest: 'Zona 22: Cruza la Ruta 7 hacia Ciudad Azulona' },
+      { type: 'route', loc: 'Ciudad Azulona (Agua)', cap: 32, quest: 'Zona 23: Pesca/Surf en los estanques de Ciudad Azulona' },
+
+      // Gimnasio 4: Erika (Ciudad Azulona)
       { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
       { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
+      { type: 'gift', loc: 'Mansión Azulona', title: 'Regalo Nuzlocke: EEVEE', giftId: 133, cap: 32, quest: 'Regalo: Recibe a Eevee en el ático de la Mansión Azulona' },
+      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Siph Scope' },
       
-      // Pokemon Tower & Fuchsia
-      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon en Pueblo Lavanda' },
-      { type: 'route', loc: 'Ruta 12-15', cap: 38, quest: 'Avanza hacia la Zona Fucsia' },
+      // Rutas Centrales & Snorlax
+      { type: 'route', loc: 'Ruta 16', cap: 34, quest: 'Zona 24: Camino Bici Ruta 16' },
+      { type: 'route', loc: 'Ruta 17', cap: 34, quest: 'Zona 25: Desciende por la Ruta 17' },
+      { type: 'route', loc: 'Ruta 18', cap: 35, quest: 'Zona 26: Recorre la Ruta 18' },
+      { type: 'static_boss', loc: 'Ruta 12', title: 'Encuentro Estático: SNORLAX dormido', team: [{ id: 143, lvl: 30 }], cap: 35, quest: '¡Despierta y captura a Snorlax con la Poké Flauta!' },
+      { type: 'route', loc: 'Ruta 12', cap: 36, quest: 'Zona 27: Atraviesa la Ruta 12' },
+      { type: 'route', loc: 'Ruta 13', cap: 37, quest: 'Zona 28: Explora la Ruta 13' },
+      { type: 'route', loc: 'Ruta 14', cap: 37, quest: 'Zona 29: Recorre la Ruta 14' },
+      { type: 'route', loc: 'Ruta 15', cap: 38, quest: 'Zona 30: Avanza por la Ruta 15 hacia Zona Fucsia' },
+      { type: 'route', loc: 'Zona Safari', cap: 39, quest: 'Zona 31: Encuentro en la Zona Safari' },
+      { type: 'route', loc: 'Ciudad Fucsia (Agua)', cap: 39, quest: 'Zona 32: Pesca/Surf en Ciudad Fucsia' },
+
+      // Gimnasio 5: Koga (Ciudad Fucsia)
       { type: 'gym', loc: 'Ciudad Fucsia', title: 'Líder Koga', team: [{ id: 109, lvl: 37 }, { id: 89, lvl: 39 }, { id: 110, lvl: 43 }], cap: 43, badgeIdx: 4, quest: 'Gimnasio 5: Desafía a Koga (Medalla Alma)' },
-      
-      // Silph Co & Sabrina
+      { type: 'gift_choice', loc: 'Dojo Karate Azafrán', title: 'Dojo Karate de Ciudad Azafrán', choices: [{ id: 106, name: 'HITMONLEE' }, { id: 107, name: 'HITMONCHAN' }], cap: 40, quest: 'Elige tu regalo del Dojo Karate (Hitmonlee o Hitmonchan)' },
       { type: 'rocket', loc: 'Silph Co.', title: 'Jefe Giovanni #2', team: [{ id: 33, lvl: 37 }, { id: 111, lvl: 37 }, { id: 31, lvl: 41 }, { id: 115, lvl: 39 }], cap: 43, quest: 'Libera Silph Co. de Giovanni' },
+      { type: 'gift', loc: 'Silph Co.', title: 'Regalo Nuzlocke: LAPRAS', giftId: 131, cap: 43, quest: 'Regalo: Recibe a Lapras del empleado agradecido en Silph Co.' },
+
+      // Gimnasio 6: Sabrina (Ciudad Azafrán)
       { type: 'gym', loc: 'Ciudad Azafrán', title: 'Líder Sabrina', team: [{ id: 64, lvl: 38 }, { id: 122, lvl: 37 }, { id: 49, lvl: 38 }, { id: 65, lvl: 43 }], cap: 43, badgeIdx: 5, quest: 'Gimnasio 6: Desafía a Sabrina (Medalla Pantano)' },
-      
-      // Legendary Challenge Articuno & Zapdos
+      { type: 'route', loc: 'Ruta 19', cap: 45, quest: 'Zona 33: Navega por la Ruta Marina 19' },
+      { type: 'route', loc: 'Ruta 20', cap: 46, quest: 'Zona 34: Atraviesa la Ruta 20' },
+      { type: 'route', loc: 'Islas Espuma', cap: 47, quest: 'Zona 35: Explora el interior de las Islas Espuma' },
       { type: 'legendary', loc: 'Islas Espuma', title: 'Desafío Legendario: ARTICUNO', team: [{ id: 144, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Articuno!' },
-      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Zapdos!' },
-      
-      // Cinnabar & Blaine
-      { type: 'route', loc: 'Mansión Pokémon', cap: 47, quest: 'Investiga la Mansión Pokémon en Isla Canela' },
+
+      // Gimnasio 7: Blaine (Isla Canela)
+      { type: 'route', loc: 'Mansión Pokémon', cap: 47, quest: 'Zona 36: Investiga la Mansión Pokémon en Isla Canela' },
+      { type: 'gift_choice', loc: 'Laboratorio Isla Canela', title: 'Laboratorio Fósil de Kanto', choices: [{ id: 138, name: 'OMANYTE (Fósil Hélice)' }, { id: 140, name: 'KABUTO (Fósil Domo)' }, { id: 142, name: 'AERODACTYL (Ámbar Viejo)' }], cap: 47, quest: 'Revive tu Fósil en el Laboratorio de Isla Canela' },
       { type: 'gym', loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 47, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
-      
-      // Legendary Moltres & Giovanni 8
+
+      // Capítulo Especial: ISLAS SETE (Islas 1 a 3) (14 Zonas Extra)
+      { type: 'route', loc: 'Isla Prima (Playa Tesoro)', cap: 48, quest: 'Zona 39: Explora Playa Tesoro en Isla Prima' },
+      { type: 'route', loc: 'Monte Ember', cap: 49, quest: 'Zona 40: Asciende por el Monte Ember' },
       { type: 'legendary', loc: 'Monte Ember', title: 'Desafío Legendario: MOLTRES', team: [{ id: 146, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Moltres!' },
+      { type: 'route', loc: 'Isla Secunda (Cabo Secundo)', cap: 49, quest: 'Zona 41: Recorre Cabo Secundo en Isla Secunda' },
+      { type: 'route', loc: 'Isla Tertia (Bosque Bayas)', cap: 50, quest: 'Zona 42: Adéntrate en el Bosque Bayas en Isla Tertia' },
+      { type: 'route', loc: 'Camino Enlace (Isla Tertia)', cap: 50, quest: 'Zona 43: Atraviesa el Camino Enlace' },
+      { type: 'route', loc: 'Puerto Tertia (Agua)', cap: 50, quest: 'Zona 44: Pesca/Surf en Puerto Tertia' },
+      { type: 'route', loc: 'Isla Quarta (Cueva Glaciada)', cap: 51, quest: 'Zona 45: Cruza la Cueva Glaciada en Isla Quarta' },
+      { type: 'route', loc: 'Isla Quarta (Agua)', cap: 51, quest: 'Zona 46: Pesca/Surf en las costas de Isla Quarta' },
+      { type: 'route', loc: 'Isla Quinta (Pradera Quinta)', cap: 52, quest: 'Zona 47: Atraviesa Pradera Quinta' },
+      { type: 'route', loc: 'Isla Quinta (Cueva Perdida)', cap: 52, quest: 'Zona 48: Explora la misteriosa Cueva Perdida' },
+      { type: 'route', loc: 'Isla Sexta (Vía Verde)', cap: 52, quest: 'Zona 49: Avanza por Vía Verde en Isla Sexta' },
+      { type: 'route', loc: 'Isla Sexta (Cueva Cambiante)', cap: 52, quest: 'Zona 50: Investiga la Cueva Cambiante' },
+      { type: 'route', loc: 'Isla Séptima (Cañón Sétima)', cap: 53, quest: 'Zona 51: Recorre el Cañón Sétima en Isla Séptima' },
+
+      // Retorno a Kanto: Gimnasio 8 Giovanni
+      { type: 'route', loc: 'Central Energía', cap: 50, quest: 'Zona 37: Explora la Central Energía abandonada' },
+      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Zapdos!' },
       { type: 'gym', loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 50 }], cap: 50, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
       
-      // Victory Road & Elite 4
-      { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Atraviesa la Calle Victoria' },
+      // Calle Victoria, Rival & Mewtwo
+      { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Zona 38: Atraviesa la peligrosa Calle Victoria' },
       { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.rivalStarterId, lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
-      
-      // Legendary Challenge Mewtwo & Elite Four
+      { type: 'route', loc: 'Cueva Celeste', cap: 60, quest: 'Zona 52: Adéntrate en Cueva Celeste' },
       { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 60 }], cap: 60, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
+
+      // Liga Pokémon: ALTO MANDO & CAMPEÓN
       { type: 'e4', loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
       { type: 'e4', loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
       { type: 'e4', loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
       { type: 'e4', loc: 'Alto Mando #4', title: 'Lance (Dragón)', team: [{ id: 130, lvl: 56 }, { id: 148, lvl: 54 }, { id: 148, lvl: 54 }, { id: 142, lvl: 58 }, { id: 149, lvl: 60 }], cap: 60, quest: 'Alto Mando 4: Enfrenta al Gran Lance' },
-      
-      // CHAMPION
       { type: 'champion', loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: (this.rivalStarterId === 4 ? 6 : this.rivalStarterId === 7 ? 9 : 3), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
     ];
   }
@@ -997,6 +1100,27 @@ class BalancedNuzlockeEngine {
       this.log(`¡Recogiste automáticamente ${step.item}!`);
     }
 
+    if (step.type === 'gift') {
+      soundEngine.playBadge();
+      this.currentEnemy = null;
+      this.updateUI();
+      const giftPkmn = await this.fetchPokemon(step.giftId, step.cap);
+      this.pendingCatch = giftPkmn;
+      this.log(`🎁 ¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}!`);
+      setTimeout(() => {
+        this.showNickModal(`¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}! Asigna un mote:`);
+      }, 500);
+      return;
+    }
+
+    if (step.type === 'gift_choice') {
+      soundEngine.playBadge();
+      this.currentEnemy = null;
+      this.updateUI();
+      this.showGiftChoiceModal(step);
+      return;
+    }
+
     if (step.type === 'route') {
       soundEngine.playBGM('route');
       this.isBoss = false;
@@ -1023,6 +1147,30 @@ class BalancedNuzlockeEngine {
       this.isBoss = true;
       this.startBossBattle(step);
     }
+  }
+
+  showGiftChoiceModal(step) {
+    document.getElementById('gift-title').innerText = step.title;
+    document.getElementById('gift-prompt').innerText = step.quest;
+    const container = document.getElementById('gift-options');
+    container.innerHTML = '';
+
+    step.choices.forEach(choice => {
+      container.innerHTML += `
+        <div class="starter-btn" onclick="game.selectGiftChoice(${choice.id}, ${step.cap})">
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${choice.id}.png" alt="${choice.name}">
+          <span>${choice.name}</span>
+        </div>`;
+    });
+
+    document.getElementById('gift-modal').style.display = 'flex';
+  }
+
+  async selectGiftChoice(pokemonId, capLvl) {
+    document.getElementById('gift-modal').style.display = 'none';
+    const chosen = await this.fetchPokemon(pokemonId, capLvl);
+    this.pendingCatch = chosen;
+    this.showNickModal(`¡Elegiste a ${chosen.speciesName}! Asigna un mote:`);
   }
 
   async spawnWildPokemon(step) {
@@ -1104,7 +1252,7 @@ class BalancedNuzlockeEngine {
     }
 
     const step = this.getStoryLine()[this.storyStep];
-    const canCatch = step && step.type === 'legendary';
+    const canCatch = step && (step.type === 'legendary' || step.type === 'static_boss');
     this.setButtons(true, canCatch, true);
     this.updateUI();
   }
@@ -1125,9 +1273,31 @@ class BalancedNuzlockeEngine {
 
   calcWinRate(atk, def, mult) {
     const lvlDiff = atk.level - def.level;
-    // Dificultad ajustada para permitir un avance fluido y divertido
-    let base = 72 + (lvlDiff * 6) + ((mult - 1) * 45);
-    return Math.min(Math.max(base, 40), 96);
+
+    // Progresión lineal basada en el paso de la historia (de paso 0 a 25)
+    const totalSteps = this.getStoryLine().length || 25;
+    const progressRatio = Math.min(Math.max(this.storyStep / totalSteps, 0), 1);
+    
+    // Curva lineal: desde 88% en Pueblo Paleta / Ruta 1 hasta 58% en el Alto Mando / Campeón
+    let base = 88 - (progressRatio * 30);
+
+    // Factor por diferencia de nivel (+4% por nivel superior, -5% por nivel inferior)
+    const levelBonus = lvlDiff >= 0 ? lvlDiff * 4 : lvlDiff * 5;
+    base += levelBonus;
+
+    // Factor por efectividad de tipo (+24% si es Super Eficaz, -24% si es Poco Eficaz)
+    const typeBonus = (mult - 1) * 40;
+    base += typeBonus;
+
+    // Modificador de desafío para Jefes, Alto Mando y Legendarios
+    const step = this.getStoryLine()[this.storyStep];
+    if (step) {
+      if (step.type === 'champion' || step.type === 'e4') base -= 10;
+      else if (step.type === 'gym' || step.type === 'rival') base -= 6;
+      else if (step.type === 'legendary') base -= 12;
+    }
+
+    return Math.min(Math.max(Math.round(base), 15), 98);
   }
 
   instantAttack() {
@@ -1154,22 +1324,22 @@ class BalancedNuzlockeEngine {
       setTimeout(async () => {
         if (this.isBoss) {
           const step = this.getStoryLine()[this.storyStep];
-          if (step && step.type === 'legendary') {
+          if (step && (step.type === 'legendary' || step.type === 'static_boss')) {
             const catchRoll = Math.random() * 100;
-            const catchChance = 60; // 60% de probabilidad de capturarlo tras vencerlo
-            const defeatedLegendary = this.currentEnemy;
+            const catchChance = step.type === 'static_boss' ? 85 : 60; // 85% Snorlax, 60% Legendarios
+            const defeatedEnemy = this.currentEnemy;
 
             if (catchRoll <= catchChance) {
               soundEngine.playBadge();
-              this.log(`🏆 ¡VICTORIA Y CAPTURA LEGENDARIA! Derrotaste a ${defeatedLegendary.speciesName} y lograste capturarlo (${catchChance}% probabilidad).`);
-              this.pendingCatch = defeatedLegendary;
+              this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y lograste capturarlo (${catchChance}% probabilidad).`);
+              this.pendingCatch = defeatedEnemy;
               this.currentEnemy = null;
               setTimeout(() => {
-                this.showNickModal(`¡Capturaste al Legendario ${this.pendingCatch.speciesName}! Asigna un mote:`);
+                this.showNickModal(`¡Capturaste a ${this.pendingCatch.speciesName}! Asigna un mote:`);
               }, 750);
               return;
             } else {
-              this.log(`⚔️ ¡VICTORIA! Venciste a ${defeatedLegendary.speciesName}, pero no pudiste capturarlo y se marchó (${catchChance}% probabilidad de captura).`);
+              this.log(`⚔️ ¡VICTORIA! Venciste a ${defeatedEnemy.speciesName}, pero no pudiste capturarlo (${catchChance}% probabilidad de captura).`);
             }
           }
           await this.loadNextBossPokemon();
@@ -1399,15 +1569,27 @@ class BalancedNuzlockeEngine {
     const statsBox = document.getElementById('summary-stats-card');
     const hallBox = document.getElementById('summary-hall-of-fame');
 
+    const modalContainer = document.querySelector('#summary-modal .modal-card');
+    if (modalContainer) {
+      modalContainer.style.background = 'linear-gradient(135deg, #0e111d 0%, #171c2e 100%)';
+      modalContainer.style.border = isVictory ? '3px solid #ffd700' : '3px solid #ff5252';
+      modalContainer.style.boxShadow = isVictory ? '0 0 35px rgba(255, 215, 0, 0.3), 0 10px 30px rgba(0,0,0,0.9)' : '0 0 35px rgba(255, 82, 82, 0.3), 0 10px 30px rgba(0,0,0,0.9)';
+      modalContainer.style.color = '#ffffff';
+    }
+
     if (isVictory) {
-      title.innerText = "🏆 ¡VICTORIA NUZLOCKE EN KANTO!";
-      title.style.color = "#2ecc71";
+      title.innerText = "🏆 HALL OF FAME - CAMPEÓN DE KANTO";
+      title.style.color = "#ffd700";
+      title.style.textShadow = "0 0 14px rgba(255, 215, 0, 0.6), 2px 2px 0px #000";
       sub.innerText = `¡Felicidades ${this.playerName}! Venciste a todos los Líderes de Gimnasio, al Alto Mando y al Campeón ${this.rivalName}.`;
+      sub.style.color = "#cbd5e1";
       soundEngine.playBadge();
     } else {
       title.innerText = "💀 FIN DE LA AVENTURA (GAME OVER)";
-      title.style.color = "#e74c3c";
+      title.style.color = "#ff5252";
+      title.style.textShadow = "0 0 14px rgba(255, 82, 82, 0.6), 2px 2px 0px #000";
       sub.innerText = `Tu equipo completo pereció en el reto Nuzlocke. Rendimos homenaje a tus caídos.`;
+      sub.style.color = "#ffcdd2";
       soundEngine.playFaint();
     }
 
@@ -1419,23 +1601,24 @@ class BalancedNuzlockeEngine {
       badgesHTML += `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/${i}.png" class="${dimmedClass}" title="Medalla ${i}">`;
     }
 
-    const e4Label = this.e4DefeatedCount >= 5 ? '🏆 CAMPEÓN SUPREMO (5/5)' : `${Math.min(this.e4DefeatedCount, 4)} / 4 Derrotados`;
+    const e4Label = this.e4DefeatedCount >= 5 ? '<span style="color:#ffd700;">🏆 CAMPEÓN SUPREMO (5/5)</span>' : `<span style="color:#00e5ff;">${Math.min(this.e4DefeatedCount, 4)} / 4 Derrotados</span>`;
 
     statsBox.innerHTML = `
-      <div><strong>Entrenador:</strong> <span style="color:#ffc107;">${this.playerName}</span> | <strong>Rival:</strong> <span style="color:#ff5252;">${this.rivalName}</span></div>
+      <div><strong>Entrenador:</strong> <span style="color:#ffd700; font-weight:bold;">${this.playerName}</span> | <strong>Rival:</strong> <span style="color:#ff5252; font-weight:bold;">${this.rivalName}</span></div>
       <div class="summary-stats-grid">
-        <div><strong>Medallas Kanto:</strong> ${this.badges} / 8</div>
-        <div><strong>Alto Mando Vencidos:</strong> ${e4Label}</div>
-        <div>💀 <strong>Bajas Totales (Cementerio):</strong> ${this.graveyard.length}</div>
-        <div><strong>Especies Capturadas:</strong> ${this.caughtSpecies.size}</div>
+        <div><strong>Medallas Kanto:</strong> <span style="color:#ffd700;">${this.badges} / 8</span></div>
+        <div><strong>Alto Mando:</strong> ${e4Label}</div>
+        <div>💀 <strong>Bajas Totales:</strong> <span style="color:#ff5252;">${this.graveyard.length}</span></div>
+        <div><strong>Especies Capturadas:</strong> <span style="color:#00e5ff;">${this.caughtSpecies.size}</span></div>
       </div>
       <div style="margin-top:10px;">
-        <span style="font-weight:bold;">Colección de Medallas Obtenidas:</span>
+        <span style="font-weight:bold; color:#e2e8f0;">Colección de Medallas Obtenidas:</span>
         <div class="summary-badge-row">${badgesHTML}</div>
       </div>
     `;
 
     if (isVictory) {
+      hallBox.style.borderColor = '#ffd700';
       hallBox.innerHTML = `
         <div class="summary-hall-title">🏆 HALL OF FAME - EQUIPO CAMPEÓN DE KANTO</div>
         <div class="hall-grid">
@@ -1443,32 +1626,37 @@ class BalancedNuzlockeEngine {
             const shinyMark = p.isShiny ? '✨ ' : '';
             const typeBadges = this.getTypeBadgeHTML(p.types);
             return `
-              <div class="hall-card" style="border-color:#ffea00;">
-                <img src="${p.frontSprite}" alt="${p.nickname}">
-                <div class="name">${shinyMark}${p.nickname}</div>
-                <div>Nv. ${p.level} (${p.speciesName})</div>
-                <div style="margin-top:4px;">${typeBadges}</div>
+              <div class="hall-card" style="border-color:#ffd700; background:linear-gradient(180deg, #1c223a 0%, #0d101d 100%);">
+                <div class="hall-card-img-box" style="background:radial-gradient(circle at center, rgba(255,215,0,0.25) 0%, transparent 70%);">
+                  <img src="${p.frontSprite}" alt="${p.nickname}">
+                </div>
+                <div class="name" style="color:#ffd700;">${shinyMark}${p.nickname}</div>
+                <div style="color:#ffffff; font-weight:bold;">Nv. ${p.level} (${p.speciesName})</div>
+                <div style="margin-top:6px;">${typeBadges}</div>
               </div>`;
           }).join('')}
         </div>`;
     } else {
+      hallBox.style.borderColor = '#ff5252';
       // Show last 6 fallen heroes from graveyard
       const lastFallen = this.graveyard.slice(-6).reverse();
       hallBox.innerHTML = `
-        <div class="summary-hall-title" style="color:#ff5252;">💀 ÚLTIMOS 6 HÉROES CAÍDOS EN COMBATE</div>
+        <div class="summary-hall-title" style="color:#ff5252; text-shadow: 0 0 10px rgba(255,82,82,0.5);">💀 ÚLTIMOS 6 HÉROES CAÍDOS EN COMBATE</div>
         <div class="hall-grid">
           ${lastFallen.length > 0 ? lastFallen.map(g => {
             const shinyMark = g.isShiny ? '✨ ' : '';
             const fallbackSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${g.id || 25}.gif`;
             const typeBadges = g.types ? this.getTypeBadgeHTML(g.types) : '';
             return `
-              <div class="hall-card" style="border-color:#e74c3c;">
-                <img src="${g.sprite || fallbackSprite}" alt="${g.nickname}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${g.id || 25}.png'">
-                <div class="name">${shinyMark}${g.nickname}</div>
-                <div>Nv. ${g.level} (${g.speciesName})</div>
-                <div class="sub">Caído en: ${g.location}</div>
+              <div class="hall-card" style="border-color:#ff5252; background:linear-gradient(180deg, #2a1618 0%, #12090b 100%);">
+                <div class="hall-card-img-box" style="background:radial-gradient(circle at center, rgba(255,82,82,0.25) 0%, transparent 70%);">
+                  <img src="${g.sprite || fallbackSprite}" alt="${g.nickname}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${g.id || 25}.png'">
+                </div>
+                <div class="name" style="color:#ff5252;">${shinyMark}${g.nickname}</div>
+                <div style="color:#ffffff; font-weight:bold;">Nv. ${g.level} (${g.speciesName})</div>
+                <div class="sub" style="color:#e2e8f0;">Caído en: ${g.location}</div>
                 <div class="sub" style="color:#ff8a80;">Por: ${g.killedBy}</div>
-                <div style="margin-top:4px;">${typeBadges}</div>
+                <div style="margin-top:6px;">${typeBadges}</div>
               </div>`;
           }).join('') : '<div style="grid-column: span 3; text-align:center; color:#aaa;">No se registraron bajas.</div>'}
         </div>`;
