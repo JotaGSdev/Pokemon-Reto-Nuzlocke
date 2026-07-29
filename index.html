@@ -172,7 +172,7 @@
     .sprite { width: 95px; height: 95px; display: block; margin: 0 auto; image-rendering: pixelated; }
 
     .sprite.shiny-effect {
-      filter: drop-shadow(0 0 10px #ffe600) hue-rotate(45deg);
+      filter: drop-shadow(0 0 12px #ffe600) brightness(1.05);
     }
 
     .shiny-tag {
@@ -727,12 +727,14 @@ class BalancedNuzlockeEngine {
       const getStat = (n) => data.stats.find(s => s.stat.name === n)?.base_stat || 50;
       const maxHp = Math.floor(((2 * getStat('hp') + 31) * lvl) / 100) + lvl + 10;
       
+      const anim = data.sprites?.versions?.['generation-v']?.['black-white']?.animated;
+      
       const frontSprite = isShiny 
-        ? (data.sprites.front_shiny || data.sprites.front_default)
-        : data.sprites.front_default;
+        ? (anim?.front_shiny || data.sprites.front_shiny || data.sprites.front_default)
+        : (anim?.front_default || data.sprites.front_default);
       const backSprite = isShiny 
-        ? (data.sprites.back_shiny || data.sprites.back_default || frontSprite)
-        : (data.sprites.back_default || frontSprite);
+        ? (anim?.back_shiny || data.sprites.back_shiny || data.sprites.back_default || frontSprite)
+        : (anim?.back_default || data.sprites.back_default || frontSprite);
 
       return {
         id: data.id,
@@ -753,7 +755,13 @@ class BalancedNuzlockeEngine {
       const numId = typeof idOrName === 'number' ? idOrName : 25;
       const sName = String(idOrName).toUpperCase();
       const maxHp = Math.floor((120 * lvl) / 100) + lvl + 10;
-      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
+      const frontSprite = isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${numId}.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
+      const backSprite = isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${numId}.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${numId}.png`;
+
       return {
         id: numId,
         speciesName: sName,
@@ -765,8 +773,8 @@ class BalancedNuzlockeEngine {
         defense: 55,
         types: ['normal'],
         isShiny: isShiny,
-        frontSprite: spriteUrl,
-        backSprite: spriteUrl
+        frontSprite: frontSprite,
+        backSprite: backSprite
       };
     }
   }
@@ -1016,7 +1024,8 @@ class BalancedNuzlockeEngine {
         speciesName: active.speciesName,
         level: active.level,
         killedBy: this.currentEnemy.speciesName,
-        location: step ? step.loc : 'Kanto'
+        location: step ? step.loc : 'Kanto',
+        isShiny: active.isShiny
       });
 
       // Remover permanentemente del equipo activo
@@ -1187,9 +1196,10 @@ class BalancedNuzlockeEngine {
       list.innerHTML = '<div>No hay bajas registradas. ¡Tu equipo sigue intacto!</div>';
     } else {
       this.graveyard.forEach(g => {
+        const shinyMark = g.isShiny ? '✨ ' : '';
         list.innerHTML += `
           <div class="grave-item">
-            <span>🪦 <strong>${g.nickname}</strong> (${g.speciesName} Lv.${g.level})</span>
+            <span>🪦 <strong>${shinyMark}${g.nickname}</strong> (${g.speciesName} Lv.${g.level})</span>
             <span>Caído en ${g.location} por ${g.killedBy}</span>
           </div>`;
       });
