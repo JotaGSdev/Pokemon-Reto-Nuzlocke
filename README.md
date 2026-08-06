@@ -41,10 +41,11 @@
 | 📍 **52 Encuentros por Zona** | Solo puedes capturar el primer Pokémon que aparezca en cada una de las 52 zonas únicas (Kanto + Islas Sete 1-3). |
 | 🎁 **Regalos y Estáticos** | Se permiten hasta 6 eventos especiales de regalo/estáticos (Eevee, Lapras, Snorlax, Dojo Karate, Fósiles). |
 | 🏷️ **Mote Obligatorio** | Es obligatorio asignar un apodo a cada compañero capturado. |
-| 🔄 **Cláusula de Duplicados** | Si ya posees la especie en tu equipo o PC, el juego re-sortea automáticamente el encuentro. |
+| 🔄 **Cláusula de Duplicados** | Si ya posees la especie **o cualquier miembro de su línea evolutiva** (p. ej. posees RATTATA ⇒ RATICATE es duplicado), el juego re-sortea automáticamente el encuentro. Si toda la zona son duplicados, la zona se descarta sin captura. |
 | ✨ **Cláusula Shiny** | Los Pokémon Shiny ignoran la restricción de ruta y siempre se pueden capturar. |
 | 🦕 **Captura de Legendarios** | Tras vencer a un Legendario (Articuno, Zapdos, Moltres, Mewtwo), tienes la oportunidad de capturarlo. |
 | 🧢 **Level Caps Equilibrados** | El nivel de los Pokémon salvajes y entrenadores se ajusta al límite de cada gimnasio. |
+| 🧬 **Solo Generación 1** | Todos los Pokémon pertenecen a la primera generación (IDs 1-151): las 52 zonas, regalos, jefes y estáticos usan exclusivamente especies de Kanto. |
 
 ---
 
@@ -55,6 +56,28 @@
 3. **Combates Tácticos**: Evalúa los tipos de tu Pokémon frente al rival y presiona **Atacar** aprovechando las ventajas de tipo.
 4. **Sistema de Almacenamiento PC**: Organiza tu equipo activo de 6 integrantes e intercambia Pokémon desde las Cajas.
 5. **Encuentros con el Alto Mando**: Enfréntate a Lorelei, Bruno, Agatha, Lance y a tu Rival por el título de Campeón de Kanto.
+
+---
+
+## 🎲 Probabilidades HardCore
+
+Todas las probabilidades se concentran en el objeto `hardcoreOdds` del constructor de `BalancedNuzlockeEngine` en `index.html`, ajustable a gusto:
+
+| Mecánica | Antes | HardCore |
+| :--- | :---: | :---: |
+| ✨ Shiny | 1/64 (1.56%) | 1/256 (~0.39%) |
+| ⚔️ Victoria (inicio) | 88% | 84% |
+| ⚔️ Victoria (Alto Mando) | 58% | 52% |
+| 📉 Penalización por nivel inferior | -5%/nivel | -6%/nivel |
+| 🏅 Penalización Gimnasio/Rival | -6% | -8% |
+| 🏆 Penalización Alto Mando/Campeón | -10% | -13% |
+| 🦕 Penalización Legendario | -12% | -15% |
+| 🫳 Captura salvaje (HP lleno) | 85% | 75% (hasta 100% a 0 HP) |
+| 🦕 Captura Legendario | 50% | 40% |
+| 🐻 Captura estático (Snorlax) | 85% | 70% |
+| 📊 Techo de victoria | 98% | 95% (nunca garantizada) |
+
+Además, **los encuentros salvajes ahora respetan la tasa de aparición (`rate`) definida en `ROUTE_ENCOUNTERS`** (antes todas las especies de una zona tenían la misma probabilidad): Pikachu en Bosque Verde aparece un 15%, Larvitar en Isla Séptima un 30%, etc.
 
 ---
 
