@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pokémon Rojo Fuego - Nuzlocke Kanto Edition</title>
+  <title>Pokémon Rojo Fuego - Kanto Nuzlocke</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -217,6 +217,39 @@
       font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
+    .shiny-sparkle {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 110px; height: 110px;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      pointer-events: none;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,215,0,0.55) 35%, rgba(255,215,0,0) 70%);
+      animation: shiny-burst 1.5s ease-out forwards;
+    }
+    .shiny-sparkle::before,
+    .shiny-sparkle::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      background: linear-gradient(180deg, #ffffff, #ffd700);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+    }
+    .shiny-sparkle::before {
+      width: 4px; height: 110px;
+      transform: translate(-50%, -50%);
+    }
+    .shiny-sparkle::after {
+      width: 110px; height: 4px;
+      transform: translate(-50%, -50%);
+    }
+    @keyframes shiny-burst {
+      0%   { transform: translate(-50%, -50%) scale(0.15) rotate(0deg); opacity: 0; }
+      25%  { opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
     #team-bar {
       display: flex; gap: 5px; padding: 8px; background: #0e101a;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
@@ -355,23 +388,23 @@
       <p>Selecciona tu Pokémon inicial:</p>
       <div class="starters-grid">
         <div class="starter-btn" onclick="game.selectStarter(1)">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur">
+          <img src="assets/sprites/front/1.gif" alt="Bulbasaur" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'">
           <span>Bulbasaur</span>
         </div>
         <div class="starter-btn" onclick="game.selectStarter(4)">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander">
+          <img src="assets/sprites/front/4.gif" alt="Charmander" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'">
           <span>Charmander</span>
         </div>
         <div class="starter-btn" onclick="game.selectStarter(7)">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle">
+          <img src="assets/sprites/front/7.gif" alt="Squirtle" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png'">
           <span>Squirtle</span>
         </div>
         <div class="starter-btn" onclick="game.selectStarter(25)">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu">
+          <img src="assets/sprites/front/25.gif" alt="Pikachu" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'">
           <span>Pikachu</span>
         </div>
         <div class="starter-btn" onclick="game.selectStarter(133)">
-          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee">
+          <img src="assets/sprites/front/133.gif" alt="Eevee" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png'">
           <span>Eevee</span>
         </div>
       </div>
@@ -382,7 +415,7 @@
   <div id="nickname-modal" class="overlay" style="display:none;">
     <div class="modal-card">
       <h2>¡Mote Obligatorio!</h2>
-      <p id="nick-prompt">Nuzlocke Rule:</p>
+      <p id="nick-prompt">Regla Nuzlocke:</p>
       <input type="text" id="nick-input" style="width:80%; padding:8px; font-family:inherit; font-size:8px; margin-bottom:10px;" maxlength="10">
       <button class="game-btn" onclick="game.confirmNickname()">Confirmar Mote</button>
     </div>
@@ -424,7 +457,17 @@
       <div id="summary-stats-card" class="summary-stats-box"></div>
       <div id="summary-hall-of-fame" class="summary-hall-box"></div>
 
-      <button class="game-btn btn-restart" style="width:100%; padding:14px; margin-top:14px; font-size:8px; background:#ff4444; color:#fff;" onclick="location.reload()">🔄 Reiniciar Nueva Partida</button>
+      <button class="game-btn btn-restart" style="width:100%; padding:14px; margin-top:14px; font-size:8px; background:#ff4444; color:#fff;" onclick="game.clearSave(); location.reload()">🔄 Reiniciar Nueva Partida</button>
+    </div>
+  </div>
+
+  <div id="test-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:640px;">
+      <h2>🧪 Test de Integridad del Juego</h2>
+      <p style="margin-bottom:8px;">Validación de zonas, caps, tablas de encuentros y nombres.<br><span style="color:#888;">Atajo de teclado: F9</span></p>
+      <div id="test-summary" style="font-size:10px; font-weight:bold; margin-bottom:6px;"></div>
+      <div id="test-results" style="text-align:left; max-height:300px; overflow-y:auto; background:#1a1c29; color:#fff; padding:10px; border-radius:6px; font-size:8px; margin-top:8px;"></div>
+      <button class="game-btn" style="margin-top:12px; width:100%;" onclick="closeUITest()">Cerrar</button>
     </div>
   </div>
 
@@ -432,8 +475,9 @@
     <span>Entrenador: <strong id="header-player">RED</strong></span>
     <span id="loc-text" class="loc-badge">Pueblo Paleta</span>
     <div style="display:flex; gap:6px;">
-      <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">SFX: ON</button>
-      <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">Música: ON</button>
+      <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">🔊 SFX: ON</button>
+      <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">🎵 Música: ON</button>
+      <button class="sound-toggle-btn" id="test-btn" title="Ejecutar test de integridad (atajo: F9; Fn+F9 en algunos portátiles)" onclick="runUITest()">🧪 Test</button>
     </div>
   </header>
 
@@ -460,7 +504,6 @@
 
   <div id="battle-screen">
     <div id="dupes-banner">DUPLICADO DETECTADO ➔ RE-SORTEANDO</div>
-    <div id="shiny-sparkle" class="shiny-sparkle" style="display:none;"></div>
 
     <div id="foe" class="combatant">
       <div class="hud">
@@ -473,6 +516,7 @@
       <div class="sprite-box">
         <div class="shadow-platform foe-shadow"></div>
         <img id="foe-sprite" class="sprite" src="" alt="Foe">
+        <div id="shiny-sparkle" class="shiny-sparkle" style="display:none;"></div>
       </div>
     </div>
 
@@ -728,9 +772,51 @@ const ROUTE_ENCOUNTERS = {
   "Isla Quinta (Cueva Perdida)": [{ id: 92, name: "GASTLY", rate: 0.5 }, { id: 200, name: "MISDREAVUS", rate: 0.3 }, { id: 42, name: "GOLBAT", rate: 0.2 }],
   "Isla Sexta (Vía Verde)": [{ id: 193, name: "YANMA", rate: 0.4 }, { id: 177, name: "NATU", rate: 0.3 }, { id: 70, name: "WEEPINBELL", rate: 0.3 }],
   "Isla Sexta (Cueva Cambiante)": [{ id: 41, name: "ZUBAT", rate: 0.4 }, { id: 179, name: "MAREEP", rate: 0.3 }, { id: 167, name: "SPINARAK", rate: 0.3 }],
-  "Isla Séptima (Cañón Sétima)": [{ id: 231, name: "PHANPY", rate: 0.4 }, { id: 227, name: "SKARMORY", rate: 0.3 }, { id: 246, name: "LARVITAR", rate: 0.3 }],
+  "Isla Séptima (Cañón Séptima)": [{ id: 231, name: "PHANPY", rate: 0.4 }, { id: 227, name: "SKARMORY", rate: 0.3 }, { id: 246, name: "LARVITAR", rate: 0.3 }],
   "Cueva Celeste": [{ id: 111, name: "RHYHORN", rate: 0.3 }, { id: 113, name: "CHANSEY", rate: 0.3 }, { id: 132, name: "DITTO", rate: 0.2 }, { id: 26, name: "RAICHU", rate: 0.2 }]
 };
+
+// Nombres locales de respaldo (id -> especie) para el fallback offline de fetchPokemon
+const FALLBACK_NAMES = {
+  1: 'BULBASAUR', 4: 'CHARMANDER', 7: 'SQUIRTLE', 10: 'CATERPIE', 11: 'METAPOD', 13: 'WEEDLE', 16: 'PIDGEY', 17: 'PIDGEOTTO',
+  18: 'PIDGEOT', 19: 'RATTATA', 20: 'RATICATE', 21: 'SPEAROW', 22: 'FEAROW', 23: 'EKANS', 24: 'ARBOK', 25: 'PIKACHU',
+  26: 'RAICHU', 29: 'NIDORAN-F', 31: 'NIDOQUEEN', 32: 'NIDORAN-M', 33: 'NIDORINO', 34: 'NIDOKING', 35: 'CLEFAIRY', 37: 'VULPIX',
+  39: 'JIGGLYPUFF', 41: 'ZUBAT', 42: 'GOLBAT', 43: 'ODDISH', 44: 'GLOOM', 45: 'VILEPLUME', 46: 'PARAS', 48: 'VENONAT',
+  49: 'VENOMOTH', 50: 'DIGLETT', 51: 'DUGTRIO', 52: 'MEOWTH', 53: 'PERSIAN', 54: 'PSYDUCK', 56: 'MANKEY', 58: 'GROWLITHE',
+  59: 'ARCANINE', 60: 'POLIWAG', 63: 'ABRA', 64: 'KADABRA', 65: 'ALAKAZAM', 66: 'MACHOP', 67: 'MACHOKE', 68: 'MACHAMP',
+  69: 'BELLSPROUT', 70: 'WEEPINBELL', 71: 'VICTREEBEL', 72: 'TENTACOOL', 74: 'GEODUDE', 77: 'PONYTA', 78: 'RAPIDASH', 79: 'SLOWPOKE',
+  80: 'SLOWBRO', 81: 'MAGNEMITE', 82: 'MAGNETON', 84: 'DODUO', 86: 'SEEL', 87: 'DEWGONG', 89: 'MUK', 90: 'SHELLDER',
+  91: 'CLOYSTER', 92: 'GASTLY', 93: 'HAUNTER', 94: 'GENGAR', 95: 'ONIX', 96: 'DROWZEE', 97: 'HYPNO', 98: 'KRABBY',
+  100: 'VOLTORB', 102: 'EXEGGCUTE', 103: 'EXEGGUTOR', 104: 'CUBONE', 105: 'MAROWAK', 106: 'HITMONLEE', 107: 'HITMONCHAN', 109: 'KOFFING',
+  110: 'WEEZING', 111: 'RHYHORN', 112: 'RHYDON', 113: 'CHANSEY', 114: 'TANGELA', 115: 'KANGASKHAN', 116: 'HORSEA', 118: 'GOLDEEN',
+  120: 'STARYU', 121: 'STARMIE', 122: 'MR-MIME', 123: 'SCYTHER', 124: 'JYNX', 125: 'ELECTABUZZ', 126: 'MAGMAR', 127: 'PINSIR',
+  128: 'TAUROS', 129: 'MAGIKARP', 130: 'GYARADOS', 131: 'LAPRAS', 132: 'DITTO', 133: 'EEVEE', 134: 'VAPOREON', 135: 'JOLTEON',
+  136: 'FLAREON', 138: 'OMANYTE', 140: 'KABUTO', 142: 'AERODACTYL', 143: 'SNORLAX', 144: 'ARTICUNO', 145: 'ZAPDOS', 146: 'MOLTRES',
+  147: 'DRATINI', 148: 'DRAGONAIR', 149: 'DRAGONITE', 150: 'MEWTWO', 161: 'SENTRET', 167: 'SPINARAK', 177: 'NATU', 179: 'MAREEP',
+  183: 'MARILL', 187: 'HOPPIP', 193: 'YANMA', 194: 'WOOPER', 200: 'MISDREAVUS', 218: 'SLUGMA', 220: 'SWINUB', 225: 'DELIBIRD',
+  227: 'SKARMORY', 231: 'PHANPY', 246: 'LARVITAR'
+};
+
+// Nivel al que Eevee puede elegir su evolución (en lugar de piedras automáticas)
+const EEVEE_EVOLUTION_LEVEL = 30;
+
+// Nombre visible de la especie (con símbolos ♀/♂) y clave canónica de la API para cadenas evolutivas
+function speciesDisplayName(rawName) {
+  const lower = String(rawName).toLowerCase();
+  if (lower === 'nidoran-f' || lower === 'nidoran♀') return 'NIDORAN♀';
+  if (lower === 'nidoran-m' || lower === 'nidoran♂') return 'NIDORAN♂';
+  return String(rawName).toUpperCase();
+}
+function speciesKeyName(rawName) {
+  const lower = String(rawName).toLowerCase();
+  if (lower === 'nidoran-f' || lower === 'nidoran♀') return 'nidoran-f';
+  if (lower === 'nidoran-m' || lower === 'nidoran♂') return 'nidoran-m';
+  return lower;
+}
+
+// 💾 Clave y versión del guardado automático en localStorage
+const SAVE_KEY = 'pokemonRfNuzlockeSave';
+const SAVE_VERSION = 1;
 
 class BalancedNuzlockeEngine {
   constructor() {
@@ -756,6 +842,7 @@ class BalancedNuzlockeEngine {
 
     this.shinyOdds = 64; // ~1.56% Shiny Chance para mayor diversión
     this.e4DefeatedCount = 0;
+    this.starterPending = false; // true mientras el inicial está en el modal de mote (antes del paso 0)
   }
 
   getTypeBadgeHTML(types) {
@@ -838,11 +925,11 @@ class BalancedNuzlockeEngine {
       { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
       { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
       { type: 'gift_choice', loc: 'Mansión Azulona', title: 'Regalo Mansión Azulona: Elección de Eeveelución', choices: [{ id: 134, name: 'VAPOREON (Piedra Agua)' }, { id: 135, name: 'JOLTEON (Piedra Trueno)' }, { id: 136, name: 'FLAREON (Piedra Fuego)' }, { id: 133, name: 'EEVEE (Forma Base)' }], cap: 32, quest: 'Elige tu Eeveelución favorita (Vaporeon, Jolteon, Flareon o Eevee)' },
-      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Siph Scope' },
+      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Silph Scope' },
       
       // Rutas Centrales & Snorlax
-      { type: 'route', loc: 'Ruta 16', cap: 34, quest: 'Zona 24: Camino Bici Ruta 16' },
-      { type: 'route', loc: 'Ruta 17', cap: 34, quest: 'Zona 25: Desciende por la Ruta 17' },
+      { type: 'route', loc: 'Ruta 16', cap: 35, quest: 'Zona 24: Camino Bici Ruta 16' },
+      { type: 'route', loc: 'Ruta 17', cap: 35, quest: 'Zona 25: Desciende por la Ruta 17' },
       { type: 'route', loc: 'Ruta 18', cap: 35, quest: 'Zona 26: Recorre la Ruta 18' },
       { type: 'static_boss', loc: 'Ruta 12', title: 'Encuentro Estático: SNORLAX dormido', team: [{ id: 143, lvl: 30 }], cap: 35, quest: '¡Despierta y captura a Snorlax con la Poké Flauta!' },
       { type: 'route', loc: 'Ruta 12', cap: 36, quest: 'Zona 27: Atraviesa la Ruta 12' },
@@ -854,7 +941,7 @@ class BalancedNuzlockeEngine {
 
       // Gimnasio 5: Koga (Ciudad Fucsia)
       { type: 'gym', loc: 'Ciudad Fucsia', title: 'Líder Koga', team: [{ id: 109, lvl: 37 }, { id: 89, lvl: 39 }, { id: 110, lvl: 43 }], cap: 43, badgeIdx: 4, quest: 'Gimnasio 5: Desafía a Koga (Medalla Alma)' },
-      { type: 'gift_choice', loc: 'Dojo Karate Azafrán', title: 'Dojo Karate de Ciudad Azafrán', choices: [{ id: 106, name: 'HITMONLEE' }, { id: 107, name: 'HITMONCHAN' }], cap: 40, quest: 'Elige tu regalo del Dojo Karate (Hitmonlee o Hitmonchan)' },
+      { type: 'gift_choice', loc: 'Dojo Karate Azafrán', title: 'Dojo Karate de Ciudad Azafrán', choices: [{ id: 106, name: 'HITMONLEE' }, { id: 107, name: 'HITMONCHAN' }], cap: 43, quest: 'Elige tu regalo del Dojo Karate (Hitmonlee o Hitmonchan)' },
       { type: 'rocket', loc: 'Silph Co.', title: 'Jefe Giovanni #2', team: [{ id: 33, lvl: 37 }, { id: 111, lvl: 37 }, { id: 31, lvl: 41 }, { id: 115, lvl: 39 }], cap: 43, quest: 'Libera Silph Co. de Giovanni' },
       { type: 'gift', loc: 'Silph Co.', title: 'Regalo Nuzlocke: LAPRAS', giftId: 131, cap: 43, quest: 'Regalo: Recibe a Lapras del empleado agradecido en Silph Co.' },
 
@@ -866,36 +953,36 @@ class BalancedNuzlockeEngine {
       { type: 'legendary', loc: 'Islas Espuma', title: 'Desafío Legendario: ARTICUNO', team: [{ id: 144, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Articuno!' },
 
       // Gimnasio 7: Blaine (Isla Canela)
-      { type: 'route', loc: 'Mansión Pokémon', cap: 47, quest: 'Zona 36: Investiga la Mansión Pokémon en Isla Canela' },
-      { type: 'gift_choice', loc: 'Laboratorio Isla Canela', title: 'Laboratorio Fósil de Kanto', choices: [{ id: 138, name: 'OMANYTE (Fósil Hélice)' }, { id: 140, name: 'KABUTO (Fósil Domo)' }, { id: 142, name: 'AERODACTYL (Ámbar Viejo)' }], cap: 47, quest: 'Revive tu Fósil en el Laboratorio de Isla Canela' },
-      { type: 'gym', loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 47, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
+      { type: 'route', loc: 'Mansión Pokémon', cap: 50, quest: 'Zona 36: Investiga la Mansión Pokémon en Isla Canela' },
+      { type: 'gift_choice', loc: 'Laboratorio Isla Canela', title: 'Laboratorio Fósil de Kanto', choices: [{ id: 138, name: 'OMANYTE (Fósil Hélice)' }, { id: 140, name: 'KABUTO (Fósil Domo)' }, { id: 142, name: 'AERODACTYL (Ámbar Viejo)' }], cap: 50, quest: 'Revive tu Fósil en el Laboratorio de Isla Canela' },
+      { type: 'gym', loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 50, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
 
       // Capítulo Especial: ISLAS SETE (Islas 1 a 3) (14 Zonas Extra)
-      { type: 'route', loc: 'Isla Prima (Playa Tesoro)', cap: 48, quest: 'Zona 39: Explora Playa Tesoro en Isla Prima' },
-      { type: 'route', loc: 'Monte Ember', cap: 49, quest: 'Zona 40: Asciende por el Monte Ember' },
+      { type: 'route', loc: 'Isla Prima (Playa Tesoro)', cap: 50, quest: 'Zona 37: Explora Playa Tesoro en Isla Prima' },
+      { type: 'route', loc: 'Monte Ember', cap: 50, quest: 'Zona 38: Asciende por el Monte Ember' },
       { type: 'legendary', loc: 'Monte Ember', title: 'Desafío Legendario: MOLTRES', team: [{ id: 146, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Moltres!' },
-      { type: 'route', loc: 'Isla Secunda (Cabo Secundo)', cap: 49, quest: 'Zona 41: Recorre Cabo Secundo en Isla Secunda' },
-      { type: 'route', loc: 'Isla Tertia (Bosque Bayas)', cap: 50, quest: 'Zona 42: Adéntrate en el Bosque Bayas en Isla Tertia' },
-      { type: 'route', loc: 'Camino Enlace (Isla Tertia)', cap: 50, quest: 'Zona 43: Atraviesa el Camino Enlace' },
-      { type: 'route', loc: 'Puerto Tertia (Agua)', cap: 50, quest: 'Zona 44: Pesca/Surf en Puerto Tertia' },
-      { type: 'route', loc: 'Isla Quarta (Cueva Glaciada)', cap: 51, quest: 'Zona 45: Cruza la Cueva Glaciada en Isla Quarta' },
-      { type: 'route', loc: 'Isla Quarta (Agua)', cap: 51, quest: 'Zona 46: Pesca/Surf en las costas de Isla Quarta' },
-      { type: 'route', loc: 'Isla Quinta (Pradera Quinta)', cap: 52, quest: 'Zona 47: Atraviesa Pradera Quinta' },
-      { type: 'route', loc: 'Isla Quinta (Cueva Perdida)', cap: 52, quest: 'Zona 48: Explora la misteriosa Cueva Perdida' },
-      { type: 'route', loc: 'Isla Sexta (Vía Verde)', cap: 52, quest: 'Zona 49: Avanza por Vía Verde en Isla Sexta' },
-      { type: 'route', loc: 'Isla Sexta (Cueva Cambiante)', cap: 52, quest: 'Zona 50: Investiga la Cueva Cambiante' },
-      { type: 'route', loc: 'Isla Séptima (Cañón Sétima)', cap: 53, quest: 'Zona 51: Recorre el Cañón Sétima en Isla Séptima' },
+      { type: 'route', loc: 'Isla Secunda (Cabo Secundo)', cap: 50, quest: 'Zona 39: Recorre Cabo Secundo en Isla Secunda' },
+      { type: 'route', loc: 'Isla Tertia (Bosque Bayas)', cap: 50, quest: 'Zona 40: Adéntrate en el Bosque Bayas en Isla Tertia' },
+      { type: 'route', loc: 'Camino Enlace (Isla Tertia)', cap: 50, quest: 'Zona 41: Atraviesa el Camino Enlace' },
+      { type: 'route', loc: 'Puerto Tertia (Agua)', cap: 50, quest: 'Zona 42: Pesca/Surf en Puerto Tertia' },
+      { type: 'route', loc: 'Isla Quarta (Cueva Glaciada)', cap: 51, quest: 'Zona 43: Cruza la Cueva Glaciada en Isla Quarta' },
+      { type: 'route', loc: 'Isla Quarta (Agua)', cap: 51, quest: 'Zona 44: Pesca/Surf en las costas de Isla Quarta' },
+      { type: 'route', loc: 'Isla Quinta (Pradera Quinta)', cap: 52, quest: 'Zona 45: Atraviesa Pradera Quinta' },
+      { type: 'route', loc: 'Isla Quinta (Cueva Perdida)', cap: 52, quest: 'Zona 46: Explora la misteriosa Cueva Perdida' },
+      { type: 'route', loc: 'Isla Sexta (Vía Verde)', cap: 52, quest: 'Zona 47: Avanza por Vía Verde en Isla Sexta' },
+      { type: 'route', loc: 'Isla Sexta (Cueva Cambiante)', cap: 52, quest: 'Zona 48: Investiga la Cueva Cambiante' },
+      { type: 'route', loc: 'Isla Séptima (Cañón Séptima)', cap: 53, quest: 'Zona 49: Recorre el Cañón Séptima en Isla Séptima' },
 
       // Retorno a Kanto: Gimnasio 8 Giovanni
-      { type: 'route', loc: 'Central Energía', cap: 50, quest: 'Zona 37: Explora la Central Energía abandonada' },
-      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Zapdos!' },
-      { type: 'gym', loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 50 }], cap: 50, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
+      { type: 'route', loc: 'Central Energía', cap: 53, quest: 'Zona 50: Explora la Central Energía abandonada' },
+      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 53 }], cap: 53, quest: '¡Encuentro Legendario con Zapdos!' },
+      { type: 'gym', loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 53 }], cap: 53, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
       
       // Calle Victoria, Rival & Mewtwo
-      { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Zona 38: Atraviesa la peligrosa Calle Victoria' },
+      { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Zona 51: Atraviesa la peligrosa Calle Victoria' },
       { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.rivalStarterId, lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
-      { type: 'route', loc: 'Cueva Celeste', cap: 60, quest: 'Zona 52: Adéntrate en Cueva Celeste' },
-      { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 60 }], cap: 60, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
+      { type: 'route', loc: 'Cueva Celeste', cap: 54, quest: 'Zona 52: Adéntrate en Cueva Celeste' },
+      { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 54 }], cap: 54, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
 
       // Liga Pokémon: ALTO MANDO & CAMPEÓN
       { type: 'e4', loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
@@ -951,6 +1038,7 @@ class BalancedNuzlockeEngine {
 
     this.playerStarterId = id;
     this.rivalStarterId = this.determineRivalStarter(id);
+    this.starterPending = true; // el inicial se registra antes del paso 0 (Batalla Rival #1)
 
     await this.loadTypeMatchups();
 
@@ -980,68 +1068,95 @@ class BalancedNuzlockeEngine {
 
     const isShiny = forceShiny || (Math.floor(Math.random() * this.shinyOdds) === 0);
 
-    if (data && data.id <= 151) {
-      const kantoId = data.id;
+    if (data) {
+      // Pokémon real desde PokéAPI: Kanto (1-151) y Johto (152-251, especies de Islas Sete)
+      const pokeId = data.id;
       const getStat = (n) => data.stats.find(s => s.stat.name === n)?.base_stat || 50;
-      const maxHp = Math.floor(((2 * getStat('hp') + 31) * lvl) / 100) + lvl + 10;
-      
+      const baseHp = getStat('hp');
+      const maxHp = Math.floor(((2 * baseHp + 31) * lvl) / 100) + lvl + 10;
+
       const anim = data.sprites?.versions?.['generation-v']?.['black-white']?.animated;
 
-      // Sprites dinámicos exclusivamente originales de Kanto (Gen 5 / PokéAPI Kanto)
-      const frontSprite = isShiny 
-        ? (anim?.front_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${kantoId}.png`)
-        : (anim?.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${kantoId}.png`);
+      // Sprites locales Gen 5 para Kanto (1-151) desde assets/sprites (front/shiny de pokemondb.net,
+      // back del repo de sprites de PokeAPI, misma familia Gen 5). Para especies >151 (Johto de
+      // Islas Sete) se usan los sprites animados de PokéAPI como respaldo.
+      const REMOTE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+      const localFront = pokeId <= 151 ? (isShiny ? `assets/sprites/shiny/${pokeId}.gif` : `assets/sprites/front/${pokeId}.gif`) : null;
+      const localBack  = pokeId <= 151 ? (isShiny ? `assets/sprites/back/shiny/${pokeId}.gif` : `assets/sprites/back/${pokeId}.gif`) : null;
 
-      const backSprite = isShiny 
-        ? (anim?.back_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${kantoId}.png`)
-        : (anim?.back_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${kantoId}.png`);
+      const frontSprite = isShiny
+        ? (localFront || anim?.front_shiny || `${REMOTE}/shiny/${pokeId}.png`)
+        : (localFront || anim?.front_default || `${REMOTE}/${pokeId}.png`);
 
-      const cleanName = data.name.split('-')[0].toUpperCase();
+      const backSprite = isShiny
+        ? (localBack || anim?.back_shiny || `${REMOTE}/back/shiny/${pokeId}.png`)
+        : (localBack || anim?.back_default || `${REMOTE}/back/${pokeId}.png`);
+
+      // Respaldo remoto estático por si un archivo local de assets/ no está disponible
+      const frontFallback = isShiny ? `${REMOTE}/shiny/${pokeId}.png` : `${REMOTE}/${pokeId}.png`;
+      const backFallback  = isShiny ? `${REMOTE}/back/shiny/${pokeId}.png` : `${REMOTE}/back/${pokeId}.png`;
+
+      const cleanName = speciesDisplayName(data.name);
+      const cleanKey = speciesKeyName(data.name);
 
       return {
-        id: kantoId,
+        id: pokeId,
         speciesName: cleanName,
+        speciesKey: cleanKey,
         nickname: cleanName,
         level: lvl,
         maxHp: maxHp,
         currentHp: maxHp,
+        baseHp: baseHp,
         attack: getStat('attack'),
         defense: getStat('defense'),
         types: data.types.map(t => t.type.name),
         isShiny: isShiny,
         frontSprite: frontSprite,
-        backSprite: backSprite
-      };
-    } else {
-      // Local robust fallback 100% Kanto (1..151)
-      const rawNum = typeof idOrName === 'number' ? idOrName : 25;
-      const numId = (rawNum >= 1 && rawNum <= 151) ? rawNum : 25;
-      const sName = String(idOrName).split('-')[0].toUpperCase();
-      const maxHp = Math.floor((120 * lvl) / 100) + lvl + 10;
-
-      const frontSprite = isShiny
-        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/shiny/${numId}.gif`
-        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${numId}.gif`;
-
-      const backSprite = isShiny
-        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/shiny/${numId}.gif`
-        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/back/${numId}.gif`;
-
-      return {
-        id: numId,
-        speciesName: sName,
-        nickname: sName,
-        level: lvl,
-        maxHp: maxHp,
-        currentHp: maxHp,
-        attack: 60,
-        defense: 55,
-        types: ['normal'],
-        isShiny: isShiny,
-        frontSprite: frontSprite,
-        backSprite: backSprite
+        backSprite: backSprite,
+        frontSpriteFallback: frontFallback,
+        backSpriteFallback: backFallback
       };
     }
+
+    // Fallback local offline: sprite por ID real (1-251) y nombre desde tabla local
+    const rawNum = typeof idOrName === 'number' ? idOrName : 25;
+    const numId = (rawNum >= 1 && rawNum <= 251) ? rawNum : 25;
+    const rawSpecies = FALLBACK_NAMES[numId] || String(idOrName);
+    const sName = speciesDisplayName(rawSpecies);
+    const sKey = speciesKeyName(rawSpecies);
+    const maxHp = Math.floor((120 * lvl) / 100) + lvl + 10;
+
+    const ANIM = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated';
+    const frontSprite = isShiny
+      ? (numId <= 151 ? `assets/sprites/shiny/${numId}.gif` : `${ANIM}/shiny/${numId}.gif`)
+      : (numId <= 151 ? `assets/sprites/front/${numId}.gif` : `${ANIM}/${numId}.gif`);
+
+    const backSprite = isShiny
+      ? (numId <= 151 ? `assets/sprites/back/shiny/${numId}.gif` : `${ANIM}/back/shiny/${numId}.gif`)
+      : (numId <= 151 ? `assets/sprites/back/${numId}.gif` : `${ANIM}/back/${numId}.gif`);
+
+    const frontFallback = isShiny ? `${ANIM}/shiny/${numId}.gif` : `${ANIM}/${numId}.gif`;
+    const backFallback  = isShiny ? `${ANIM}/back/shiny/${numId}.gif` : `${ANIM}/back/${numId}.gif`;
+
+    return {
+      id: numId,
+      speciesName: sName,
+      speciesKey: sKey,
+      nickname: sName,
+      level: lvl,
+      maxHp: maxHp,
+      currentHp: maxHp,
+      baseHp: 60,
+      attack: 60,
+      defense: 55,
+      types: ['normal'],
+      isShiny: isShiny,
+      frontSprite: frontSprite,
+      backSprite: backSprite,
+      frontSpriteFallback: frontFallback,
+      backSpriteFallback: backFallback
+    };
   }
 
   getRandomNickname() {
@@ -1084,6 +1199,10 @@ class BalancedNuzlockeEngine {
       this.capturedZones.add(step.loc);
     }
 
+    // El pendiente ya fue consumido (está en el equipo/PC): limpiar para el guardado
+    this.pendingCatch = null;
+    this.pendingCatchMsg = null;
+
     this.healAliveTeam();
     this.currentEnemy = null;
 
@@ -1091,7 +1210,12 @@ class BalancedNuzlockeEngine {
     this.updateUI();
 
     setTimeout(() => {
-      this.storyStep++;
+      // El inicial se registra antes del paso 0 (Batalla Rival #1): no avanzar la historia todavía
+      if (this.starterPending) {
+        this.starterPending = false;
+      } else {
+        this.storyStep++;
+      }
       this.initCurrentStep();
     }, 750);
   }
@@ -1100,11 +1224,12 @@ class BalancedNuzlockeEngine {
     for (let p of this.team) {
       if (p.currentHp > 0) {
         p.level = targetCap;
-        p.maxHp = Math.floor(((2 * p.attack + 31) * targetCap) / 100) + targetCap + 10;
+        p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * targetCap) / 100) + targetCap + 10;
         p.currentHp = p.maxHp;
         await this.checkEvolution(p);
       }
     }
+    this.saveGame();
   }
 
   async initCurrentStep() {
@@ -1132,9 +1257,11 @@ class BalancedNuzlockeEngine {
       this.updateUI();
       const giftPkmn = await this.fetchPokemon(step.giftId, step.cap);
       this.pendingCatch = giftPkmn;
+      this.pendingCatchMsg = `¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}! Asigna un mote:`;
+      this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
       this.log(`🎁 ¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}!`);
       setTimeout(() => {
-        this.showNickModal(`¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}! Asigna un mote:`);
+        this.showNickModal(this.pendingCatchMsg);
       }, 500);
       return;
     }
@@ -1183,7 +1310,9 @@ class BalancedNuzlockeEngine {
 
     const cards = [];
     for (let choice of step.choices) {
-      const animSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${choice.id}.gif`;
+      const animSprite = choice.id <= 151
+        ? `assets/sprites/front/${choice.id}.gif`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${choice.id}.gif`;
       const staticSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${choice.id}.png`;
       
       const pkmnData = await this.fetchPokemon(choice.id, step.cap);
@@ -1206,7 +1335,9 @@ class BalancedNuzlockeEngine {
     document.getElementById('gift-modal').style.display = 'none';
     const chosen = await this.fetchPokemon(pokemonId, capLvl);
     this.pendingCatch = chosen;
-    this.showNickModal(`¡Elegiste a ${chosen.speciesName}! Asigna un mote:`);
+    this.pendingCatchMsg = `¡Elegiste a ${chosen.speciesName}! Asigna un mote:`;
+    this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
+    this.showNickModal(this.pendingCatchMsg);
   }
 
   async spawnWildPokemon(step) {
@@ -1285,6 +1416,8 @@ class BalancedNuzlockeEngine {
     
     if (this.currentEnemy.isShiny) {
       soundEngine.playShiny();
+      document.getElementById('shiny-sparkle').style.display = 'block';
+      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', 1500);
     }
 
     const step = this.getStoryLine()[this.storyStep];
@@ -1370,9 +1503,11 @@ class BalancedNuzlockeEngine {
               defeatedEnemy.currentHp = defeatedEnemy.maxHp;
               this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo al 100% HP (${catchChance}% probabilidad).`);
               this.pendingCatch = defeatedEnemy;
+              this.pendingCatchMsg = `¡Capturaste a ${defeatedEnemy.speciesName}! Asigna un mote:`;
               this.currentEnemy = null;
+              this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
               setTimeout(() => {
-                this.showNickModal(`¡Capturaste a ${this.pendingCatch.speciesName}! Asigna un mote:`);
+                this.showNickModal(this.pendingCatchMsg);
               }, 750);
               return;
             } else {
@@ -1442,29 +1577,35 @@ class BalancedNuzlockeEngine {
   catchPokemon() {
     const step = this.getStoryLine()[this.storyStep];
     const isLegendary = step && step.type === 'legendary';
-    if ((this.isBoss && !isLegendary) || !this.currentEnemy) return;
+    const isStaticBoss = step && step.type === 'static_boss';
+    // Permitir captura en salvajes, legendarios y jefes estáticos (Snorlax)
+    if ((this.isBoss && !isLegendary && !isStaticBoss) || !this.currentEnemy) return;
 
     this.setButtons(false, false, false);
-    // Probabilidad de captura: salvajes ~85-95%, legendarios 50%
-    const winRate = isLegendary ? 50 : Math.round((1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * 20 + 85);
+    // Probabilidad de captura: salvajes ~85-95%, legendarios 50%, estáticos (Snorlax) 85%
+    const winRate = isLegendary ? 50 : isStaticBoss ? 85 : Math.round((1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * 20 + 85);
 
     soundEngine.playCatch();
     this.log(`Lanzaste Pokéball a ${this.currentEnemy.speciesName} (${winRate}% probabilidad)...`);
 
-    if (!isLegendary && !this.currentEnemy.isShiny) {
+    // El estático (Snorlax) no consume la zona: la Ruta 12 mantiene su encuentro salvaje
+    if (!isLegendary && !isStaticBoss && !this.currentEnemy.isShiny) {
       this.capturedZones.add(step.loc);
     }
+    this.saveGame();
 
     setTimeout(() => {
       if (Math.random() * 100 <= winRate) {
         soundEngine.playBadge();
         this.pendingCatch = this.currentEnemy;
+        this.pendingCatchMsg = `¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`;
         this.currentEnemy = null;
-        this.showNickModal(`¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`);
+        this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
+        this.showNickModal(this.pendingCatchMsg);
       } else {
         soundEngine.playHit();
-        if (isLegendary) {
-          this.log(`❌ ¡El Legendario ${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
+        if (isLegendary || isStaticBoss) {
+          this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
           this.setButtons(true, true, true);
         } else {
           this.log(`❌ ¡La Pokéball falló y ${this.currentEnemy.speciesName} escapó! Has perdido el único intento de captura en ${step.loc}.`);
@@ -1488,29 +1629,114 @@ class BalancedNuzlockeEngine {
       const evoData = await evoRes.json();
 
       let node = evoData.chain;
-      while (node && node.species.name !== p.speciesName.toLowerCase()) {
+      while (node && node.species.name !== (p.speciesKey || p.speciesName.toLowerCase())) {
         node = node.evolves_to[0];
       }
 
       if (node && node.evolves_to.length > 0) {
-        const next = node.evolves_to[0];
-        const minLvl = next.evolution_details[0]?.min_level || 16;
+        // Eevee no evoluciona con piedra automática: el jugador elige su evolución al llegar al nivel
+        if (p.speciesName === 'EEVEE' && p.level >= EEVEE_EVOLUTION_LEVEL && !p.evoChoiceDeclined) {
+          await this.offerEeveeEvolution(p);
+          return;
+        }
 
-        if (p.level >= minLvl) {
+        const next = node.evolves_to[0];
+        const details = next.evolution_details[0];
+        const minLvl = details?.min_level;
+
+        // Solo evoluciones por nivel: piedras, comercio y amistad no se disparan automáticamente
+        if (typeof minLvl === 'number' && minLvl > 0 && p.level >= minLvl) {
           this.log(`¡${p.nickname} está evolucionando!`);
           const evo = await this.fetchPokemon(next.species.name, p.level, p.isShiny);
           
           p.id = evo.id;
           p.speciesName = evo.speciesName;
+          p.speciesKey = evo.speciesKey;
           p.frontSprite = evo.frontSprite;
           p.backSprite = evo.backSprite;
           p.types = evo.types;
+          // Actualizar stats al evolucionar (baseHp se usa para calcular el HP máximo)
+          p.baseHp = evo.baseHp;
+          p.attack = evo.attack;
+          p.defense = evo.defense;
+          p.maxHp = evo.maxHp;
+          p.currentHp = evo.maxHp;
           this.caughtSpecies.add(p.speciesName);
 
           this.log(`¡Felicidades! Evolucionó a ${p.speciesName}!`);
         }
       }
     } catch(e) {}
+  }
+
+  offerEeveeEvolution(p) {
+    document.getElementById('gift-title').innerText = '⚡ ¡Evolución de Eevee!';
+    document.getElementById('gift-prompt').innerText = `Tu Eevee ha alcanzado el nivel ${EEVEE_EVOLUTION_LEVEL} y puede evolucionar. Elige su destino (decisión única):`;
+    const container = document.getElementById('gift-options');
+    container.innerHTML = '<div style="color:#aaa; font-size:7px;">Cargando opciones...</div>';
+
+    const eeveelutions = [
+      { id: 134, name: 'VAPOREON (Piedra Agua)' },
+      { id: 135, name: 'JOLTEON (Piedra Trueno)' },
+      { id: 136, name: 'FLAREON (Piedra Fuego)' },
+      { id: 133, name: 'MANTENER COMO EEVEE' }
+    ];
+
+    const cards = eeveelutions.map(choice => {
+      const animSprite = choice.id <= 151
+        ? `assets/sprites/front/${choice.id}.gif`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${choice.id}.gif`;
+      const staticSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${choice.id}.png`;
+      return `
+        <div class="starter-btn" style="flex-direction:column; padding:12px 10px; min-width:130px;" onclick="game.chooseEeveeEvolution(${choice.id})">
+          <img src="${animSprite}" alt="${choice.name}" style="width:52px; height:52px; image-rendering:pixelated; margin-bottom:6px;" onerror="this.src='${staticSprite}'">
+          <span style="font-weight:bold; color:#ffea00; font-size:7.5px;">${choice.name}</span>
+        </div>`;
+    });
+    container.innerHTML = cards.join('');
+
+    document.getElementById('gift-modal').style.display = 'flex';
+
+    return new Promise((resolve) => {
+      this.pendingEeveeResolve = resolve;
+      this.pendingEeveePokemon = p;
+    });
+  }
+
+  async chooseEeveeEvolution(pokemonId) {
+    document.getElementById('gift-modal').style.display = 'none';
+    const p = this.pendingEeveePokemon;
+    const resolve = this.pendingEeveeResolve;
+    this.pendingEeveePokemon = null;
+    this.pendingEeveeResolve = null;
+    if (!p || !resolve) return;
+
+    try {
+      if (pokemonId === 133) {
+        p.evoChoiceDeclined = true;
+        this.log('Has decidido mantener a tu Eevee sin evolucionar.');
+      } else {
+        const evo = await this.fetchPokemon(pokemonId, p.level, p.isShiny);
+        p.id = evo.id;
+        p.speciesName = evo.speciesName;
+        p.speciesKey = evo.speciesKey;
+        p.frontSprite = evo.frontSprite;
+        p.backSprite = evo.backSprite;
+        p.types = evo.types;
+        p.baseHp = evo.baseHp;
+        p.attack = evo.attack;
+        p.defense = evo.defense;
+        p.maxHp = evo.maxHp;
+        p.currentHp = evo.maxHp;
+        this.caughtSpecies.add(p.speciesName);
+        soundEngine.playBadge();
+        this.log(`¡Felicidades! Tu Eevee evolucionó a ${p.speciesName}!`);
+      }
+    } finally {
+      // Resolver siempre para que la historia nunca quede bloqueada esperando la elección
+      resolve();
+      this.updateUI();
+    }
   }
 
   healAliveTeam() {
@@ -1601,6 +1827,7 @@ class BalancedNuzlockeEngine {
   }
 
   showSummaryModal(isVictory) {
+    this.clearSave(); // la partida terminó (victoria o game over): eliminar el guardado
     const title = document.getElementById('summary-title');
     const sub = document.getElementById('summary-subtitle');
     const statsBox = document.getElementById('summary-stats-card');
@@ -1712,6 +1939,15 @@ class BalancedNuzlockeEngine {
       const foeImg = document.getElementById('foe-sprite');
       foeImg.src = this.currentEnemy.frontSprite;
       foeImg.className = 'sprite';
+      // Si un sprite local de assets/ falla, caer al respaldo remoto (fallback capturado al asignar
+      // para no leer this.currentEnemy tarde, cuando la batalla ya pudo terminar)
+      const foeFallback = this.currentEnemy.frontSpriteFallback;
+      foeImg.onerror = () => {
+        if (foeImg.src.startsWith('assets/')) {
+          foeImg.onerror = null;
+          foeImg.src = foeFallback;
+        }
+      };
 
       const pct = (this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100;
       const foeHpBar = document.getElementById('foe-hp');
@@ -1731,6 +1967,14 @@ class BalancedNuzlockeEngine {
       const plyrImg = document.getElementById('player-sprite');
       plyrImg.src = active.backSprite;
       plyrImg.className = 'sprite';
+      // Si un sprite local de assets/ falla, caer al respaldo remoto (fallback capturado al asignar)
+      const activeFallback = active.backSpriteFallback;
+      plyrImg.onerror = () => {
+        if (plyrImg.src.startsWith('assets/')) {
+          plyrImg.onerror = null;
+          plyrImg.src = activeFallback;
+        }
+      };
 
       document.getElementById('player-hp-val').innerText = `${active.currentHp}/${active.maxHp}`;
       const pct = (active.currentHp / active.maxHp) * 100;
@@ -1769,6 +2013,7 @@ class BalancedNuzlockeEngine {
         slot.onclick = null;
       }
     }
+    this.saveGame();
   }
 
   setButtons(atk, catchBtn, pc) {
@@ -1778,9 +2023,125 @@ class BalancedNuzlockeEngine {
   }
 
   log(msg) { document.getElementById('textbox').innerText = msg; }
+
+  // ── 💾 Guardado automático en localStorage (equipo, PC, cementerio, zonas, paso de historia) ──
+  saveGame() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        version: SAVE_VERSION,
+        playerName: this.playerName,
+        rivalName: this.rivalName,
+        playerStarterId: this.playerStarterId,
+        rivalStarterId: this.rivalStarterId,
+        storyStep: this.storyStep,
+        badges: this.badges,
+        activeIdx: this.activeIdx,
+        team: this.team,
+        pcBox: this.pcBox,
+        graveyard: this.graveyard,
+        capturedZones: [...this.capturedZones],
+        caughtSpecies: [...this.caughtSpecies],
+        e4DefeatedCount: this.e4DefeatedCount || 0,
+        pendingCatch: this.pendingCatch, // evitar perder una captura/regalo con el modal de mote abierto
+        pendingCatchMsg: this.pendingCatchMsg || null,
+        savedAt: Date.now()
+      }));
+    } catch (e) { /* almacenamiento no disponible (modo privado / cuota) */ }
+  }
+
+  clearSave() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  }
+
+  tryRestoreSave() {
+    let raw = null;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+    if (!raw) return false;
+    try {
+      const d = JSON.parse(raw);
+      if (!d || d.version !== SAVE_VERSION) return false;
+
+      this.playerName = d.playerName || "RED";
+      this.rivalName = d.rivalName || "BLUE";
+      this.playerStarterId = d.playerStarterId || 1;
+      this.rivalStarterId = d.rivalStarterId || 4;
+      this.storyStep = d.storyStep || 0;
+      this.badges = d.badges || 0;
+      this.team = Array.isArray(d.team) ? d.team : [];
+      this.pcBox = Array.isArray(d.pcBox) ? d.pcBox : [];
+      this.graveyard = Array.isArray(d.graveyard) ? d.graveyard : [];
+      this.activeIdx = Math.min(d.activeIdx || 0, Math.max(0, this.team.length - 1));
+      this.capturedZones = new Set(Array.isArray(d.capturedZones) ? d.capturedZones : []);
+      this.caughtSpecies = new Set(Array.isArray(d.caughtSpecies) ? d.caughtSpecies : []);
+      this.e4DefeatedCount = d.e4DefeatedCount || 0;
+
+      // Migración de sprites: guardados creados antes de los assets locales apuntan a URLs remotas.
+      // Re-derivar rutas locales para Kanto (1-151) para que también se beneficien del modo offline.
+      const migrateSprites = (p) => {
+        if (p && p.id && p.id <= 151) {
+          p.frontSprite = p.isShiny ? `assets/sprites/shiny/${p.id}.gif` : `assets/sprites/front/${p.id}.gif`;
+          p.backSprite = p.isShiny ? `assets/sprites/back/shiny/${p.id}.gif` : `assets/sprites/back/${p.id}.gif`;
+          if (!p.frontSpriteFallback) p.frontSpriteFallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.isShiny ? 'shiny/' : ''}${p.id}.png`;
+          if (!p.backSpriteFallback) p.backSpriteFallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${p.isShiny ? 'shiny/' : ''}${p.id}.png`;
+        }
+      };
+      [this.team, this.pcBox].forEach(arr => arr.forEach(migrateSprites));
+
+      // Estado transitorio de combate: se regenera desde storyStep al ejecutar initCurrentStep()
+      this.currentEnemy = null;
+      this.isBoss = false;
+      this.bossTeam = [];
+      this.pendingCatch = d.pendingCatch || null;
+      this.pendingCatchMsg = d.pendingCatchMsg || null;
+      migrateSprites(this.pendingCatch); // también migrar un Pokémon pendiente de mote de guardado antiguo
+      this.starterPending = false;
+
+      // Equipo vacío con partida iniciada ⇒ game over (se restauran los datos para el resumen)
+      if (this.team.length === 0 && this.storyStep > 0) {
+        this.clearSave();
+        this.showSummaryModal(false);
+        return true;
+      }
+
+      // Re-renderizar la UI de estado persistente
+      document.getElementById('setup-modal').style.display = 'none';
+      document.getElementById('header-player').innerText = this.playerName;
+      for (let i = 0; i < 8; i++) {
+        const b = document.getElementById(`badge-${i}`);
+        if (b) b.className = i < this.badges ? 'badge-slot obtained' : 'badge-slot';
+      }
+
+      this.loadTypeMatchups(); // async sin await: solo alimenta el preview de tipos
+
+      // Si quedó un Pokémon pendiente de mote (captura/regalo con el modal abierto), reabrirlo
+      if (this.pendingCatch) {
+        const curStep = this.getStoryLine()[this.storyStep];
+        if (curStep) {
+          document.getElementById('loc-text').innerText = curStep.loc;
+          document.getElementById('quest-title').innerText = curStep.quest;
+          document.getElementById('cap-limit').innerText = `LevelCap: Lv.${curStep.cap}`;
+        }
+        this.showNickModal(this.pendingCatchMsg || `Asigna un mote a tu ${this.pendingCatch.speciesName}:`);
+        this.log('💾 Partida restaurada: tienes un Pokémon pendiente de mote.');
+        return true;
+      }
+
+      this.initCurrentStep();
+      const savedMins = d.savedAt ? Math.max(1, Math.round((Date.now() - d.savedAt) / 60000)) : null;
+      this.log(savedMins !== null
+        ? `💾 Partida restaurada (guardado hace ${savedMins} min). ¡Continúa tu aventura!`
+        : '💾 Partida restaurada desde el guardado automático. ¡Continúa tu aventura!');
+      return true;
+    } catch (e) {
+      return false; // guardado corrupto: se muestra la pantalla de configuración normal
+    }
+  }
 }
 
 const game = new BalancedNuzlockeEngine();
+
+// 💾 Restaurar la partida guardada automáticamente al recargar la página (si existe)
+game.tryRestoreSave();
 
 // Auto-reproducir la música de apertura Pokémon 8-bit en la pantalla de inicio con la primera interacción
 const startInitialBGM = () => {
@@ -1792,6 +2153,162 @@ const startInitialBGM = () => {
 
 ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(evt => {
   window.addEventListener(evt, startInitialBGM, { once: true });
+});
+
+// 🧪 Test de integridad del juego (accesible desde consola: window.testGame())
+// Valida: 52 zonas monótonas, caps no decrecientes, ids de encuentros cubiertos
+// por FALLBACK_NAMES, nombres de tabla coherentes y locs de historia en la tabla.
+window.testGame = function testGame() {
+  const checks = [];
+  let failed = 0;
+  const add = (name, ok, detail) => {
+    checks.push({ name, ok, detail: detail || (ok ? 'OK' : '—') });
+    if (!ok) failed++;
+  };
+
+  const story = game.getStoryLine();
+  const totalSteps = story.length;
+
+  // ── 1. Zonas: 52 únicas, en orden de historia, sin huecos ni duplicados ──
+  const zoneNums = [];
+  story.forEach((step, i) => {
+    const m = /Zona (\d+):/.exec(step.quest || '');
+    if (m) zoneNums.push({ n: parseInt(m[1], 10), i });
+  });
+  const nums = zoneNums.map(z => z.n);
+  const unique = [...new Set(nums)];
+  const sorted = [...nums].sort((a, b) => a - b);
+  const expected = Array.from({ length: 52 }, (_, i) => i + 1);
+  const orderBroken = [];
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] <= nums[i - 1]) orderBroken.push(`${nums[i - 1]}→${nums[i]}`);
+  }
+  const zonesOk = nums.length === 52 && unique.length === 52 &&
+    sorted.join(',') === expected.join(',') && orderBroken.length === 0;
+  add('Zonas: 52 únicas en orden (1→52)', zonesOk, zonesOk
+    ? 'OK: secuencia completa 1→52 en orden de historia'
+    : `PROBLEMA: ${nums.length} zonas, ${unique.length} únicas` +
+      (orderBroken.length ? ` — orden roto en ${orderBroken.join(', ')}` : '') +
+      (sorted.join(',') !== expected.join(',') ? ' — faltan o sobran números' : ''));
+
+  // ── 2. Caps no decrecientes ──
+  const noCap = story.filter(s => typeof s.cap !== 'number');
+  add('Todos los pasos definen cap (' + totalSteps + ' pasos)', noCap.length === 0,
+    noCap.length ? noCap.map(s => s.quest || s.title || '?').join(', ') : 'OK');
+
+  const capDrops = [];
+  for (let i = 1; i < totalSteps; i++) {
+    if (story[i].cap < story[i - 1].cap) {
+      capDrops.push(`paso ${i + 1} (${story[i].quest || story[i].title}): ${story[i - 1].cap}→${story[i].cap}`);
+    }
+  }
+  add('Caps no decrecientes', capDrops.length === 0, capDrops.length
+    ? capDrops.join(' | ')
+    : totalSteps > 0 ? `OK: ${story[0].cap}→${story[totalSteps - 1].cap} sin caídas` : 'OK');
+
+  const overLvl = [];
+  story.forEach((s, i) => (s.team || []).forEach(p => {
+    if (p.lvl > s.cap) overLvl.push(`paso ${i + 1}: id ${p.id} Lv.${p.lvl} > cap ${s.cap}`);
+  }));
+  add('Jefes por debajo de su cap', overLvl.length === 0,
+    overLvl.length ? overLvl.join(' | ') : 'OK');
+
+  // ── 3. Todos los ids de encuentro cubiertos por FALLBACK_NAMES ──
+  const missingIds = [];
+  const usedIds = new Set();
+  Object.entries(ROUTE_ENCOUNTERS).forEach(([loc, list]) => {
+    list.forEach(e => {
+      usedIds.add(e.id);
+      if (!(e.id in FALLBACK_NAMES)) missingIds.push(`${loc}: id ${e.id} "${e.name}"`);
+    });
+  });
+  add('Encuentros cubiertos por FALLBACK_NAMES', missingIds.length === 0, missingIds.length
+    ? missingIds.join(' | ')
+    : `OK: ${usedIds.size} ids únicos cubiertos`);
+
+  // ── 4. Nombres de tabla coherentes con su id ──
+  const badNames = [];
+  let totalEntries = 0;
+  Object.entries(ROUTE_ENCOUNTERS).forEach(([loc, list]) => {
+    list.forEach(e => {
+      totalEntries++;
+      if (!(e.id in FALLBACK_NAMES)) return; // ya reportado en el check anterior
+      const expectedName = speciesDisplayName(FALLBACK_NAMES[e.id]);
+      if (e.name !== expectedName) badNames.push(`${loc}: id ${e.id} "${e.name}" ≠ "${expectedName}"`);
+    });
+  });
+  add(`Nombres de tabla coherentes (${totalEntries} entradas)`, badNames.length === 0, badNames.length
+    ? badNames.join(' | ')
+    : 'OK');
+
+  // ── 5b. Ninguna clave huérfana en ROUTE_ENCOUNTERS (tabla→historia) ──
+  const usedLocs = new Set(story
+    .filter(s => ['route', 'legendary', 'static_boss'].includes(s.type))
+    .map(s => s.loc));
+  const orphanKeys = Object.keys(ROUTE_ENCOUNTERS).filter(k => !usedLocs.has(k));
+  add('Sin claves huérfanas en ROUTE_ENCOUNTERS', orphanKeys.length === 0,
+    orphanKeys.length ? orphanKeys.join(', ') : 'OK');
+
+  // ── 5. Locs de encuentro de la historia existen en ROUTE_ENCOUNTERS (historia→tabla) ──
+  const missingLocs = [...usedLocs].filter(loc => !(loc in ROUTE_ENCOUNTERS));
+  add('Locs de encuentro presentes en ROUTE_ENCOUNTERS', missingLocs.length === 0,
+    missingLocs.length ? missingLocs.join(', ') : 'OK');
+
+  // ── Salida ──
+  const passed = checks.length - failed;
+  console.group('%c🧪 testGame() — Integridad del juego', 'font-weight:bold;font-size:14px');
+  checks.forEach(c => console.log(`%c${c.ok ? '✅' : '❌'} ${c.name} — ${c.detail}`, c.ok ? 'color:#2e7d32' : 'color:#c62828;font-weight:bold'));
+  console.log(`%cResultado: ${passed}/${checks.length} checks OK${failed ? ` — ${failed} FALLO(S)` : ''}`, failed ? 'color:#c62828;font-weight:bold;font-size:13px' : 'color:#2e7d32;font-weight:bold;font-size:13px');
+  console.groupEnd();
+  return { passed, failed, checks };
+};
+
+// Ejecuta el test y muestra los resultados en pantalla (botón 🧪 Test o atajo F9)
+window.runUITest = function runUITest() {
+  const result = window.testGame();
+  const summary = document.getElementById('test-summary');
+  const list = document.getElementById('test-results');
+  const allOk = result.failed === 0;
+  summary.textContent = `Resultado: ${result.passed}/${result.checks.length} checks OK` + (allOk ? '' : ` — ${result.failed} FALLO(S)`);
+  summary.style.color = allOk ? '#2e7d32' : '#d32f2f';
+  list.innerHTML = '';
+  result.checks.forEach(c => {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:5px 4px; border-bottom:1px dashed #444; display:flex; gap:8px; align-items:flex-start;';
+    const icon = document.createElement('span');
+    icon.textContent = c.ok ? '✅' : '❌';
+    const body = document.createElement('div');
+    body.style.flex = '1';
+    const name = document.createElement('strong');
+    name.textContent = c.name;
+    const detail = document.createElement('span');
+    detail.textContent = c.detail;
+    detail.style.cssText = `color:${c.ok ? '#8bc34a' : '#ff8a80'}; word-break:break-word;`;
+    body.appendChild(name);
+    body.appendChild(document.createElement('br'));
+    body.appendChild(detail);
+    row.appendChild(icon);
+    row.appendChild(body);
+    list.appendChild(row);
+  });
+  document.getElementById('test-modal').style.display = 'flex';
+};
+
+window.closeUITest = function closeUITest() {
+  document.getElementById('test-modal').style.display = 'none';
+};
+
+// Atajo de teclado F9 para abrir/cerrar el test de integridad
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F9') {
+    e.preventDefault();
+    const modal = document.getElementById('test-modal');
+    if (modal.style.display === 'none') {
+      window.runUITest();
+    } else {
+      window.closeUITest();
+    }
+  }
 });
 </script>
 </body>
