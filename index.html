@@ -562,6 +562,12 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 2px 4px rgba(0,0,0,0.35);
       margin: 0 2px;
     }
+    .hud .type-pill {
+      padding: 2px 6px;
+      font-size: 5px;
+      border-radius: 8px;
+      margin: 0 1px;
+    }
 
     .summary-stats-box {
       background: #101424; color: #e2e8f0; border: 2px solid #29324e;
@@ -851,6 +857,7 @@
           <strong id="foe-nick">---</strong>
           <span id="foe-lvl">Lv.0</span>
         </div>
+        <div id="foe-types" style="margin-top:3px; display:flex; gap:2px; flex-wrap:wrap;"></div>
         <div class="hp-bar-outer"><div id="foe-hp" class="hp-bar-inner"></div></div>
       </div>
       <div class="sprite-box">
@@ -870,6 +877,7 @@
           <strong id="player-nick">---</strong>
           <span id="player-lvl">Lv.0</span>
         </div>
+        <div id="player-types" style="margin-top:3px; display:flex; gap:2px; flex-wrap:wrap;"></div>
         <div class="hp-bar-outer"><div id="player-hp" class="hp-bar-inner"></div></div>
         <div style="font-size:6px; text-align:right; margin-top:3px;">
           HP: <span id="player-hp-val">0/0</span>
@@ -3304,7 +3312,10 @@ class BalancedNuzlockeEngine {
       this.activeIdx = nextIdx;
       this.log(`¡Entra al combate ${this.team[this.activeIdx].nickname}!`);
       this.updateUI();
-      this.setButtons(true, false, true);
+      const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
+      const canCatch = this.currentEnemy && step && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny);
+      const canRun = !this.isBoss;
+      this.setButtons(true, canCatch, canRun, true);
     }
   }
 
@@ -3602,12 +3613,48 @@ class BalancedNuzlockeEngine {
     document.getElementById('summary-modal').style.display = 'flex';
   }
 
+  getTypeNameES(t) {
+    const namesES = {
+      fire: 'FUEGO', water: 'AGUA', grass: 'PLANTA', electric: 'ELÉCTRICO',
+      ice: 'HIELO', fighting: 'LUCHA', poison: 'VENENO', ground: 'TIERRA',
+      flying: 'VOLADOR', psychic: 'PSÍQUICO', bug: 'BICHO', rock: 'ROCA',
+      ghost: 'FANTASMA', dragon: 'DRAGÓN', steel: 'ACERO', fairy: 'HADA',
+      dark: 'SINIESTRO', normal: 'NORMAL'
+    };
+    return namesES[t] || (t ? t.toUpperCase() : 'NORMAL');
+  }
+
+  refreshButtonLabels() {
+    const btnPhys = document.getElementById('btn-atk-phys');
+    const btnSpec = document.getElementById('btn-atk-spec');
+    const active = this.team[this.activeIdx];
+    if (btnPhys && active) {
+      const isNormal = active.types && active.types.includes('normal');
+      btnPhys.innerText = isNormal ? '⚔️ Físico (STAB)' : '⚔️ Físico (Normal)';
+    }
+    if (btnSpec && active) {
+      if (this.currentEnemy) {
+        const config = this.getAttackConfig(active, this.currentEnemy, true);
+        const typeName = this.getTypeNameES(config.atkType);
+        const stabSuffix = config.isSTAB ? ' (STAB)' : '';
+        btnSpec.innerText = `🔥 ${typeName}${stabSuffix}`;
+      } else if (active.types && active.types[0]) {
+        const typeName = this.getTypeNameES(active.types[0]);
+        btnSpec.innerText = `🔥 ${typeName} (STAB)`;
+      } else {
+        btnSpec.innerText = '🔥 Elemental';
+      }
+    }
+  }
+
   updateUI() {
     if (this.currentEnemy) {
       document.getElementById('foe').style.display = 'block';
       const foeStar = this.currentEnemy.isShiny ? '✨ ' : '';
       document.getElementById('foe-nick').innerText = `${foeStar}${this.currentEnemy.nickname}`;
       document.getElementById('foe-lvl').innerText = `Lv.${this.currentEnemy.level}`;
+      const foeTypesEl = document.getElementById('foe-types');
+      if (foeTypesEl) foeTypesEl.innerHTML = this.getTypeBadgeHTML(this.currentEnemy.types);
       
       const foeImg = document.getElementById('foe-sprite');
       foeImg.src = this.currentEnemy.frontSprite;
@@ -3636,6 +3683,8 @@ class BalancedNuzlockeEngine {
       const playerStar = active.isShiny ? '✨ ' : '';
       document.getElementById('player-nick').innerText = `${playerStar}${active.nickname}`;
       document.getElementById('player-lvl').innerText = `Lv.${active.level}`;
+      const playerTypesEl = document.getElementById('player-types');
+      if (playerTypesEl) playerTypesEl.innerHTML = this.getTypeBadgeHTML(active.types);
 
       const plyrImg = document.getElementById('player-sprite');
       plyrImg.src = active.frontSprite;
@@ -3672,8 +3721,9 @@ class BalancedNuzlockeEngine {
         const stabLabel = elemConfig.isSTAB ? ' + STAB x1.5' : '';
         const playerTypeBadges = this.getTypeBadgeHTML(active.types);
         const foeTypeBadges = this.getTypeBadgeHTML(this.currentEnemy.types);
+        const elemName = this.getTypeNameES(elemConfig.atkType);
 
-        document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${elemConfig.atkType.toUpperCase()}: ${multText}${stabLabel}]</span>`;
+        document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${elemName}: ${multText}${stabLabel}]</span>`;
         const hpPct = Math.max(0, Math.round((this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100));
         document.getElementById('preview-win-val').innerText = `${hpPct}% HP Rival`;
       } else {
@@ -3688,13 +3738,26 @@ class BalancedNuzlockeEngine {
         const shinyMark = this.team[i].isShiny ? '✨ ' : '';
         slot.innerText = `${shinyMark}${this.team[i].nickname} L${this.team[i].level}`;
         slot.className = `team-slot ${i === this.activeIdx ? 'active' : ''} ${this.team[i].currentHp === 0 ? 'dead' : ''}`;
-        slot.onclick = () => { if (this.team[i].currentHp > 0) { this.activeIdx = i; this.updateUI(); } };
+        slot.onclick = () => {
+          if (this.team[i].currentHp > 0) {
+            const changed = this.activeIdx !== i;
+            this.activeIdx = i;
+            if (changed && typeof soundEngine !== 'undefined') {
+              soundEngine.playSelect();
+              this.log(`¡Adelante ${this.team[i].nickname}!`);
+            }
+            this.updateUI();
+          }
+        };
       } else {
         slot.innerText = "-";
         slot.className = "team-slot";
         slot.onclick = null;
       }
     }
+
+    // Actualizar etiquetas de botones de ataque al instante para el Pokémon activo
+    this.refreshButtonLabels();
 
     // 📖 Refrescar el contador de Pokédex en el header (vistas / capturadas) con aviso de reto en riesgo
     const pdx = this.computePokedexCounts();
@@ -3725,23 +3788,10 @@ class BalancedNuzlockeEngine {
     const btnPc = document.getElementById('btn-pc');
     const btnGrave = document.getElementById('btn-grave');
 
-    const active = this.team[this.activeIdx];
-    if (btnPhys) {
-      btnPhys.disabled = !atk;
-      const isNormal = active && active.types && active.types.includes('normal');
-      btnPhys.innerText = isNormal ? '⚔️ Físico (STAB)' : '⚔️ Físico (Normal)';
-    }
-    if (btnSpec) {
-      btnSpec.disabled = !atk;
-      if (active && this.currentEnemy) {
-        const config = this.getAttackConfig(active, this.currentEnemy, true);
-        btnSpec.innerText = `🔥 Elemental (${config.atkType.toUpperCase()})`;
-      } else if (active && active.types && active.types[0]) {
-        btnSpec.innerText = `🔥 Elemental (${active.types[0].toUpperCase()})`;
-      } else {
-        btnSpec.innerText = '🔥 Elemental';
-      }
-    }
+    if (btnPhys) btnPhys.disabled = !atk;
+    if (btnSpec) btnSpec.disabled = !atk;
+    this.refreshButtonLabels();
+
     if (btnCatch) {
       btnCatch.disabled = !catchBtn;
       const totalBalls = (this.inventory ? ((this.inventory.pokeball || 0) + (this.inventory.greatball || 0) + (this.inventory.ultraball || 0)) : 0);
@@ -4271,6 +4321,57 @@ window.testGame = function testGame() {
   }
   add('Alto Mando y Campeón sin autocuración tras victoria', leagueNoHealOk,
     leagueNoHealOk ? 'OK: El equipo conserva su daño entre combates de Lorelei, Bruno, Agatha, Lance y el Campeón' : `FALLO: ${leagueNoHealDetails.join(' | ')}`);
+
+  // ── 11. Actualización inmediata visual de tipo, STAB y botones al cambiar de Pokémon ──
+  let switchVisualOk = true;
+  const switchVisualDetails = [];
+  try {
+    const origTeam = game.team;
+    const origIdx = game.activeIdx;
+    const origEnemy = game.currentEnemy;
+
+    const snorlax = { id: 143, nickname: 'Snorlax', speciesName: 'SNORLAX', level: 30, types: ['normal'], currentHp: 100, maxHp: 100, frontSprite: '' };
+    const charizard = { id: 6, nickname: 'Charizard', speciesName: 'CHARIZARD', level: 36, types: ['fire', 'flying'], currentHp: 100, maxHp: 100, frontSprite: '' };
+    const enemyBulba = { id: 1, nickname: 'BulbaEnemy', speciesName: 'BULBASAUR', level: 30, types: ['grass', 'poison'], currentHp: 80, maxHp: 80, frontSprite: '' };
+
+    game.team = [snorlax, charizard];
+    game.currentEnemy = enemyBulba;
+
+    // Con Snorlax activo (normal): Físico debe tener STAB, Elemental tipo Normal (STAB)
+    game.activeIdx = 0;
+    game.refreshButtonLabels();
+    const btnPhys = document.getElementById('btn-atk-phys');
+    const btnSpec = document.getElementById('btn-atk-spec');
+
+    if (!btnPhys.innerText.includes('STAB')) {
+      switchVisualOk = false;
+      switchVisualDetails.push(`Snorlax físico esperaba STAB: "${btnPhys.innerText}"`);
+    }
+
+    // Cambiar a Charizard (fire, flying): Físico Normal (sin STAB), Elemental Fuego (STAB)
+    game.activeIdx = 1;
+    game.updateUI();
+
+    if (btnPhys.innerText.includes('STAB')) {
+      switchVisualOk = false;
+      switchVisualDetails.push(`Charizard físico no debió tener STAB: "${btnPhys.innerText}"`);
+    }
+    if (!btnSpec.innerText.includes('FUEGO') || !btnSpec.innerText.includes('STAB')) {
+      switchVisualOk = false;
+      switchVisualDetails.push(`Charizard elemental esperaba FUEGO (STAB): "${btnSpec.innerText}"`);
+    }
+
+    // Restaurar estado
+    game.team = origTeam;
+    game.activeIdx = origIdx;
+    game.currentEnemy = origEnemy;
+    game.updateUI();
+  } catch (e) {
+    switchVisualOk = false;
+    switchVisualDetails.push(`Error en test de cambio visual: ${e.message}`);
+  }
+  add('Actualización Inmediata de Tipos, STAB y Botones al Cambiar Pokémon', switchVisualOk,
+    switchVisualOk ? 'OK: Botones Físico/Elemental, STAB y badges de tipo se recalculan al instante sin requerir atacar' : `FALLO: ${switchVisualDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
