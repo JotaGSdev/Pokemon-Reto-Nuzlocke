@@ -35,7 +35,9 @@
     }
 
     #game-container {
-      width: 780px;
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
       background: linear-gradient(145deg, #1b1f33, #121524);
       border: 8px solid #080a12;
       border-radius: 20px;
@@ -219,7 +221,23 @@
 
     .sprite { display: block; margin: 0 auto; image-rendering: pixelated; filter: none; z-index: 2; position: relative; }
     #foe-sprite { width: 95px; height: 95px; object-fit: contain; }
-    #player-sprite { width: 130px; height: 130px; object-fit: contain; transform: scale(1.25); transform-origin: bottom center; }
+    #player-sprite { width: 110px; height: 110px; object-fit: contain; transform: scaleX(-1) scale(1.15); transform-origin: bottom center; }
+
+    @keyframes screen-shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-4px, 2px); }
+      40% { transform: translate(4px, -2px); }
+      60% { transform: translate(-3px, 3px); }
+      80% { transform: translate(3px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+    .shake { animation: screen-shake 0.35s ease-in-out; }
+
+    @keyframes hit-flash {
+      0%, 100% { filter: none; }
+      50% { filter: brightness(2.2) drop-shadow(0 0 10px #ff0000) sepia(1) hue-rotate(-50deg); }
+    }
+    .hit-flash { animation: hit-flash 0.32s ease-in-out; }
 
     #dupes-banner {
       position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -290,6 +308,26 @@
       border: 3px solid var(--ui-border); border-radius: 0 0 10px 10px;
     }
 
+    @media (max-width: 640px) {
+      body { padding: 6px; }
+      #game-container { padding: 10px; border-width: 5px; }
+      header { flex-direction: column; gap: 8px; text-align: center; }
+      .sound-toggle-btn { font-size: 6px; padding: 4px 6px; }
+      #controls { grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
+      button.game-btn { font-size: 6px; padding: 10px 4px; }
+      .badge-slot { width: 30px; height: 30px; }
+      .badge-slot img { width: 18px; height: 18px; }
+      #battle-screen { height: 210px; }
+      .combatant { width: 160px; }
+      #foe { top: 8px; right: 10px; }
+      #player { bottom: 8px; left: 10px; }
+      #foe-sprite { width: 75px; height: 75px; }
+      #player-sprite { width: 85px; height: 85px; }
+      .team-slot { font-size: 5px; height: 32px; }
+      .modal-card { padding: 14px; }
+      .hall-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     button.game-btn {
       padding: 12px 6px; font-family: 'Press Start 2P', monospace;
       font-size: 7px; border: 2px solid var(--ui-border);
@@ -302,6 +340,8 @@
     button.btn-restart { background: #ff4444; color: #fff; }
     button.btn-graveyard { background: #7b1fa2; color: #fff; }
     button.btn-legend { background: #0288d1; color: #fff; }
+    button.btn-run { background: #ff9800; color: #000; font-weight: bold; }
+    button.btn-bag { background: #4caf50; color: #fff; }
 
     .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; text-align: left; font-size: 6px; }
     .pc-box { border: 2px solid #444; background: #fff; padding: 6px; height: 180px; overflow-y: auto; }
@@ -451,6 +491,15 @@
     </div>
   </div>
 
+  <div id="bag-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:560px;">
+      <h2>🎒 Mochila de Objetos</h2>
+      <p>Utiliza objetos para restaurar salud a tu equipo o revisa tus Pokéballs:</p>
+      <div id="bag-items-list" style="display:flex; flex-direction:column; gap:8px; text-align:left; margin-top:10px;"></div>
+      <button class="game-btn" style="margin-top:14px; width:100%;" onclick="game.closeBag()">Cerrar Mochila</button>
+    </div>
+  </div>
+
   <div id="graveyard-modal" class="overlay" style="display:none;">
     <div class="modal-card">
       <h2>🪦 Cementerio de Héroes Caídos</h2>
@@ -574,9 +623,12 @@
   <div id="textbox">Iniciando aventura completa Nuzlocke en Kanto...</div>
 
   <div id="controls">
-    <button class="game-btn" id="btn-atk" onclick="game.instantAttack()">Atacar</button>
-    <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">Capturar</button>
-    <button class="game-btn" id="btn-pc" onclick="game.openPC()">PC Equipo</button>
+    <button class="game-btn" id="btn-atk-phys" onclick="game.attackPhysical()">⚔️ Físico</button>
+    <button class="game-btn" id="btn-atk-spec" onclick="game.attackElemental()">🔥 Elemental</button>
+    <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">🫳 Capturar</button>
+    <button class="game-btn btn-run" id="btn-run" onclick="game.runAway()">🏃 Huir</button>
+    <button class="game-btn btn-bag" id="btn-bag" onclick="game.openBag()">🎒 Mochila</button>
+    <button class="game-btn" id="btn-pc" onclick="game.openPC()">💻 PC</button>
     <button class="game-btn btn-graveyard" id="btn-grave" onclick="game.openGraveyard()">🪦 Cementerio</button>
   </div>
 </div>
@@ -876,6 +928,29 @@ const KANTO_EVOLUTION_LINES = {
   151: [151]
 };
 
+// Evoluciones especiales de Kanto (Intercambio y Piedras evolutivas adaptadas a Nuzlocke por nivel)
+const KANTO_SPECIAL_EVOLUTIONS = {
+  // Evoluciones por Intercambio (Trade)
+  64: { targetId: 65, name: 'ALAKAZAM', level: 36 },
+  67: { targetId: 68, name: 'MACHAMP', level: 36 },
+  75: { targetId: 76, name: 'GOLEM', level: 36 },
+  93: { targetId: 94, name: 'GENGAR', level: 36 },
+  // Evoluciones por Piedras (Stones)
+  25: { targetId: 26, name: 'RAICHU', level: 30 },
+  30: { targetId: 31, name: 'NIDOQUEEN', level: 32 },
+  33: { targetId: 34, name: 'NIDOKING', level: 32 },
+  35: { targetId: 36, name: 'CLEFABLE', level: 28 },
+  37: { targetId: 38, name: 'NINETALES', level: 30 },
+  39: { targetId: 40, name: 'WIGGLYTUFF', level: 28 },
+  44: { targetId: 45, name: 'VILEPLUME', level: 32 },
+  58: { targetId: 59, name: 'ARCANINE', level: 32 },
+  61: { targetId: 62, name: 'POLIWRATH', level: 32 },
+  70: { targetId: 71, name: 'VICTREEBEL', level: 32 },
+  90: { targetId: 91, name: 'CLOYSTER', level: 30 },
+  102: { targetId: 103, name: 'EXEGGUTOR', level: 32 },
+  120: { targetId: 121, name: 'STARMIE', level: 30 }
+};
+
 // Nivel al que Eevee puede elegir su evolución (en lugar de piedras automáticas)
 const EEVEE_EVOLUTION_LEVEL = 30;
 
@@ -949,6 +1024,17 @@ class BalancedNuzlockeEngine {
     this.shinyOdds = this.hardcoreOdds.shinyOdds;
     this.e4DefeatedCount = 0;
     this.starterPending = false; // true mientras el inicial está en el modal de mote (antes del paso 0)
+    this.inventory = { potion: 3, superPotion: 1, maxPotion: 0, pokeball: 5 };
+  }
+
+  addInventoryItem(itemStr) {
+    if (!itemStr) return;
+    if (itemStr.includes('Pokéball x3')) this.inventory.pokeball += 3;
+    else if (itemStr.includes('Pokéball')) this.inventory.pokeball += 1;
+    else if (itemStr.includes('Poción Max')) this.inventory.maxPotion += 1;
+    else if (itemStr.includes('Superpoción')) this.inventory.superPotion += 1;
+    else if (itemStr.includes('Poción') || itemStr.includes('Antídoto')) this.inventory.potion += 1;
+    this.saveGame();
   }
 
   getTypeBadgeHTML(types) {
@@ -1185,24 +1271,17 @@ class BalancedNuzlockeEngine {
 
       const anim = data.sprites?.versions?.['generation-v']?.['black-white']?.animated;
 
-      // Sprites locales Gen 5 para Kanto (1-151) desde assets/sprites (front/shiny de pokemondb.net,
-      // back del repo de sprites de PokeAPI, misma familia Gen 5). Para especies >151 (Johto de
-      // Islas Sete) se usan los sprites animados de PokéAPI como respaldo.
+      // Sprites locales Gen 5 para Kanto (1-151) desde assets/sprites (front/shiny de pokemondb.net).
+      // El Pokémon del jugador usa el mismo sprite frontal volteado horizontalmente en combate.
       const REMOTE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
       const localFront = pokeId <= 151 ? (isShiny ? `assets/sprites/shiny/${pokeId}.gif` : `assets/sprites/front/${pokeId}.gif`) : null;
-      const localBack  = pokeId <= 151 ? (isShiny ? `assets/sprites/back/shiny/${pokeId}.gif` : `assets/sprites/back/${pokeId}.gif`) : null;
 
       const frontSprite = isShiny
         ? (localFront || anim?.front_shiny || `${REMOTE}/shiny/${pokeId}.png`)
         : (localFront || anim?.front_default || `${REMOTE}/${pokeId}.png`);
 
-      const backSprite = isShiny
-        ? (localBack || anim?.back_shiny || `${REMOTE}/back/shiny/${pokeId}.png`)
-        : (localBack || anim?.back_default || `${REMOTE}/back/${pokeId}.png`);
-
       // Respaldo remoto estático por si un archivo local de assets/ no está disponible
       const frontFallback = isShiny ? `${REMOTE}/shiny/${pokeId}.png` : `${REMOTE}/${pokeId}.png`;
-      const backFallback  = isShiny ? `${REMOTE}/back/shiny/${pokeId}.png` : `${REMOTE}/back/${pokeId}.png`;
 
       const cleanName = speciesDisplayName(data.name);
       const cleanKey = speciesKeyName(data.name);
@@ -1221,9 +1300,9 @@ class BalancedNuzlockeEngine {
         types: data.types.map(t => t.type.name),
         isShiny: isShiny,
         frontSprite: frontSprite,
-        backSprite: backSprite,
+        backSprite: frontSprite, // el sprite de combate del jugador usa el frontal volteado
         frontSpriteFallback: frontFallback,
-        backSpriteFallback: backFallback
+        backSpriteFallback: frontFallback
       };
     }
 
@@ -1240,12 +1319,7 @@ class BalancedNuzlockeEngine {
       ? (numId <= 151 ? `assets/sprites/shiny/${numId}.gif` : `${ANIM}/shiny/${numId}.gif`)
       : (numId <= 151 ? `assets/sprites/front/${numId}.gif` : `${ANIM}/${numId}.gif`);
 
-    const backSprite = isShiny
-      ? (numId <= 151 ? `assets/sprites/back/shiny/${numId}.gif` : `${ANIM}/back/shiny/${numId}.gif`)
-      : (numId <= 151 ? `assets/sprites/back/${numId}.gif` : `${ANIM}/back/${numId}.gif`);
-
     const frontFallback = isShiny ? `${ANIM}/shiny/${numId}.gif` : `${ANIM}/${numId}.gif`;
-    const backFallback  = isShiny ? `${ANIM}/back/shiny/${numId}.gif` : `${ANIM}/back/${numId}.gif`;
 
     return {
       id: numId,
@@ -1261,9 +1335,9 @@ class BalancedNuzlockeEngine {
       types: ['normal'],
       isShiny: isShiny,
       frontSprite: frontSprite,
-      backSprite: backSprite,
+      backSprite: frontSprite,
       frontSpriteFallback: frontFallback,
-      backSpriteFallback: backFallback
+      backSpriteFallback: frontFallback
     };
   }
 
@@ -1356,7 +1430,8 @@ class BalancedNuzlockeEngine {
     document.getElementById('cap-limit').innerText = `LevelCap: Lv.${step.cap}`;
 
     if (step.item) {
-      this.log(`¡Recogiste automáticamente ${step.item}!`);
+      this.addInventoryItem(step.item);
+      this.log(`¡Recogiste ${step.item}! Guardado en tu Mochila.`);
     }
 
     if (step.type === 'gift') {
@@ -1513,7 +1588,7 @@ class BalancedNuzlockeEngine {
 
     // Un duplicado (o su línea evolutiva) nunca se puede capturar; los shiny siempre sí
     const canCatch = (!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny;
-    this.setButtons(true, canCatch, true);
+    this.setButtons(true, canCatch, true, true);
 
     const shinyText = this.currentEnemy.isShiny ? ' ✨ SHINY' : '';
     const dupesText = dupesTriggered ? ' (Regla Duplicados/Línea Activa)' : '';
@@ -1562,7 +1637,7 @@ class BalancedNuzlockeEngine {
 
     const step = this.getStoryLine()[this.storyStep];
     const canCatch = step && (step.type === 'legendary' || step.type === 'static_boss');
-    this.setButtons(true, canCatch, true);
+    this.setButtons(true, canCatch, false, true);
     this.updateUI();
   }
 
@@ -1580,138 +1655,216 @@ class BalancedNuzlockeEngine {
     return mult;
   }
 
-  calcWinRate(atk, def, mult) {
-    const lvlDiff = atk.level - def.level;
+  calcDamage(attacker, defender, isElemental) {
+    const lvl = attacker.level || 5;
+    const atkStat = Math.max(attacker.attack || 50, 10);
+    const defStat = Math.max(defender.defense || 50, 10);
+    const basePower = isElemental ? 55 : 40;
+    const typeMult = isElemental ? this.calcTypeMultiplier(attacker.types, defender.types) : 1.0;
 
-    // Progresión lineal basada en el paso de la historia (de paso 0 a 25)
-    const totalSteps = this.getStoryLine().length || 25;
-    const progressRatio = Math.min(Math.max(this.storyStep / totalSteps, 0), 1);
-    
-    // Curva HardCore: desde 84% en Pueblo Paleta / Ruta 1 hasta 52% en el Alto Mando / Campeón
-    const h = this.hardcoreOdds;
-    let base = h.winStart - (progressRatio * (h.winStart - h.winEnd));
-
-    // Factor por diferencia de nivel (+4% por nivel superior, -6% por nivel inferior)
-    const levelBonus = lvlDiff >= 0 ? lvlDiff * h.winLvlUp : lvlDiff * h.winLvlDown;
-    base += levelBonus;
-
-    // Factor por efectividad de tipo (+40% si es Super Eficaz, -40% si es Poco Eficaz)
-    const typeBonus = (mult - 1) * h.winType;
-    base += typeBonus;
-
-    // Penalizaciones de desafío para Jefes, Alto Mando y Legendarios
-    const step = this.getStoryLine()[this.storyStep];
-    if (step) {
-      if (step.type === 'champion' || step.type === 'e4') base -= h.penChampion;
-      else if (step.type === 'gym' || step.type === 'rival') base -= h.penGymRival;
-      else if (step.type === 'legendary') base -= h.penLegendary;
-    }
-
-    return Math.min(Math.max(Math.round(base), h.winMin), h.winMax);
+    const raw = ((((2 * lvl) / 5 + 2) * basePower * (atkStat / defStat)) / 50 + 2);
+    const randomVariance = 0.85 + Math.random() * 0.3; // 85% a 115%
+    const isCrit = Math.random() < 0.08; // 8% de probabilidad de crítico
+    const critMult = isCrit ? 1.5 : 1.0;
+    const damage = Math.max(1, Math.round(raw * typeMult * critMult * randomVariance));
+    return { damage, typeMult, isCrit };
   }
 
-  instantAttack() {
+  attackPhysical() {
+    this.executePlayerAttack(false);
+  }
+
+  attackElemental() {
+    this.executePlayerAttack(true);
+  }
+
+  executePlayerAttack(isElemental) {
     const active = this.team[this.activeIdx];
-    if (!active || active.currentHp <= 0 || !this.currentEnemy) return;
+    if (!active || active.currentHp <= 0 || !this.currentEnemy || this.currentEnemy.currentHp <= 0) return;
 
-    this.setButtons(false, false, false);
+    this.setButtons(false, false, false, false);
 
-    const playerMult = this.calcTypeMultiplier(active.types, this.currentEnemy.types);
-    const winRate = this.calcWinRate(active, this.currentEnemy, playerMult);
+    const { damage, typeMult, isCrit } = this.calcDamage(active, this.currentEnemy, isElemental);
 
-    const roll = Math.random() * 100;
-    const isPlayerVictory = roll <= winRate;
-
-    if (playerMult > 1.2) soundEngine.playSuperEffective();
-    else soundEngine.playHit();
-
-    if (isPlayerVictory) {
-      this.currentEnemy.currentHp = 0;
-      this.updateUI();
-      const multLabel = playerMult > 1.2 ? ' [¡Super Eficaz!]' : playerMult < 0.8 ? ' [Poco Eficaz]' : '';
-      this.log(`⚔️ ¡VICTORIA! ${active.nickname} vence a ${this.currentEnemy.speciesName}${multLabel} (${Math.round(winRate)}% probabilidad).`);
-
-      setTimeout(async () => {
-        if (this.isBoss) {
-          const step = this.getStoryLine()[this.storyStep];
-          if (step && (step.type === 'legendary' || step.type === 'static_boss')) {
-            const catchRoll = Math.random() * 100;
-            const catchChance = step.type === 'static_boss' ? this.hardcoreOdds.catchStatic : this.hardcoreOdds.catchLegend;
-            const defeatedEnemy = this.currentEnemy;
-
-            if (catchRoll <= catchChance) {
-              soundEngine.playBadge();
-              defeatedEnemy.currentHp = defeatedEnemy.maxHp;
-              this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo al 100% HP (${catchChance}% probabilidad).`);
-              this.pendingCatch = defeatedEnemy;
-              this.pendingCatchMsg = `¡Capturaste a ${defeatedEnemy.speciesName}! Asigna un mote:`;
-              this.currentEnemy = null;
-              this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
-              setTimeout(() => {
-                this.showNickModal(this.pendingCatchMsg);
-              }, 750);
-              return;
-            } else {
-              this.log(`⚔️ ¡VICTORIA! Venciste a ${defeatedEnemy.speciesName}, pero no pudiste capturarlo (${catchChance}% probabilidad de captura).`);
-            }
-          }
-          await this.loadNextBossPokemon();
-        } else {
-          const step = this.getStoryLine()[this.storyStep];
-          if (step && step.type === 'route' && !this.currentEnemy.isShiny) {
-            this.capturedZones.add(step.loc);
-          }
-          this.healAliveTeam();
-          this.currentEnemy = null;
-          this.storyStep++;
-          this.initCurrentStep();
-        }
-      }, 700);
-
-    } else {
-      active.currentHp = 0;
-      soundEngine.playFaint();
-
-      const step = this.getStoryLine()[this.storyStep];
-      const deadName = active.nickname;
-
-      // Guardar en el Cementerio
-      this.graveyard.push({
-        id: active.id,
-        nickname: active.nickname,
-        speciesName: active.speciesName,
-        level: active.level,
-        killedBy: this.currentEnemy.speciesName,
-        location: step ? step.loc : 'Kanto',
-        isShiny: active.isShiny,
-        sprite: active.frontSprite,
-        types: active.types
-      });
-
-      // Remover permanentemente del equipo activo
-      this.team.splice(this.activeIdx, 1);
-
-      // Si hay Pokémon en el PC, promover uno para tomar su lugar
-      if (this.pcBox.length > 0) {
-        const sub = this.pcBox.shift();
-        sub.currentHp = sub.maxHp;
-        this.team.push(sub);
-        this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! ${sub.nickname} entra automáticamente desde el PC a su lugar.`);
-      } else {
-        this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! Hueco libre en el equipo.`);
+    const foeImg = document.getElementById('foe-sprite');
+    const battleScreen = document.getElementById('battle-screen');
+    if (foeImg) {
+      foeImg.classList.add('hit-flash');
+      setTimeout(() => foeImg.classList.remove('hit-flash'), 320);
+    }
+    if (typeMult > 1.2 || isCrit) {
+      soundEngine.playSuperEffective();
+      if (battleScreen) {
+        battleScreen.classList.add('shake');
+        setTimeout(() => battleScreen.classList.remove('shake'), 350);
       }
+    } else {
+      soundEngine.playHit();
+    }
 
+    this.currentEnemy.currentHp = Math.max(0, this.currentEnemy.currentHp - damage);
+    this.updateUI();
+
+    const multText = isElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
+    const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
+    const atkName = isElemental ? `Ataque Elemental (${(active.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
+    this.log(`⚔️ ${active.nickname} usa ${atkName}${critText} causando ${damage} de daño a ${this.currentEnemy.speciesName}${multText}.`);
+
+    if (this.currentEnemy.currentHp <= 0) {
+      setTimeout(() => this.handleEnemyDefeated(), 750);
+    } else {
+      setTimeout(() => this.enemyTurn(), 900);
+    }
+  }
+
+  enemyTurn() {
+    if (!this.currentEnemy || this.currentEnemy.currentHp <= 0) return;
+    const active = this.team[this.activeIdx];
+    if (!active || active.currentHp <= 0) return;
+
+    const typeMult = this.calcTypeMultiplier(this.currentEnemy.types, active.types);
+    const useElemental = typeMult >= 1.0;
+    const { damage, isCrit } = this.calcDamage(this.currentEnemy, active, useElemental);
+
+    const plyrImg = document.getElementById('player-sprite');
+    const battleScreen = document.getElementById('battle-screen');
+    if (plyrImg) {
+      plyrImg.classList.add('hit-flash');
+      setTimeout(() => plyrImg.classList.remove('hit-flash'), 320);
+    }
+    if (typeMult > 1.2 || isCrit) {
+      soundEngine.playSuperEffective();
+      if (battleScreen) {
+        battleScreen.classList.add('shake');
+        setTimeout(() => battleScreen.classList.remove('shake'), 350);
+      }
+    } else {
+      soundEngine.playHit();
+    }
+
+    active.currentHp = Math.max(0, active.currentHp - damage);
+    this.updateUI();
+
+    const multText = useElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
+    const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
+    const foeAtk = useElemental ? `Ataque Elemental (${(this.currentEnemy.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
+    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}! ${active.nickname} recibe ${damage} de daño.`);
+
+    if (active.currentHp <= 0) {
+      setTimeout(() => this.handlePlayerFaint(active), 750);
+    } else {
+      const step = this.getStoryLine()[this.storyStep];
+      const canCatch = (!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || (step && (step.type === 'legendary' || step.type === 'static_boss'));
+      const canRun = !this.isBoss;
+      this.setButtons(true, canCatch, canRun, true);
+    }
+  }
+
+  runAway() {
+    if (this.isBoss || !this.currentEnemy) return;
+    const active = this.team[this.activeIdx];
+    if (!active) return;
+
+    this.setButtons(false, false, false, false);
+    const escapeChance = Math.min(95, Math.max(30, 50 + (active.level - this.currentEnemy.level) * 10));
+    const roll = Math.random() * 100;
+
+    if (roll <= escapeChance) {
+      soundEngine.playTone(450, 0.1, 'sine');
+      setTimeout(() => soundEngine.playTone(600, 0.12, 'sine'), 80);
+      const step = this.getStoryLine()[this.storyStep];
+      this.log(`🏃 ¡Escapaste con éxito de ${this.currentEnemy.speciesName}! Zona completada sin captura.`);
+      if (step && step.type === 'route') {
+        this.capturedZones.add(step.loc);
+      }
+      this.currentEnemy = null;
       this.updateUI();
-
       setTimeout(() => {
-        if (this.team.length === 0) {
-          this.showSummaryModal(false);
+        this.healAliveTeam();
+        this.storyStep++;
+        this.initCurrentStep();
+      }, 900);
+    } else {
+      soundEngine.playHit();
+      this.log(`🏃 ¡No pudiste escapar de ${this.currentEnemy.speciesName}! El enemigo aprovecha para atacar.`);
+      setTimeout(() => this.enemyTurn(), 700);
+    }
+  }
+
+  handlePlayerFaint(active) {
+    soundEngine.playFaint();
+    const step = this.getStoryLine()[this.storyStep];
+    const deadName = active.nickname;
+
+    this.graveyard.push({
+      id: active.id,
+      nickname: active.nickname,
+      speciesName: active.speciesName,
+      level: active.level,
+      killedBy: this.currentEnemy ? this.currentEnemy.speciesName : 'Combate',
+      location: step ? step.loc : 'Kanto',
+      isShiny: active.isShiny,
+      sprite: active.frontSprite,
+      types: active.types
+    });
+
+    this.team.splice(this.activeIdx, 1);
+
+    if (this.pcBox.length > 0) {
+      const sub = this.pcBox.shift();
+      sub.currentHp = sub.maxHp;
+      this.team.push(sub);
+      this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! ${sub.nickname} entra automáticamente desde el PC a su lugar.`);
+    } else {
+      this.log(`💀 ¡${deadName} ha muerto y fue enviado al Cementerio! Hueco libre en el equipo.`);
+    }
+
+    this.updateUI();
+
+    setTimeout(() => {
+      if (this.team.length === 0) {
+        this.showSummaryModal(false);
+      } else {
+        this.activeIdx = 0;
+        this.updateUI();
+        const canCatch = this.currentEnemy && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny);
+        const canRun = !this.isBoss;
+        this.setButtons(true, canCatch, canRun, true);
+      }
+    }, 900);
+  }
+
+  handleEnemyDefeated() {
+    this.log(`🏆 ¡VICTORIA! Derrotaste a ${this.currentEnemy.speciesName}.`);
+    if (this.isBoss) {
+      const step = this.getStoryLine()[this.storyStep];
+      if (step && (step.type === 'legendary' || step.type === 'static_boss')) {
+        const catchChance = step.type === 'static_boss' ? this.hardcoreOdds.catchStatic : this.hardcoreOdds.catchLegend;
+        if (Math.random() * 100 <= catchChance) {
+          soundEngine.playBadge();
+          const defeatedEnemy = this.currentEnemy;
+          defeatedEnemy.currentHp = defeatedEnemy.maxHp;
+          this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo (${catchChance}%).`);
+          this.pendingCatch = defeatedEnemy;
+          this.pendingCatchMsg = `¡Capturaste a ${defeatedEnemy.speciesName}! Asigna un mote:`;
+          this.currentEnemy = null;
+          this.saveGame();
+          setTimeout(() => this.showNickModal(this.pendingCatchMsg), 700);
+          return;
         } else {
-          this.activeIdx = 0;
-          this.updateUI();
-          this.setButtons(true, false, true);
+          this.log(`⚔️ Venciste a ${this.currentEnemy.speciesName}, pero escapó antes de capturarlo.`);
         }
-      }, 800);
+      }
+      this.loadNextBossPokemon();
+    } else {
+      const step = this.getStoryLine()[this.storyStep];
+      if (step && step.type === 'route' && !this.currentEnemy.isShiny) {
+        this.capturedZones.add(step.loc);
+      }
+      this.healAliveTeam();
+      this.currentEnemy = null;
+      this.storyStep++;
+      setTimeout(() => this.initCurrentStep(), 800);
     }
   }
 
@@ -1719,52 +1872,139 @@ class BalancedNuzlockeEngine {
     const step = this.getStoryLine()[this.storyStep];
     const isLegendary = step && step.type === 'legendary';
     const isStaticBoss = step && step.type === 'static_boss';
-    // Permitir captura en salvajes, legendarios y jefes estáticos (Snorlax)
     if ((this.isBoss && !isLegendary && !isStaticBoss) || !this.currentEnemy) return;
 
-    this.setButtons(false, false, false);
-    // Probabilidad de captura HardCore: salvajes ~75-95%, legendarios 40%, estáticos (Snorlax) 70%
+    if (this.inventory.pokeball <= 0) {
+      this.log('❌ ¡No te quedan Pokéballs en la Mochila! Debes luchar o huir.');
+      return;
+    }
+
+    this.inventory.pokeball--;
+    this.setButtons(false, false, false, false);
+
     const h = this.hardcoreOdds;
-    const winRate = isLegendary ? h.catchLegend : isStaticBoss ? h.catchStatic : Math.round((1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp)) * h.catchWildHp + h.catchWildBase);
+    const hpFactor = (1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp));
+    const catchRate = isLegendary
+      ? h.catchLegend
+      : isStaticBoss
+      ? h.catchStatic
+      : Math.min(100, Math.round(hpFactor * h.catchWildHp + h.catchWildBase));
 
     soundEngine.playCatch();
-    this.log(`Lanzaste Pokéball a ${this.currentEnemy.speciesName} (${winRate}% probabilidad)...`);
+    this.log(`Lanzaste una Pokéball a ${this.currentEnemy.speciesName} (${catchRate}% por salud)... Te quedan ${this.inventory.pokeball} Pokéballs.`);
 
-    // El estático (Snorlax) no consume la zona: la Ruta 12 mantiene su encuentro salvaje
     if (!isLegendary && !isStaticBoss && !this.currentEnemy.isShiny) {
       this.capturedZones.add(step.loc);
     }
     this.saveGame();
 
     setTimeout(() => {
-      if (Math.random() * 100 <= winRate) {
+      if (Math.random() * 100 <= catchRate) {
         soundEngine.playBadge();
         this.pendingCatch = this.currentEnemy;
         this.pendingCatchMsg = `¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`;
         this.currentEnemy = null;
-        this.saveGame(); // persistir el pendiente por si se recarga con el modal abierto
+        this.saveGame();
         this.showNickModal(this.pendingCatchMsg);
       } else {
         soundEngine.playHit();
-        if (isLegendary || isStaticBoss) {
-          this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
-          this.setButtons(true, true, true);
-        } else {
-          this.log(`❌ ¡La Pokéball falló y ${this.currentEnemy.speciesName} escapó! Has perdido el único intento de captura en ${step.loc}.`);
-          this.currentEnemy = null;
-          setTimeout(() => {
-            this.healAliveTeam();
-            this.storyStep++;
-            this.initCurrentStep();
-          }, 1200);
-        }
+        this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
+        setTimeout(() => this.enemyTurn(), 750);
       }
-    }, 600);
+    }, 700);
+  }
+
+  openBag() {
+    const list = document.getElementById('bag-items-list');
+    const active = this.team[this.activeIdx];
+    const canHeal = active && active.currentHp > 0 && active.currentHp < active.maxHp;
+
+    list.innerHTML = `
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
+        <span>🔴 <strong>Pokéballs:</strong> ${this.inventory.pokeball}</span>
+        <span style="color:#aaa; font-size:6px;">(Usa 'Capturar' en combate)</span>
+      </div>
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
+        <span>🧪 <strong>Poción (+20 HP):</strong> ${this.inventory.potion}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.potion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('potion', 20)">Usar en Activo</button>
+      </div>
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
+        <span>🧪 <strong>Superpoción (+50 HP):</strong> ${this.inventory.superPotion}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.superPotion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('superPotion', 50)">Usar en Activo</button>
+      </div>
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
+        <span>🧪 <strong>Poción Máx (100% HP):</strong> ${this.inventory.maxPotion}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.maxPotion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('maxPotion', 9999)">Usar en Activo</button>
+      </div>
+    `;
+    document.getElementById('bag-modal').style.display = 'flex';
+  }
+
+  closeBag() {
+    document.getElementById('bag-modal').style.display = 'none';
+  }
+
+  usePotion(type, amount) {
+    const active = this.team[this.activeIdx];
+    if (!active || active.currentHp <= 0 || active.currentHp >= active.maxHp) return;
+    if (this.inventory[type] <= 0) return;
+
+    this.inventory[type]--;
+    const oldHp = active.currentHp;
+    active.currentHp = Math.min(active.maxHp, active.currentHp + amount);
+    const healed = active.currentHp - oldHp;
+    soundEngine.playTone(600, 0.1, 'sine');
+    setTimeout(() => soundEngine.playTone(800, 0.15, 'sine'), 100);
+
+    this.log(`🧪 ¡Usaste ${type === 'maxPotion' ? 'Poción Máx' : type === 'superPotion' ? 'Superpoción' : 'Poción'}! ${active.nickname} recuperó ${healed} HP.`);
+    this.closeBag();
+    this.updateUI();
+
+    if (this.currentEnemy && this.currentEnemy.currentHp > 0) {
+      this.setButtons(false, false, false, false);
+      setTimeout(() => this.enemyTurn(), 800);
+    }
+  }
+
+  async performEvolution(p, targetIdOrName) {
+    this.log(`¡${p.nickname} está evolucionando!`);
+    const evo = await this.fetchPokemon(targetIdOrName, p.level, p.isShiny);
+    p.id = evo.id;
+    p.speciesName = evo.speciesName;
+    p.speciesKey = evo.speciesKey;
+    p.frontSprite = evo.frontSprite;
+    p.backSprite = evo.frontSprite;
+    p.frontSpriteFallback = evo.frontSpriteFallback;
+    p.backSpriteFallback = evo.frontSpriteFallback;
+    p.types = evo.types;
+    p.baseHp = evo.baseHp;
+    p.attack = evo.attack;
+    p.defense = evo.defense;
+    const oldMax = p.maxHp;
+    p.maxHp = evo.maxHp;
+    p.currentHp = Math.min(p.currentHp + Math.max(0, evo.maxHp - oldMax), evo.maxHp);
+    this.caughtSpecies.add(p.speciesName);
+    soundEngine.playBadge();
+    this.log(`¡Felicidades! ¡Evolucionó a ${p.speciesName}!`);
   }
 
   async checkEvolution(p) {
-    // Regla Solo Gen 1: un Pokémon de un guardado antiguo con id > 151 no evoluciona
     if (p && p.id > 151) return;
+
+    // Eevee especial (elección de jugador)
+    if (p.speciesName === 'EEVEE' && p.level >= EEVEE_EVOLUTION_LEVEL && !p.evoChoiceDeclined) {
+      await this.offerEeveeEvolution(p);
+      return;
+    }
+
+    // Comprobar evolución especial de Kanto (Intercambio y Piedras)
+    const specialEvo = KANTO_SPECIAL_EVOLUTIONS[p.id];
+    if (specialEvo && p.level >= specialEvo.level) {
+      await this.performEvolution(p, specialEvo.targetId);
+      return;
+    }
+
+    // Evolución normal por nivel de PokéAPI
     try {
       const spRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${p.id}/`);
       if (!spRes.ok) return;
@@ -1778,36 +2018,12 @@ class BalancedNuzlockeEngine {
       }
 
       if (node && node.evolves_to.length > 0) {
-        // Eevee no evoluciona con piedra automática: el jugador elige su evolución al llegar al nivel
-        if (p.speciesName === 'EEVEE' && p.level >= EEVEE_EVOLUTION_LEVEL && !p.evoChoiceDeclined) {
-          await this.offerEeveeEvolution(p);
-          return;
-        }
-
         const next = node.evolves_to[0];
         const details = next.evolution_details[0];
         const minLvl = details?.min_level;
 
-        // Solo evoluciones por nivel: piedras, comercio y amistad no se disparan automáticamente
         if (typeof minLvl === 'number' && minLvl > 0 && p.level >= minLvl) {
-          this.log(`¡${p.nickname} está evolucionando!`);
-          const evo = await this.fetchPokemon(next.species.name, p.level, p.isShiny);
-          
-          p.id = evo.id;
-          p.speciesName = evo.speciesName;
-          p.speciesKey = evo.speciesKey;
-          p.frontSprite = evo.frontSprite;
-          p.backSprite = evo.backSprite;
-          p.types = evo.types;
-          // Actualizar stats al evolucionar (baseHp se usa para calcular el HP máximo)
-          p.baseHp = evo.baseHp;
-          p.attack = evo.attack;
-          p.defense = evo.defense;
-          p.maxHp = evo.maxHp;
-          p.currentHp = evo.maxHp;
-          this.caughtSpecies.add(p.speciesName);
-
-          this.log(`¡Felicidades! Evolucionó a ${p.speciesName}!`);
+          await this.performEvolution(p, next.species.name);
         }
       }
     } catch(e) {}
@@ -2226,10 +2442,10 @@ class BalancedNuzlockeEngine {
       document.getElementById('player-lvl').innerText = `Lv.${active.level}`;
 
       const plyrImg = document.getElementById('player-sprite');
-      plyrImg.src = active.backSprite;
+      plyrImg.src = active.frontSprite;
       plyrImg.className = 'sprite';
       // Si un sprite local de assets/ falla, caer al respaldo remoto (fallback capturado al asignar)
-      const activeFallback = active.backSpriteFallback;
+      const activeFallback = active.frontSpriteFallback || active.frontSprite;
       plyrImg.onerror = () => {
         if (plyrImg.src.startsWith('assets/')) {
           plyrImg.onerror = null;
@@ -2243,21 +2459,19 @@ class BalancedNuzlockeEngine {
       hpBar.style.width = `${pct}%`;
       hpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
 
-      // Preview de Combate previo a atacar: Tipos y Porcentaje de Victoria
+      // Preview de Combate previo a atacar: Tipos y Efectividad
       if (this.currentEnemy) {
         const playerMult = this.calcTypeMultiplier(active.types, this.currentEnemy.types);
-        const winRate = Math.round(this.calcWinRate(active, this.currentEnemy, playerMult));
-        const multText = playerMult > 1.2 ? 'Super Eficaz (x1.6)' : playerMult < 0.8 ? 'Poco Eficaz (x0.6)' : 'Eficacia Normal';
+        const multText = playerMult > 1.2 ? 'Elemental Super Eficaz (x1.6)' : playerMult < 0.8 ? 'Elemental Poco Eficaz (x0.6)' : 'Elemental Eficacia Normal (x1.0)';
         const playerTypeBadges = this.getTypeBadgeHTML(active.types);
         const foeTypeBadges = this.getTypeBadgeHTML(this.currentEnemy.types);
 
         document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${multText}]</span>`;
-        document.getElementById('preview-win-val').innerText = `${winRate}%`;
-        document.getElementById('btn-atk').innerText = `Atacar (${winRate}%)`;
+        const hpPct = Math.max(0, Math.round((this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100));
+        document.getElementById('preview-win-val').innerText = `${hpPct}% HP Rival`;
       } else {
         document.getElementById('preview-matchup').innerHTML = `--- vs ---`;
-        document.getElementById('preview-win-val').innerText = `--%`;
-        document.getElementById('btn-atk').innerText = `Atacar`;
+        document.getElementById('preview-win-val').innerText = `--`;
       }
     }
 
@@ -2293,10 +2507,23 @@ class BalancedNuzlockeEngine {
     this.saveGame();
   }
 
-  setButtons(atk, catchBtn, pc) {
-    document.getElementById('btn-atk').disabled = !atk;
-    document.getElementById('btn-catch').disabled = !catchBtn;
-    document.getElementById('btn-pc').disabled = !pc;
+  setButtons(atk, catchBtn, runBtn, pcBag) {
+    const btnPhys = document.getElementById('btn-atk-phys');
+    const btnSpec = document.getElementById('btn-atk-spec');
+    const btnCatch = document.getElementById('btn-catch');
+    const btnRun = document.getElementById('btn-run');
+    const btnBag = document.getElementById('btn-bag');
+    const btnPc = document.getElementById('btn-pc');
+
+    if (btnPhys) btnPhys.disabled = !atk;
+    if (btnSpec) btnSpec.disabled = !atk;
+    if (btnCatch) {
+      btnCatch.disabled = !catchBtn;
+      btnCatch.innerText = `🫳 Capturar (${this.inventory ? this.inventory.pokeball : 0})`;
+    }
+    if (btnRun) btnRun.disabled = !runBtn;
+    if (btnBag) btnBag.disabled = !pcBag;
+    if (btnPc) btnPc.disabled = !pcBag;
   }
 
   log(msg) { document.getElementById('textbox').innerText = msg; }
@@ -2316,6 +2543,7 @@ class BalancedNuzlockeEngine {
         team: this.team,
         pcBox: this.pcBox,
         graveyard: this.graveyard,
+        inventory: this.inventory,
         capturedZones: [...this.capturedZones],
         caughtSpecies: [...this.caughtSpecies],
         seenSpecies: [...this.seenSpecies],
@@ -2348,20 +2576,20 @@ class BalancedNuzlockeEngine {
       this.team = Array.isArray(d.team) ? d.team : [];
       this.pcBox = Array.isArray(d.pcBox) ? d.pcBox : [];
       this.graveyard = Array.isArray(d.graveyard) ? d.graveyard : [];
+      this.inventory = d.inventory || { potion: 3, superPotion: 1, maxPotion: 0, pokeball: 5 };
       this.activeIdx = Math.min(d.activeIdx || 0, Math.max(0, this.team.length - 1));
       this.capturedZones = new Set(Array.isArray(d.capturedZones) ? d.capturedZones : []);
       this.caughtSpecies = new Set(Array.isArray(d.caughtSpecies) ? d.caughtSpecies : []);
       this.seenSpecies = new Set(Array.isArray(d.seenSpecies) ? d.seenSpecies : []);
       this.e4DefeatedCount = d.e4DefeatedCount || 0;
 
-      // Migración de sprites: guardados creados antes de los assets locales apuntan a URLs remotas.
-      // Re-derivar rutas locales para Kanto (1-151) para que también se beneficien del modo offline.
+      // Migración de sprites: el Pokémon del jugador usa frontSprite volteado horizontalmente
       const migrateSprites = (p) => {
         if (p && p.id && p.id <= 151) {
           p.frontSprite = p.isShiny ? `assets/sprites/shiny/${p.id}.gif` : `assets/sprites/front/${p.id}.gif`;
-          p.backSprite = p.isShiny ? `assets/sprites/back/shiny/${p.id}.gif` : `assets/sprites/back/${p.id}.gif`;
+          p.backSprite = p.frontSprite;
           if (!p.frontSpriteFallback) p.frontSpriteFallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.isShiny ? 'shiny/' : ''}${p.id}.png`;
-          if (!p.backSpriteFallback) p.backSpriteFallback = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${p.isShiny ? 'shiny/' : ''}${p.id}.png`;
+          p.backSpriteFallback = p.frontSpriteFallback;
         }
       };
       [this.team, this.pcBox].forEach(arr => arr.forEach(migrateSprites));
@@ -2553,6 +2781,16 @@ window.testGame = function testGame() {
     lineIssues.length
       ? lineIssues.slice(0, 5).join(' | ') + (lineIssues.length > 5 ? ` (+${lineIssues.length - 5} más)` : '')
       : 'OK: cada id pertenece a una línea simétrica');
+
+  // ── 3f. Evoluciones especiales de Kanto (Piedras e Intercambio) ──
+  const specialIssues = [];
+  Object.entries(KANTO_SPECIAL_EVOLUTIONS).forEach(([srcId, data]) => {
+    const src = parseInt(srcId, 10);
+    if (src < 1 || src > 151) specialIssues.push(`Origen id ${src} fuera de 1-151`);
+    if (data.targetId < 1 || data.targetId > 151) specialIssues.push(`Destino id ${data.targetId} fuera de 1-151`);
+    if (data.level < 1 || data.level > 65) specialIssues.push(`Nivel ${data.level} inválido para id ${src}`);
+  });
+  add('Evoluciones especiales Gen 1 configuradas (' + Object.keys(KANTO_SPECIAL_EVOLUTIONS).length + ')', specialIssues.length === 0, specialIssues.length ? specialIssues.join(' | ') : 'OK: piedras e intercambios cubiertos');
 
   // ── 4. Nombres de tabla coherentes con su id ──
   const badNames = [];
