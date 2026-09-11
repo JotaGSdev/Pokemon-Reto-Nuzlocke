@@ -2402,7 +2402,7 @@ class BalancedNuzlockeEngine {
 
     const step = this.getStoryLine()[this.storyStep];
     const canCatch = step && (step.type === 'legendary' || step.type === 'static_boss');
-    const canRun = Boolean(step && step.optional && !step.mandatory);
+    const canRun = false; // Huir solo está permitido contra Pokémon salvajes
     this.setButtons(true, canCatch, canRun, true);
     this.updateUI();
   }
@@ -2685,38 +2685,21 @@ class BalancedNuzlockeEngine {
     } else {
       const step = this.getStoryLine()[this.storyStep];
       const canCatch = (!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || (step && (step.type === 'legendary' || step.type === 'static_boss'));
-      const canRun = (!this.isBoss && !step.mandatory) || Boolean(step && step.optional);
+      const canRun = !this.isBoss && Boolean(step && step.type === 'route');
       this.setButtons(true, canCatch, canRun, true);
     }
   }
 
   runAway() {
     const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
-    if (step && step.mandatory) {
+    if (this.isBoss || (step && step.type !== 'route')) {
       soundEngine.playHit();
-      this.log('⚠️ ¡Combate obligatorio! No puedes huir de un líder de gimnasio, rival o jefe de la historia.');
+      this.log('⚠️ ¡No puedes huir de un combate contra un entrenador o líder! Huir solo es posible contra Pokémon salvajes.');
       return;
     }
     if (!this.currentEnemy) return;
     const active = this.team[this.activeIdx];
     if (!active) return;
-
-    // Huida estratégica garantizada en combate opcional (entrenador, villano secundario, legendario)
-    if (step && step.optional) {
-      this.setButtons(false, false, false, false);
-      soundEngine.playTone(450, 0.1, 'sine');
-      setTimeout(() => soundEngine.playTone(600, 0.12, 'sine'), 80);
-      this.log(`🏃 ¡Te retiraste estratégicamente del combate opcional con ${step.title}! Tu equipo sigue a salvo.`);
-      this.currentEnemy = null;
-      this.updateUI();
-      setTimeout(() => {
-        this.storyStep++;
-        this.initCurrentStep();
-      }, 700);
-      return;
-    }
-
-    if (this.isBoss) return;
 
     this.setButtons(false, false, false, false);
     const escapeChance = Math.min(95, Math.max(30, 50 + (active.level - this.currentEnemy.level) * 10));
@@ -2780,7 +2763,7 @@ class BalancedNuzlockeEngine {
         this.activeIdx = 0;
         this.updateUI();
         const canCatch = this.currentEnemy && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || (step && (step.type === 'legendary' || step.type === 'static_boss')));
-        const canRun = (!this.isBoss && (!step || !step.mandatory)) || Boolean(step && step.optional);
+        const canRun = !this.isBoss && Boolean(step && step.type === 'route');
         this.setButtons(true, canCatch, canRun, true);
       }
     }, 900);
@@ -3491,7 +3474,7 @@ class BalancedNuzlockeEngine {
       this.updateUI();
       const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
       const canCatch = this.currentEnemy && step && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || step.type === 'legendary' || step.type === 'static_boss');
-      const canRun = (!this.isBoss && (!step || !step.mandatory)) || Boolean(step && step.optional);
+      const canRun = !this.isBoss && Boolean(step && step.type === 'route');
       this.setButtons(true, canCatch, canRun, true);
     }
   }
@@ -4587,12 +4570,26 @@ window.testGame = function testGame() {
       battlesCategoryOk = false;
       battlesCategoryDetails.push('Faltan métodos showOptionalBattleModal, acceptOptionalBattle o skipOptionalBattle');
     }
+
+    // 4. Verificar que no se pueda huir en combates de entrenadores/jefes (solo salvajes)
+    const origIsBoss = game.isBoss;
+    game.isBoss = true;
+    let runBlocked = false;
+    const origLog = game.log;
+    game.log = (msg) => { if (msg && msg.includes('Huir solo es posible contra Pokémon salvajes')) runBlocked = true; };
+    game.runAway();
+    game.log = origLog;
+    game.isBoss = origIsBoss;
+    if (!runBlocked) {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push('Huir debe estar bloqueado en combates de entrenadores y jefes');
+    }
   } catch (e) {
     battlesCategoryOk = false;
     battlesCategoryDetails.push(`Error en test de combates opcionales/obligatorios: ${e.message}`);
   }
   add('Combates Opcionales vs Batallas Obligatorias (Entrenadores, Villanos y Jefes)', battlesCategoryOk,
-    battlesCategoryOk ? 'OK: Gimnasios, Rivales clave y Liga obligatorios; Entrenadores, Villanos secundarios y Legendarios opcionales con salto y huida segura' : `FALLO: ${battlesCategoryDetails.join(' | ')}`);
+    battlesCategoryOk ? 'OK: Gimnasios, Rivales clave y Liga obligatorios; Entrenadores y Legendarios opcionales; Huir restringido solo a Pokémon salvajes' : `FALLO: ${battlesCategoryDetails.join(' | ')}`);
 
   // ── 13. Progresión de Niveles Dinámica (+1 Salvaje, +2 Opcional, +4 Jefes / Liga) ──
   let levelProgressionOk = true;
