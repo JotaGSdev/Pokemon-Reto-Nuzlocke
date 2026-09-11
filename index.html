@@ -2051,7 +2051,7 @@ class BalancedNuzlockeEngine {
     const multText = useElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
     const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
     const foeAtk = useElemental ? `Ataque Elemental (${(this.currentEnemy.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
-    const focusBandText = focusBandTriggered ? ' 🥊 ¡Cinta Foco evitó que fenezca, queda con 1 HP!' : '';
+    const focusBandText = focusBandTriggered ? ' [Cinta Foco] ¡Resistió el golpe mortal con 1 HP!' : '';
     this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}! ${active.nickname} recibe ${finalDamage} de daño.${focusBandText}`);
 
     if (active.currentHp <= 0) {
@@ -2155,7 +2155,7 @@ class BalancedNuzlockeEngine {
           healedAny = true;
         }
       });
-      if (healedAny) leftoversMsg = ' 🍎 ¡Restos curó 10% HP a tu equipo!';
+      if (healedAny) leftoversMsg = ' [Restos] ¡Restos curó 10% HP a tu equipo vivo!';
     }
 
     this.log(`🏆 ¡VICTORIA! Derrotaste a ${this.currentEnemy.speciesName}. Ganaste ₽${baseReward}.${leftoversMsg}`);
@@ -2363,7 +2363,7 @@ class BalancedNuzlockeEngine {
     soundEngine.playTone(600, 0.1, 'sine');
     setTimeout(() => soundEngine.playTone(800, 0.15, 'sine'), 100);
 
-    this.log(`🧪 ¡Usaste ${type === 'maxPotion' ? 'Poción Máx' : type === 'superPotion' ? 'Superpoción' : 'Poción'}! ${active.nickname} recuperó ${healed} HP.`);
+    this.log(`¡Usaste ${type === 'maxPotion' ? 'Poción Máx' : type === 'superPotion' ? 'Superpoción' : 'Poción'}! ${active.nickname} recuperó ${healed} HP.`);
     this.closeBag();
     this.updateUI();
 
