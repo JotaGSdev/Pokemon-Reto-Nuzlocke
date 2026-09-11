@@ -802,6 +802,25 @@
     </div>
   </div>
 
+  <div id="optional-battle-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:560px;">
+      <h2 id="optional-modal-title" style="color:#f59e0b; font-size:10px;">🥋 Combate Opcional</h2>
+      <div id="optional-modal-badge" style="margin: 6px 0;"></div>
+      <p id="optional-modal-desc" style="font-size:7px; color:#cbd5e1; margin-bottom:12px; line-height:1.6;"></p>
+      
+      <div style="background:#171c2b; border:2px solid #2e3856; border-radius:8px; padding:10px; margin-bottom:14px; text-align:left; font-size:6.5px; line-height:1.7;">
+        <div style="color:#ffd700; font-weight:bold; margin-bottom:4px;">💰 Recompensas por Victoria:</div>
+        <div id="optional-modal-rewards" style="color:#94a3b8;"></div>
+        <div style="margin-top:6px; color:#f87171; font-size:6px;">⚠️ ¡Cuidado Nuzlocke! Si tu Pokémon se debilita en este combate, perecerá permanentemente.</div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button class="game-btn" style="background:#22c55e; color:#fff; padding:10px 16px; font-size:7.5px; flex:1;" onclick="game.acceptOptionalBattle()">⚔️ Aceptar Desafío</button>
+        <button class="game-btn" style="background:#64748b; color:#fff; padding:10px 16px; font-size:7.5px; flex:1;" onclick="game.skipOptionalBattle()">🚶 Evitar Combate</button>
+      </div>
+    </div>
+  </div>
+
   <div id="catch-modal" class="overlay" style="display:none;">
     <div class="modal-card" style="max-width:440px;">
       <h2>🫳 Selecciona Pokéball</h2>
@@ -1613,38 +1632,43 @@ class BalancedNuzlockeEngine {
   getStoryLine() {
     return [
       // Capítulo 1: Inicio en Kanto
-      { type: 'rival', loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.getRivalStarterForm(5), lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
+      { type: 'rival', mandatory: true, loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.getRivalStarterForm(5), lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
       { type: 'route', loc: 'Pueblo Paleta (Agua)', cap: 6, quest: 'Zona 1: Pesca/Surf en Pueblo Paleta' },
       { type: 'route', loc: 'Ruta 1', cap: 7, quest: 'Zona 2: Captura y entrena en Ruta 1', item: 'Pokéball x3' },
-      { type: 'rival', loc: 'Ruta 22', title: `Rival ${this.rivalName} #2`, team: [{ id: 16, lvl: 9 }, { id: this.getRivalStarterForm(9), lvl: 9 }], cap: 9, quest: `Combate 2 con ${this.rivalName}`, item: 'Poción Max' },
+      { type: 'rival', optional: true, loc: 'Ruta 22', title: `Rival ${this.rivalName} #2 (Opcional)`, team: [{ id: 16, lvl: 9 }, { id: this.getRivalStarterForm(9), lvl: 9 }], cap: 9, quest: `Desafío Opcional en Ruta 22 con ${this.rivalName}`, item: 'Poción Max', rewardMoney: 180 },
       { type: 'route', loc: 'Ruta 22', cap: 9, quest: 'Zona 3: Captura en Ruta 22' },
       { type: 'route', loc: 'Ruta 2', cap: 11, quest: 'Zona 4: Avanza por la Ruta 2', item: 'Superpoción' },
+      { type: 'trainer', optional: true, loc: 'Bosque Verde', title: 'Cazabichos Sammy', team: [{ id: 10, lvl: 7 }, { id: 13, lvl: 7 }], cap: 13, quest: 'Combate Opcional: Cazabichos Sammy en Bosque Verde', rewardMoney: 150 },
       { type: 'route', loc: 'Bosque Verde', cap: 13, quest: 'Zona 5: Atraviesa Bosque Verde', item: 'Antídoto' },
       
       // Gimnasio 1: Brock (Ciudad Plateada)
-      { type: 'gym', loc: 'Ciudad Plateada', title: 'Líder Brock', team: [{ id: 74, lvl: 12 }, { id: 95, lvl: 14 }], cap: 14, badgeIdx: 0, quest: 'Gimnasio 1: Desafía a Brock (Medalla Roca)' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Plateada', title: 'Líder Brock', team: [{ id: 74, lvl: 12 }, { id: 95, lvl: 14 }], cap: 14, badgeIdx: 0, quest: 'Gimnasio 1: Desafía a Brock (Medalla Roca)' },
+      { type: 'trainer', optional: true, loc: 'Ruta 3', title: 'Joven Calvin', team: [{ id: 19, lvl: 11 }, { id: 21, lvl: 12 }], cap: 17, quest: 'Combate Opcional: Joven Calvin en Ruta 3', rewardMoney: 180 },
       { type: 'route', loc: 'Ruta 3', cap: 17, quest: 'Zona 6: Camino hacia Monte Moon', item: 'Superpoción' },
-      { type: 'rocket', loc: 'Monte Moon', title: 'Equipo Rocket Grunt', team: [{ id: 41, lvl: 13 }, { id: 19, lvl: 14 }], cap: 19, quest: 'Enfrenta al Equipo Rocket en Monte Moon' },
+      { type: 'rocket', optional: true, loc: 'Monte Moon', title: 'Recluta Rocket Infiltrado', team: [{ id: 41, lvl: 13 }, { id: 19, lvl: 14 }], cap: 19, quest: 'Combate Opcional: Recluta Rocket en Monte Moon', rewardMoney: 220 },
       { type: 'route', loc: 'Monte Moon', cap: 19, quest: 'Zona 7: Captura en las profundidades de Monte Moon' },
       { type: 'route', loc: 'Ruta 4', cap: 20, quest: 'Zona 8: Explora la Ruta 4' },
 
       // Gimnasio 2: Misty (Ciudad Celeste)
       { type: 'route', loc: 'Ciudad Celeste (Agua)', cap: 21, quest: 'Zona 9: Pesca/Surf en Ciudad Celeste' },
-      { type: 'gym', loc: 'Ciudad Celeste', title: 'Líder Misty', team: [{ id: 120, lvl: 18 }, { id: 121, lvl: 21 }], cap: 21, badgeIdx: 1, quest: 'Gimnasio 2: Desafía a Misty (Medalla Cascada)' },
-      { type: 'rival', loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.getRivalStarterForm(19), lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Celeste', title: 'Líder Misty', team: [{ id: 120, lvl: 18 }, { id: 121, lvl: 21 }], cap: 21, badgeIdx: 1, quest: 'Gimnasio 2: Desafía a Misty (Medalla Cascada)' },
+      { type: 'rival', mandatory: true, loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.getRivalStarterForm(19), lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
       { type: 'route', loc: 'Ruta 24', cap: 23, quest: 'Zona 10: Atraviesa la Ruta 24' },
       { type: 'route', loc: 'Ruta 25', cap: 24, quest: 'Zona 11: Explora la Ruta 25 hacia el Cabo Celeste' },
       { type: 'route', loc: 'Ruta 5', cap: 24, quest: 'Zona 12: Desciende por la Ruta 5' },
       { type: 'route', loc: 'Ruta 6', cap: 24, quest: 'Zona 13: Avanza por la Ruta 6 hacia Ciudad Carmín' },
       { type: 'route', loc: 'Ciudad Carmín (Agua)', cap: 24, quest: 'Zona 14: Pesca/Surf en Puerto Carmín' },
-      { type: 'rival', loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.getRivalStarterForm(20), lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
+      { type: 'trainer', optional: true, loc: 'S.S. Anne', title: 'Marinero Leonard', team: [{ id: 66, lvl: 17 }, { id: 72, lvl: 17 }], cap: 24, quest: 'Combate Opcional: Marinero Leonard en S.S. Anne', rewardMoney: 260 },
+      { type: 'rival', mandatory: true, loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.getRivalStarterForm(20), lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
 
       // Gimnasio 3: Lt. Surge (Ciudad Carmín)
-      { type: 'gym', loc: 'Ciudad Carmín', title: 'Líder Lt. Surge', team: [{ id: 100, lvl: 21 }, { id: 25, lvl: 18 }, { id: 26, lvl: 24 }], cap: 24, badgeIdx: 2, quest: 'Gimnasio 3: Desafía a Lt. Surge (Medalla Trueno)' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Carmín', title: 'Líder Lt. Surge', team: [{ id: 100, lvl: 21 }, { id: 25, lvl: 18 }, { id: 26, lvl: 24 }], cap: 24, badgeIdx: 2, quest: 'Gimnasio 3: Desafía a Lt. Surge (Medalla Trueno)' },
+      { type: 'trainer', optional: true, loc: 'Ruta 11', title: 'Pescador Barny', team: [{ id: 60, lvl: 20 }, { id: 118, lvl: 21 }], cap: 26, quest: 'Combate Opcional: Pescador Barny en Ruta 11', rewardMoney: 280 },
       { type: 'route', loc: 'Ruta 11', cap: 26, quest: 'Zona 15: Explora la Ruta 11' },
       { type: 'route', loc: 'Cueva Diglett', cap: 27, quest: 'Zona 16: Atraviesa la Cueva Diglett' },
       { type: 'route', loc: 'Ruta 9', cap: 28, quest: 'Zona 17: Avanza por la Ruta 9' },
       { type: 'route', loc: 'Ruta 10', cap: 29, quest: 'Zona 18: Recorre la Ruta 10' },
+      { type: 'trainer', optional: true, loc: 'Túnel Roca', title: 'Pokémaníaco Ashton', team: [{ id: 104, lvl: 23 }, { id: 79, lvl: 24 }], cap: 29, quest: 'Combate Opcional: Pokémaníaco Ashton en Túnel Roca', rewardMoney: 300 },
       { type: 'route', loc: 'Túnel Roca', cap: 29, quest: 'Zona 19: Cruza el Túnel Roca sin destello' },
       { type: 'route', loc: 'Torre Pokémon', cap: 31, quest: 'Zona 20: Investiga la Torre Pokémon en Pueblo Lavanda' },
       { type: 'route', loc: 'Ruta 8', cap: 31, quest: 'Zona 21: Atraviesa la Ruta 8' },
@@ -1652,45 +1676,50 @@ class BalancedNuzlockeEngine {
       { type: 'route', loc: 'Ciudad Azulona (Agua)', cap: 32, quest: 'Zona 23: Pesca/Surf en los estanques de Ciudad Azulona' },
 
       // Gimnasio 4: Erika (Ciudad Azulona)
-      { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
-      { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
+      { type: 'rocket', mandatory: true, loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
       { type: 'gift_choice', loc: 'Mansión Azulona', title: 'Regalo Mansión Azulona: Elección de Eeveelución', choices: [{ id: 134, name: 'VAPOREON (Piedra Agua)' }, { id: 135, name: 'JOLTEON (Piedra Trueno)' }, { id: 136, name: 'FLAREON (Piedra Fuego)' }, { id: 133, name: 'EEVEE (Forma Base)' }], cap: 32, quest: 'Elige tu Eeveelución favorita (Vaporeon, Jolteon, Flareon o Eevee)' },
-      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.getRivalStarterForm(25), lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Silph Scope' },
+      { type: 'rival', mandatory: true, loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.getRivalStarterForm(25), lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Silph Scope' },
+      { type: 'rocket', optional: true, loc: 'Torre Pokémon', title: 'Recluta Rocket Espía', team: [{ id: 96, lvl: 25 }, { id: 42, lvl: 26 }], cap: 35, quest: 'Combate Opcional: Recluta Rocket Espía en Torre Pokémon', rewardMoney: 340 },
       
       // Rutas Centrales & Snorlax
       { type: 'route', loc: 'Ruta 16', cap: 35, quest: 'Zona 24: Camino Bici Ruta 16' },
       { type: 'route', loc: 'Ruta 17', cap: 35, quest: 'Zona 25: Desciende por la Ruta 17' },
       { type: 'route', loc: 'Ruta 18', cap: 35, quest: 'Zona 26: Recorre la Ruta 18' },
-      { type: 'static_boss', loc: 'Ruta 12', title: 'Encuentro Estático: SNORLAX dormido', team: [{ id: 143, lvl: 30 }], cap: 35, quest: '¡Despierta y captura a Snorlax con la Poké Flauta!' },
+      { type: 'static_boss', optional: true, loc: 'Ruta 12', title: 'Encuentro Estático: SNORLAX dormido', team: [{ id: 143, lvl: 30 }], cap: 35, quest: '¡Despierta y captura a Snorlax con la Poké Flauta! (Opcional)' },
       { type: 'route', loc: 'Ruta 12', cap: 36, quest: 'Zona 27: Atraviesa la Ruta 12' },
       { type: 'route', loc: 'Ruta 13', cap: 37, quest: 'Zona 28: Explora la Ruta 13' },
+      { type: 'trainer', optional: true, loc: 'Ruta 14', title: 'Ornitólogo Donald', team: [{ id: 17, lvl: 32 }, { id: 22, lvl: 33 }], cap: 37, quest: 'Combate Opcional: Ornitólogo Donald en Ruta 14', rewardMoney: 350 },
       { type: 'route', loc: 'Ruta 14', cap: 37, quest: 'Zona 29: Recorre la Ruta 14' },
       { type: 'route', loc: 'Ruta 15', cap: 38, quest: 'Zona 30: Avanza por la Ruta 15 hacia Zona Fucsia' },
       { type: 'route', loc: 'Zona Safari', cap: 39, quest: 'Zona 31: Encuentro en la Zona Safari' },
       { type: 'route', loc: 'Ciudad Fucsia (Agua)', cap: 39, quest: 'Zona 32: Pesca/Surf en Ciudad Fucsia' },
 
       // Gimnasio 5: Koga (Ciudad Fucsia)
-      { type: 'gym', loc: 'Ciudad Fucsia', title: 'Líder Koga', team: [{ id: 109, lvl: 37 }, { id: 89, lvl: 39 }, { id: 110, lvl: 43 }], cap: 43, badgeIdx: 4, quest: 'Gimnasio 5: Desafía a Koga (Medalla Alma)' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Fucsia', title: 'Líder Koga', team: [{ id: 109, lvl: 37 }, { id: 89, lvl: 39 }, { id: 110, lvl: 43 }], cap: 43, badgeIdx: 4, quest: 'Gimnasio 5: Desafía a Koga (Medalla Alma)' },
+      { type: 'trainer', optional: true, loc: 'Dojo Karate Azafrán', title: 'Maestro Karateka Koichi', team: [{ id: 56, lvl: 34 }, { id: 57, lvl: 37 }], cap: 43, quest: 'Combate Opcional: Maestro Karateka en Dojo de Azafrán', rewardMoney: 400 },
       { type: 'gift_choice', loc: 'Dojo Karate Azafrán', title: 'Dojo Karate de Ciudad Azafrán', choices: [{ id: 106, name: 'HITMONLEE' }, { id: 107, name: 'HITMONCHAN' }], cap: 43, quest: 'Elige tu regalo del Dojo Karate (Hitmonlee o Hitmonchan)' },
-      { type: 'rocket', loc: 'Silph Co.', title: 'Jefe Giovanni #2', team: [{ id: 33, lvl: 37 }, { id: 111, lvl: 37 }, { id: 31, lvl: 41 }, { id: 115, lvl: 39 }], cap: 43, quest: 'Libera Silph Co. de Giovanni' },
+      { type: 'rocket', optional: true, loc: 'Silph Co.', title: 'Científico Rocket Travis', team: [{ id: 100, lvl: 34 }, { id: 82, lvl: 36 }], cap: 43, quest: 'Combate Opcional: Científico Rocket Travis en Silph Co.', rewardMoney: 450 },
+      { type: 'rocket', mandatory: true, loc: 'Silph Co.', title: 'Jefe Giovanni #2', team: [{ id: 33, lvl: 37 }, { id: 111, lvl: 37 }, { id: 31, lvl: 41 }, { id: 115, lvl: 39 }], cap: 43, quest: 'Libera Silph Co. de Giovanni' },
       { type: 'gift', loc: 'Silph Co.', title: 'Regalo Nuzlocke: LAPRAS', giftId: 131, cap: 43, quest: 'Regalo: Recibe a Lapras del empleado agradecido en Silph Co.' },
 
       // Gimnasio 6: Sabrina (Ciudad Azafrán)
-      { type: 'gym', loc: 'Ciudad Azafrán', title: 'Líder Sabrina', team: [{ id: 64, lvl: 38 }, { id: 122, lvl: 37 }, { id: 49, lvl: 38 }, { id: 65, lvl: 43 }], cap: 43, badgeIdx: 5, quest: 'Gimnasio 6: Desafía a Sabrina (Medalla Pantano)' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Azafrán', title: 'Líder Sabrina', team: [{ id: 64, lvl: 38 }, { id: 122, lvl: 37 }, { id: 49, lvl: 38 }, { id: 65, lvl: 43 }], cap: 43, badgeIdx: 5, quest: 'Gimnasio 6: Desafía a Sabrina (Medalla Pantano)' },
+      { type: 'trainer', optional: true, loc: 'Ruta 19', title: 'Nadador Axel', team: [{ id: 116, lvl: 38 }, { id: 90, lvl: 39 }], cap: 45, quest: 'Combate Opcional: Nadador Axel en Ruta 19', rewardMoney: 420 },
       { type: 'route', loc: 'Ruta 19', cap: 45, quest: 'Zona 33: Navega por la Ruta Marina 19' },
       { type: 'route', loc: 'Ruta 20', cap: 46, quest: 'Zona 34: Atraviesa la Ruta 20' },
       { type: 'route', loc: 'Islas Espuma', cap: 47, quest: 'Zona 35: Explora el interior de las Islas Espuma' },
-      { type: 'legendary', loc: 'Islas Espuma', title: 'Desafío Legendario: ARTICUNO', team: [{ id: 144, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Articuno!' },
+      { type: 'legendary', optional: true, loc: 'Islas Espuma', title: 'Desafío Legendario: ARTICUNO', team: [{ id: 144, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Articuno! (Opcional)' },
 
       // Gimnasio 7: Blaine (Isla Canela)
       { type: 'route', loc: 'Mansión Pokémon', cap: 50, quest: 'Zona 36: Investiga la Mansión Pokémon en Isla Canela' },
       { type: 'gift_choice', loc: 'Laboratorio Isla Canela', title: 'Laboratorio Fósil de Kanto', choices: [{ id: 138, name: 'OMANYTE (Fósil Hélice)' }, { id: 140, name: 'KABUTO (Fósil Domo)' }, { id: 142, name: 'AERODACTYL (Ámbar Viejo)' }], cap: 50, quest: 'Revive tu Fósil en el Laboratorio de Isla Canela' },
-      { type: 'gym', loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 50, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
+      { type: 'gym', mandatory: true, loc: 'Isla Canela', title: 'Líder Blaine', team: [{ id: 58, lvl: 42 }, { id: 77, lvl: 40 }, { id: 78, lvl: 42 }, { id: 59, lvl: 47 }], cap: 50, badgeIdx: 6, quest: 'Gimnasio 7: Desafía a Blaine (Medalla Volcán)' },
 
       // Capítulo Especial: ISLAS SETE (Islas 1 a 3) (14 Zonas Extra)
       { type: 'route', loc: 'Isla Prima (Playa Tesoro)', cap: 50, quest: 'Zona 37: Explora Playa Tesoro en Isla Prima' },
       { type: 'route', loc: 'Monte Ember', cap: 50, quest: 'Zona 38: Asciende por el Monte Ember' },
-      { type: 'legendary', loc: 'Monte Ember', title: 'Desafío Legendario: MOLTRES', team: [{ id: 146, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Moltres!' },
+      { type: 'legendary', optional: true, loc: 'Monte Ember', title: 'Desafío Legendario: MOLTRES', team: [{ id: 146, lvl: 50 }], cap: 50, quest: '¡Encuentro Legendario con Moltres! (Opcional)' },
       { type: 'route', loc: 'Isla Secunda (Cabo Secundo)', cap: 50, quest: 'Zona 39: Recorre Cabo Secundo en Isla Secunda' },
       { type: 'route', loc: 'Isla Tertia (Bosque Bayas)', cap: 50, quest: 'Zona 40: Adéntrate en el Bosque Bayas en Isla Tertia' },
       { type: 'route', loc: 'Camino Enlace (Isla Tertia)', cap: 50, quest: 'Zona 41: Atraviesa el Camino Enlace' },
@@ -1705,21 +1734,22 @@ class BalancedNuzlockeEngine {
 
       // Retorno a Kanto: Gimnasio 8 Giovanni
       { type: 'route', loc: 'Central Energía', cap: 53, quest: 'Zona 50: Explora la Central Energía abandonada' },
-      { type: 'legendary', loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 53 }], cap: 53, quest: '¡Encuentro Legendario con Zapdos!' },
-      { type: 'gym', loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 53 }], cap: 53, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
+      { type: 'legendary', optional: true, loc: 'Central Energía', title: 'Desafío Legendario: ZAPDOS', team: [{ id: 145, lvl: 53 }], cap: 53, quest: '¡Encuentro Legendario con Zapdos! (Opcional)' },
+      { type: 'gym', mandatory: true, loc: 'Ciudad Verde', title: 'Líder Giovanni (Gym 8)', team: [{ id: 111, lvl: 45 }, { id: 51, lvl: 42 }, { id: 31, lvl: 44 }, { id: 34, lvl: 45 }, { id: 112, lvl: 53 }], cap: 53, badgeIdx: 7, quest: 'Gimnasio 8: Desafía a Giovanni (Medalla Tierra)' },
       
       // Calle Victoria, Rival & Mewtwo
+      { type: 'trainer', optional: true, loc: 'Calle Victoria', title: 'Entrenador Guay Yuji', team: [{ id: 123, lvl: 46 }, { id: 127, lvl: 47 }], cap: 53, quest: 'Combate Opcional: Entrenador Guay Yuji en Calle Victoria', rewardMoney: 550 },
       { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Zona 51: Atraviesa la peligrosa Calle Victoria' },
-      { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.getRivalStarterForm(53), lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
+      { type: 'rival', mandatory: true, loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.getRivalStarterForm(53), lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
       { type: 'route', loc: 'Cueva Celeste', cap: 54, quest: 'Zona 52: Adéntrate en Cueva Celeste' },
-      { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 54 }], cap: 54, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
+      { type: 'legendary', optional: true, loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 54 }], cap: 54, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste! (Opcional)' },
 
       // Liga Pokémon: ALTO MANDO & CAMPEÓN
-      { type: 'e4', loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
-      { type: 'e4', loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
-      { type: 'e4', loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
-      { type: 'e4', loc: 'Alto Mando #4', title: 'Lance (Dragón)', team: [{ id: 130, lvl: 56 }, { id: 148, lvl: 54 }, { id: 148, lvl: 54 }, { id: 142, lvl: 58 }, { id: 149, lvl: 60 }], cap: 60, quest: 'Alto Mando 4: Enfrenta al Gran Lance' },
-      { type: 'champion', loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: this.getRivalStarterForm(65), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
+      { type: 'e4', mandatory: true, loc: 'Alto Mando #1', title: 'Lorelei (Hielo/Agua)', team: [{ id: 87, lvl: 52 }, { id: 91, lvl: 51 }, { id: 80, lvl: 52 }, { id: 124, lvl: 54 }, { id: 131, lvl: 54 }], cap: 54, quest: 'Alto Mando 1: Enfrenta a Lorelei' },
+      { type: 'e4', mandatory: true, loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
+      { type: 'e4', mandatory: true, loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
+      { type: 'e4', mandatory: true, loc: 'Alto Mando #4', title: 'Lance (Dragón)', team: [{ id: 130, lvl: 56 }, { id: 148, lvl: 54 }, { id: 148, lvl: 54 }, { id: 142, lvl: 58 }, { id: 149, lvl: 60 }], cap: 60, quest: 'Alto Mando 4: Enfrenta al Gran Lance' },
+      { type: 'champion', mandatory: true, loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: this.getRivalStarterForm(65), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
     ];
   }
 
@@ -2022,7 +2052,13 @@ class BalancedNuzlockeEngine {
     this.updateMoneyUI();
 
     document.getElementById('loc-text').innerText = step.loc;
-    document.getElementById('quest-title').innerText = step.quest;
+    if (step.mandatory) {
+      document.getElementById('quest-title').innerHTML = `<span style="color:#ef4444; font-weight:bold;">⚔️ [OBLIGATORIO]</span> ${step.quest}`;
+    } else if (step.optional) {
+      document.getElementById('quest-title').innerHTML = `<span style="color:#38bdf8; font-weight:bold;">🥋 [OPCIONAL]</span> ${step.quest}`;
+    } else {
+      document.getElementById('quest-title').innerText = step.quest;
+    }
     document.getElementById('cap-limit').innerText = `🎯 Nivel Rival: Lv.${step.cap}`;
 
     if (step.item) {
@@ -2086,7 +2122,21 @@ class BalancedNuzlockeEngine {
       }
 
       this.spawnWildPokemon(step);
-    } else if (step.type === 'e4' || step.type === 'champion') {
+      return;
+    }
+
+    // Combates Opcionales (Entrenadores, Villanos secundarios, Legendarios)
+    if (step.optional) {
+      this.isBoss = false;
+      this.currentEnemy = null;
+      this.updateUI();
+      soundEngine.playBGM(step.type === 'rocket' ? 'boss' : 'route');
+      this.showOptionalBattleModal(step);
+      return;
+    }
+
+    // Batallas Obligatorias (Gimnasios, Rivales canónicos, Giovanni, Liga Pokémon)
+    if (step.type === 'e4' || step.type === 'champion') {
       soundEngine.playBGM('league');
       this.isBoss = true;
       this.startBossBattle(step);
@@ -2095,6 +2145,50 @@ class BalancedNuzlockeEngine {
       this.isBoss = true;
       this.startBossBattle(step);
     }
+  }
+
+  showOptionalBattleModal(step) {
+    const titleEl = document.getElementById('optional-modal-title');
+    const badgeEl = document.getElementById('optional-modal-badge');
+    const descEl = document.getElementById('optional-modal-desc');
+    const rewardsEl = document.getElementById('optional-modal-rewards');
+
+    const isVillain = step.type === 'rocket';
+    const isLegendary = step.type === 'legendary' || step.type === 'static_boss';
+    const badgeText = isLegendary ? '⭐ DESAFÍO LEGENDARIO (OPCIONAL)' : isVillain ? '☠️ VILLANO ROCKET (OPCIONAL)' : '🥋 ENTRENADOR (OPCIONAL)';
+    const badgeColor = isLegendary ? '#ffd700' : isVillain ? '#ef4444' : '#38bdf8';
+
+    if (titleEl) titleEl.innerText = step.title;
+    if (badgeEl) badgeEl.innerHTML = `<span style="background:${badgeColor}; color:#000; font-size:6px; font-weight:bold; padding:2px 8px; border-radius:10px;">${badgeText}</span>`;
+    if (descEl) {
+      descEl.innerHTML = `Encuentro en <strong>${step.loc}</strong> (Nivel máx: Lv.${step.cap}).<br>` +
+        `¿Deseas aceptar el combate o prefieres evitarlo y continuar tu viaje para proteger a tu equipo en este reto Nuzlocke?`;
+    }
+    const rewardMoney = step.rewardMoney || (100 + step.cap * 12);
+    if (rewardsEl) {
+      rewardsEl.innerHTML = `• Recompensa monetaria: <strong>+₽${rewardMoney}</strong> Pokécuartos.<br>` +
+        `• Puntos de experiencia y posible botín para tu equipo vivo.<br>` +
+        `• <em>En combate opcional puedes huir estratégicamente si la batalla se complica.</em>`;
+    }
+
+    document.getElementById('optional-battle-modal').style.display = 'flex';
+  }
+
+  acceptOptionalBattle() {
+    document.getElementById('optional-battle-modal').style.display = 'none';
+    const step = this.getStoryLine()[this.storyStep];
+    if (!step) return;
+    this.startBossBattle(step);
+  }
+
+  skipOptionalBattle() {
+    document.getElementById('optional-battle-modal').style.display = 'none';
+    const step = this.getStoryLine()[this.storyStep];
+    if (!step) return;
+    soundEngine.playTone(400, 0.1, 'sine');
+    this.log(`🚶 Decidiste evitar el combate con ${step.title} para mantener a salvo tu equipo.`);
+    this.storyStep++;
+    setTimeout(() => this.initCurrentStep(), 500);
   }
 
   async showGiftChoiceModal(step) {
@@ -2194,7 +2288,8 @@ class BalancedNuzlockeEngine {
 
   async startBossBattle(step) {
     this.bossTeam = [...step.team];
-    this.log(`¡Combate con ${step.title}!`);
+    const prefix = step.mandatory ? '⚔️ [OBLIGATORIO] ' : step.optional ? '🥋 [OPCIONAL] ' : '';
+    this.log(`${prefix}¡Combate con ${step.title}!`);
     await this.loadNextBossPokemon();
   }
 
@@ -2202,6 +2297,14 @@ class BalancedNuzlockeEngine {
     if (this.bossTeam.length === 0) {
       this.log("¡Batalla ganada!");
       const step = this.getStoryLine()[this.storyStep];
+
+      // Recompensa de dinero extra para combates opcionales (entrenadores, villanos, etc.)
+      if (step && step.optional) {
+        const bonusMoney = step.rewardMoney || (100 + (step.cap || 10) * 12);
+        this.money = (this.money || 0) + bonusMoney;
+        this.updateMoneyUI();
+        this.log(`🏆 ¡Victoria sobre ${step.title}! Recibes +₽${bonusMoney} Pokécuartos.`);
+      }
 
       if (step && (step.type === 'e4' || step.type === 'champion')) {
         this.e4DefeatedCount++;
@@ -2249,7 +2352,8 @@ class BalancedNuzlockeEngine {
 
     const step = this.getStoryLine()[this.storyStep];
     const canCatch = step && (step.type === 'legendary' || step.type === 'static_boss');
-    this.setButtons(true, canCatch, false, true);
+    const canRun = Boolean(step && step.optional && !step.mandatory);
+    this.setButtons(true, canCatch, canRun, true);
     this.updateUI();
   }
 
@@ -2531,15 +2635,38 @@ class BalancedNuzlockeEngine {
     } else {
       const step = this.getStoryLine()[this.storyStep];
       const canCatch = (!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || (step && (step.type === 'legendary' || step.type === 'static_boss'));
-      const canRun = !this.isBoss;
+      const canRun = (!this.isBoss && !step.mandatory) || Boolean(step && step.optional);
       this.setButtons(true, canCatch, canRun, true);
     }
   }
 
   runAway() {
-    if (this.isBoss || !this.currentEnemy) return;
+    const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
+    if (step && step.mandatory) {
+      soundEngine.playHit();
+      this.log('⚠️ ¡Combate obligatorio! No puedes huir de un líder de gimnasio, rival o jefe de la historia.');
+      return;
+    }
+    if (!this.currentEnemy) return;
     const active = this.team[this.activeIdx];
     if (!active) return;
+
+    // Huida estratégica garantizada en combate opcional (entrenador, villano secundario, legendario)
+    if (step && step.optional) {
+      this.setButtons(false, false, false, false);
+      soundEngine.playTone(450, 0.1, 'sine');
+      setTimeout(() => soundEngine.playTone(600, 0.12, 'sine'), 80);
+      this.log(`🏃 ¡Te retiraste estratégicamente del combate opcional con ${step.title}! Tu equipo sigue a salvo.`);
+      this.currentEnemy = null;
+      this.updateUI();
+      setTimeout(() => {
+        this.storyStep++;
+        this.initCurrentStep();
+      }, 700);
+      return;
+    }
+
+    if (this.isBoss) return;
 
     this.setButtons(false, false, false, false);
     const escapeChance = Math.min(95, Math.max(30, 50 + (active.level - this.currentEnemy.level) * 10));
@@ -2548,7 +2675,6 @@ class BalancedNuzlockeEngine {
     if (roll <= escapeChance) {
       soundEngine.playTone(450, 0.1, 'sine');
       setTimeout(() => soundEngine.playTone(600, 0.12, 'sine'), 80);
-      const step = this.getStoryLine()[this.storyStep];
       this.log(`🏃 ¡Escapaste con éxito de ${this.currentEnemy.speciesName}! Zona completada sin captura.`);
       if (step && step.type === 'route') {
         this.capturedZones.add(step.loc);
@@ -2603,8 +2729,8 @@ class BalancedNuzlockeEngine {
       } else {
         this.activeIdx = 0;
         this.updateUI();
-        const canCatch = this.currentEnemy && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny);
-        const canRun = !this.isBoss;
+        const canCatch = this.currentEnemy && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || (step && (step.type === 'legendary' || step.type === 'static_boss')));
+        const canRun = (!this.isBoss && (!step || !step.mandatory)) || Boolean(step && step.optional);
         this.setButtons(true, canCatch, canRun, true);
       }
     }, 900);
@@ -3313,8 +3439,8 @@ class BalancedNuzlockeEngine {
       this.log(`¡Entra al combate ${this.team[this.activeIdx].nickname}!`);
       this.updateUI();
       const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
-      const canCatch = this.currentEnemy && step && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny);
-      const canRun = !this.isBoss;
+      const canCatch = this.currentEnemy && step && ((!this.capturedZones.has(step.loc) && !this.isSpeciesOwned(this.currentEnemy.id)) || this.currentEnemy.isShiny || step.type === 'legendary' || step.type === 'static_boss');
+      const canRun = (!this.isBoss && (!step || !step.mandatory)) || Boolean(step && step.optional);
       this.setButtons(true, canCatch, canRun, true);
     }
   }
@@ -4372,6 +4498,50 @@ window.testGame = function testGame() {
   }
   add('Actualización Inmediata de Tipos, STAB y Botones al Cambiar Pokémon', switchVisualOk,
     switchVisualOk ? 'OK: Botones Físico/Elemental, STAB y badges de tipo se recalculan al instante sin requerir atacar' : `FALLO: ${switchVisualDetails.join(' | ')}`);
+
+  // ── 12. Combates Opcionales vs Batallas Obligatorias ──
+  let battlesCategoryOk = true;
+  const battlesCategoryDetails = [];
+  try {
+    // 1. Verificar que gimnasios, rival canónico, Giovanni y Liga tengan mandatory: true
+    const mandatoryGyms = story.filter(s => s.type === 'gym');
+    if (mandatoryGyms.length !== 8 || !mandatoryGyms.every(s => s.mandatory)) {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push(`Los 8 gimnasios deben ser obligatorios (encontrados: ${mandatoryGyms.filter(s => s.mandatory).length}/8)`);
+    }
+
+    const mandatoryLeague = story.filter(s => s.type === 'e4' || s.type === 'champion');
+    if (mandatoryLeague.length !== 5 || !mandatoryLeague.every(s => s.mandatory)) {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push('Alto Mando y Campeón deben ser obligatorios (5/5)');
+    }
+
+    // 2. Verificar que entrenadores, villanos secundarios y legendarios tengan optional: true
+    const optionalTrainers = story.filter(s => s.type === 'trainer');
+    if (optionalTrainers.length < 5 || !optionalTrainers.every(s => s.optional)) {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push(`Entrenadores deben ser opcionales (${optionalTrainers.length})`);
+    }
+
+    const optionalLegends = story.filter(s => s.type === 'legendary' || s.type === 'static_boss');
+    if (optionalLegends.length < 5 || !optionalLegends.every(s => s.optional)) {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push(`Legendarios y estáticos deben ser opcionales (${optionalLegends.length})`);
+    }
+
+    // 3. Verificar métodos de control opcional
+    if (typeof game.showOptionalBattleModal !== 'function' ||
+        typeof game.acceptOptionalBattle !== 'function' ||
+        typeof game.skipOptionalBattle !== 'function') {
+      battlesCategoryOk = false;
+      battlesCategoryDetails.push('Faltan métodos showOptionalBattleModal, acceptOptionalBattle o skipOptionalBattle');
+    }
+  } catch (e) {
+    battlesCategoryOk = false;
+    battlesCategoryDetails.push(`Error en test de combates opcionales/obligatorios: ${e.message}`);
+  }
+  add('Combates Opcionales vs Batallas Obligatorias (Entrenadores, Villanos y Jefes)', battlesCategoryOk,
+    battlesCategoryOk ? 'OK: Gimnasios, Rivales clave y Liga obligatorios; Entrenadores, Villanos secundarios y Legendarios opcionales con salto y huida segura' : `FALLO: ${battlesCategoryDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
