@@ -326,6 +326,8 @@
       .team-slot { font-size: 5px; height: 32px; }
       .modal-card { padding: 14px; }
       .hall-grid { grid-template-columns: repeat(2, 1fr); }
+      .shop-grid { grid-template-columns: 1fr; }
+      .relics-grid { grid-template-columns: 1fr; }
     }
 
     button.game-btn {
@@ -342,6 +344,101 @@
     button.btn-legend { background: #0288d1; color: #fff; }
     button.btn-run { background: #ff9800; color: #000; font-weight: bold; }
     button.btn-bag { background: #4caf50; color: #fff; }
+    button.btn-shop { background: #00897b; color: #fff; font-weight: bold; }
+    button.btn-shop:hover:not(:disabled) { background: #00bfa5; }
+
+    .currency-badge {
+      background: #231c07;
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 7px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: inset 0 0 6px rgba(255, 215, 0, 0.25);
+    }
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 6px;
+      margin-top: 10px;
+      text-align: left;
+    }
+    .shop-item {
+      background: #171c2b;
+      border: 2px solid #2e3856;
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .shop-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .shop-item-name {
+      font-size: 7px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .shop-item-desc {
+      font-size: 5.5px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .shop-item-cost {
+      font-size: 6.5px;
+      color: #ffd700;
+      font-weight: bold;
+    }
+    .relics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .relic-card {
+      background: linear-gradient(180deg, #1f2438 0%, #121524 100%);
+      border: 2px solid #5c6bc0;
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .relic-card:hover {
+      transform: translateY(-3px);
+      border-color: #ffd700;
+      box-shadow: 0 6px 18px rgba(255, 215, 0, 0.4);
+    }
+    .relic-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+    }
+    .relic-title {
+      font-size: 8px;
+      color: #ffd700;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .relic-desc {
+      font-size: 6px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
 
     .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; text-align: left; font-size: 6px; }
     .pc-box { border: 2px solid #444; background: #fff; padding: 6px; height: 180px; overflow-y: auto; }
@@ -540,10 +637,50 @@
     </div>
   </div>
 
+  <div id="shop-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:660px;">
+      <h2>🏪 Tienda Pokémon (Poké Mart)</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+        <span style="font-size:6.5px; color:#cbd5e1;">Compra suministros tácticos y piedras de evolución para tu run:</span>
+        <span class="currency-badge">💰 Dinero: ₽<span id="shop-money-val">500</span></span>
+      </div>
+      <div id="shop-grid" class="shop-grid"></div>
+      <button class="game-btn" style="margin-top:14px; width:100%;" onclick="game.closeShop()">Cerrar Tienda</button>
+    </div>
+  </div>
+
+  <div id="relic-draft-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:680px;">
+      <h2 style="color:#ffd700;">🏺 ¡Recompensa de Reliquia!</h2>
+      <p style="font-size:7px; margin-bottom:10px; color:#ddd;">Has vencido un gran desafío. Elige 1 reliquia para potenciar tu aventura:</p>
+      <div id="relic-draft-options" class="relics-grid"></div>
+    </div>
+  </div>
+
+  <div id="relics-list-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:580px;">
+      <h2>🏺 Tus Reliquias Activas</h2>
+      <p style="font-size:7px; margin-bottom:10px; color:#ddd;">Efectos pasivos acumulados en esta run:</p>
+      <div id="relics-active-list" style="display:flex; flex-direction:column; gap:8px; text-align:left; max-height:280px; overflow-y:auto;"></div>
+      <button class="game-btn" style="margin-top:14px; width:100%;" onclick="game.closeRelicsModal()">Cerrar</button>
+    </div>
+  </div>
+
+  <div id="catch-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:440px;">
+      <h2>🫳 Selecciona Pokéball</h2>
+      <p style="font-size:7px; margin-bottom:12px; color:#ddd;">Elige la esfera que lanzarás al objetivo:</p>
+      <div id="catch-ball-options" style="display:flex; flex-direction:column; gap:8px;"></div>
+      <button class="game-btn" style="margin-top:12px; width:100%;" onclick="game.closeCatchModal()">Cancelar</button>
+    </div>
+  </div>
+
   <header>
     <span>Entrenador: <strong id="header-player">RED</strong></span>
     <span id="loc-text" class="loc-badge">Pueblo Paleta</span>
-    <div style="display:flex; gap:6px;">
+    <span class="currency-badge" title="Dinero para la Tienda Pokémon">💰 ₽<span id="header-money">500</span></span>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
+      <button class="sound-toggle-btn" id="relics-btn" title="Ver Reliquias activas" onclick="game.openRelicsModal()">🏺 0 Reliquias</button>
       <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">🔊 SFX: ON</button>
       <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">🎵 Música: ON</button>
       <button class="sound-toggle-btn" id="test-btn" title="Ejecutar test de integridad (atajo: F9; Fn+F9 en algunos portátiles)" onclick="runUITest()">🧪 Test</button>
@@ -628,7 +765,8 @@
     <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">🫳 Capturar</button>
     <button class="game-btn btn-run" id="btn-run" onclick="game.runAway()">🏃 Huir</button>
     <button class="game-btn btn-bag" id="btn-bag" onclick="game.openBag()">🎒 Mochila</button>
-    <button class="game-btn" id="btn-pc" onclick="game.openPC()">💻 PC</button>
+    <button class="game-btn btn-shop" id="btn-shop" onclick="game.openShop()">🛒 Tienda</button>
+    <button class="game-btn btn-pc" id="btn-pc" onclick="game.openPC()">💻 PC</button>
     <button class="game-btn btn-graveyard" id="btn-grave" onclick="game.openGraveyard()">🪦 Cementerio</button>
   </div>
 </div>
@@ -971,9 +1109,79 @@ function speciesKeyName(rawName) {
   return lower;
 }
 
+// 🏺 Catálogo de Reliquias Roguelite
+const ROGUELITE_RELICS = {
+  focus_band: {
+    id: 'focus_band',
+    icon: '🥊',
+    name: 'Cinta Foco',
+    desc: 'Sobrevive con 1 HP a un golpe mortal si tenías más del 50% de HP (1 vez por combate).'
+  },
+  gold_amulet: {
+    id: 'gold_amulet',
+    icon: '🪙',
+    name: 'Amuleto Avaro',
+    desc: '+35% de dinero obtenido en todas las victorias en combate.'
+  },
+  leftovers: {
+    id: 'leftovers',
+    icon: '🍎',
+    name: 'Restos',
+    desc: 'Recupera un 10% de la salud máxima de tu equipo vivo tras ganar cada combate.'
+  },
+  scope_lens: {
+    id: 'scope_lens',
+    icon: '🔍',
+    name: 'Lente Precisa',
+    desc: 'Probabilidad de golpe crítico aumentada del 8% al 22%.'
+  },
+  power_belt: {
+    id: 'power_belt',
+    icon: '⚡',
+    name: 'Cinto de Poder',
+    desc: '+25% de daño con todos los ataques elementales de tu Pokémon.'
+  },
+  assault_vest: {
+    id: 'assault_vest',
+    icon: '🛡️',
+    name: 'Chaleco Asalto',
+    desc: 'Reduce un 15% todo el daño recibido por tu Pokémon en combate.'
+  },
+  shiny_charm: {
+    id: 'shiny_charm',
+    icon: '✨',
+    name: 'Amuleto Iris',
+    desc: 'Probabilidad de encuentro Shiny aumentada a 1/64 (en lugar de 1/256).'
+  }
+};
+
+// 🏪 Catálogo de la Tienda Pokémon (Poké Mart)
+const POKEMART_ITEMS = [
+  { id: 'pokeball', name: 'Pokéball', icon: '🔴', cost: 200, desc: 'Ratio de captura base.' },
+  { id: 'greatball', name: 'Superball', icon: '🔵', cost: 600, desc: '+12% al ratio de captura.' },
+  { id: 'ultraball', name: 'Ultraball', icon: '🟡', cost: 1200, desc: '+25% al ratio de captura.' },
+  { id: 'potion', name: 'Poción', icon: '🧪', cost: 300, desc: 'Restaura 20 HP en combate o mochila.' },
+  { id: 'superPotion', name: 'Superpoción', icon: '🧪', cost: 700, desc: 'Restaura 50 HP en combate o mochila.' },
+  { id: 'maxPotion', name: 'Poción Máx', icon: '🧪', cost: 1500, desc: 'Restaura el 100% de HP.' },
+  { id: 'fire_stone', name: 'Piedra Fuego', icon: '🔥', cost: 2100, desc: 'Evoluciona a Vulpix, Growlithe o Eevee.' },
+  { id: 'water_stone', name: 'Piedra Agua', icon: '💧', cost: 2100, desc: 'Evoluciona a Poliwhirl, Shellder, Staryu o Eevee.' },
+  { id: 'thunder_stone', name: 'Piedra Trueno', icon: '⚡', cost: 2100, desc: 'Evoluciona a Pikachu o Eevee.' },
+  { id: 'leaf_stone', name: 'Piedra Hoja', icon: '🍃', cost: 2100, desc: 'Evoluciona a Gloom, Weepinbell o Exeggcute.' },
+  { id: 'moon_stone', name: 'Piedra Lunar', icon: '🌙', cost: 2100, desc: 'Evoluciona a Nidorina, Nidorino, Clefairy o Jigglypuff.' }
+];
+
+// Mapeo de piedras evolutivas a IDs de destino en Gen 1
+const STONE_EVOLUTIONS = {
+  fire_stone: { name: 'Piedra Fuego', targets: { 37: 38, 58: 59, 133: 136 } },
+  water_stone: { name: 'Piedra Agua', targets: { 61: 62, 90: 91, 120: 121, 133: 134 } },
+  thunder_stone: { name: 'Piedra Trueno', targets: { 25: 26, 133: 135 } },
+  leaf_stone: { name: 'Piedra Hoja', targets: { 44: 45, 70: 71, 102: 103 } },
+  moon_stone: { name: 'Piedra Lunar', targets: { 30: 31, 33: 34, 35: 36, 39: 40 } }
+};
+
 // 💾 Clave y versión del guardado automático en localStorage
 const SAVE_KEY = 'pokemonRfNuzlockeSave';
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
 
 class BalancedNuzlockeEngine {
   constructor() {
@@ -1002,6 +1210,12 @@ class BalancedNuzlockeEngine {
     this.bossTeam = [];
     this.pendingCatch = null;
 
+    // --- Sistema Roguelite ---
+    this.money = 500;
+    this.relics = [];
+    this.focusBandUsedInBattle = false;
+    this.pendingDraftCallback = null;
+
     // --- Probabilidades Modo HardCore (ajustables a gusto) ---
     // Combate: curva de probabilidad de victoria (de inicio a Alto Mando)
     this.hardcoreOdds = {
@@ -1024,16 +1238,42 @@ class BalancedNuzlockeEngine {
     this.shinyOdds = this.hardcoreOdds.shinyOdds;
     this.e4DefeatedCount = 0;
     this.starterPending = false; // true mientras el inicial está en el modal de mote (antes del paso 0)
-    this.inventory = { potion: 3, superPotion: 1, maxPotion: 0, pokeball: 5 };
+    this.inventory = {
+      potion: 3, superPotion: 1, maxPotion: 0,
+      pokeball: 5, greatball: 0, ultraball: 0,
+      fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0
+    };
+  }
+
+  hasRelic(id) {
+    return Array.isArray(this.relics) && this.relics.includes(id);
+  }
+
+  getEffectiveShinyOdds() {
+    return this.hasRelic('shiny_charm') ? 64 : this.hardcoreOdds.shinyOdds;
+  }
+
+  updateMoneyUI() {
+    const h = document.getElementById('header-money');
+    if (h) h.innerText = this.money || 0;
+    const s = document.getElementById('shop-money-val');
+    if (s) s.innerText = this.money || 0;
+    const rBtn = document.getElementById('relics-btn');
+    if (rBtn) {
+      const count = Array.isArray(this.relics) ? this.relics.length : 0;
+      rBtn.innerText = `🏺 ${count} Reliquia${count === 1 ? '' : 's'}`;
+    }
   }
 
   addInventoryItem(itemStr) {
     if (!itemStr) return;
-    if (itemStr.includes('Pokéball x3')) this.inventory.pokeball += 3;
-    else if (itemStr.includes('Pokéball')) this.inventory.pokeball += 1;
-    else if (itemStr.includes('Poción Max')) this.inventory.maxPotion += 1;
-    else if (itemStr.includes('Superpoción')) this.inventory.superPotion += 1;
-    else if (itemStr.includes('Poción') || itemStr.includes('Antídoto')) this.inventory.potion += 1;
+    if (itemStr.includes('Pokéball x3')) this.inventory.pokeball = (this.inventory.pokeball || 0) + 3;
+    else if (itemStr.includes('Ultraball')) this.inventory.ultraball = (this.inventory.ultraball || 0) + 1;
+    else if (itemStr.includes('Superball')) this.inventory.greatball = (this.inventory.greatball || 0) + 1;
+    else if (itemStr.includes('Pokéball')) this.inventory.pokeball = (this.inventory.pokeball || 0) + 1;
+    else if (itemStr.includes('Poción Max')) this.inventory.maxPotion = (this.inventory.maxPotion || 0) + 1;
+    else if (itemStr.includes('Superpoción')) this.inventory.superPotion = (this.inventory.superPotion || 0) + 1;
+    else if (itemStr.includes('Poción') || itemStr.includes('Antídoto')) this.inventory.potion = (this.inventory.potion || 0) + 1;
     this.saveGame();
   }
 
@@ -1259,7 +1499,7 @@ class BalancedNuzlockeEngine {
       }
     } catch(e) {}
 
-    const isShiny = forceShiny || (Math.floor(Math.random() * this.shinyOdds) === 0);
+    const isShiny = forceShiny || (Math.floor(Math.random() * this.getEffectiveShinyOdds()) === 0);
 
     if (data) {
       // Pokémon real desde PokéAPI: solo Generación 1 (1-151). El respaldo remoto para ids
@@ -1424,6 +1664,9 @@ class BalancedNuzlockeEngine {
     }
 
     await this.normalizeTeamLevels(step.cap);
+
+    this.focusBandUsedInBattle = false;
+    this.updateMoneyUI();
 
     document.getElementById('loc-text').innerText = step.loc;
     document.getElementById('quest-title').innerText = step.quest;
@@ -1620,6 +1863,16 @@ class BalancedNuzlockeEngine {
 
       this.healAliveTeam();
       this.currentEnemy = null;
+
+      const isMajorBoss = step && (step.badgeIdx !== undefined || step.type === 'gym' || step.type === 'champion' || (step.type === 'rival' && this.badges >= 1));
+      if (isMajorBoss && this.canDraftRelic()) {
+        this.showRelicDraftModal(() => {
+          this.storyStep++;
+          this.initCurrentStep();
+        });
+        return;
+      }
+
       this.storyStep++;
       setTimeout(() => this.initCurrentStep(), 700);
       return;
@@ -1660,13 +1913,25 @@ class BalancedNuzlockeEngine {
     const atkStat = Math.max(attacker.attack || 50, 10);
     const defStat = Math.max(defender.defense || 50, 10);
     const basePower = isElemental ? 55 : 40;
-    const typeMult = isElemental ? this.calcTypeMultiplier(attacker.types, defender.types) : 1.0;
+    let typeMult = isElemental ? this.calcTypeMultiplier(attacker.types, defender.types) : 1.0;
+    const isAttackerPlayer = this.team.includes(attacker);
+    const isDefenderPlayer = this.team.includes(defender);
+
+    if (isAttackerPlayer && isElemental && this.hasRelic('power_belt')) {
+      typeMult *= 1.25;
+    }
 
     const raw = ((((2 * lvl) / 5 + 2) * basePower * (atkStat / defStat)) / 50 + 2);
     const randomVariance = 0.85 + Math.random() * 0.3; // 85% a 115%
-    const isCrit = Math.random() < 0.08; // 8% de probabilidad de crítico
+    const critChance = (isAttackerPlayer && this.hasRelic('scope_lens')) ? 0.22 : 0.08;
+    const isCrit = Math.random() < critChance;
     const critMult = isCrit ? 1.5 : 1.0;
-    const damage = Math.max(1, Math.round(raw * typeMult * critMult * randomVariance));
+    let damage = Math.max(1, Math.round(raw * typeMult * critMult * randomVariance));
+
+    if (isDefenderPlayer && this.hasRelic('assault_vest')) {
+      damage = Math.max(1, Math.round(damage * 0.85));
+    }
+
     return { damage, typeMult, isCrit };
   }
 
@@ -1742,13 +2007,24 @@ class BalancedNuzlockeEngine {
       soundEngine.playHit();
     }
 
-    active.currentHp = Math.max(0, active.currentHp - damage);
+    let finalDamage = damage;
+    let focusBandTriggered = false;
+    if (active.currentHp - damage <= 0) {
+      if (this.hasRelic('focus_band') && !this.focusBandUsedInBattle && active.currentHp > (active.maxHp * 0.5)) {
+        this.focusBandUsedInBattle = true;
+        finalDamage = active.currentHp - 1;
+        focusBandTriggered = true;
+      }
+    }
+
+    active.currentHp = Math.max(0, active.currentHp - finalDamage);
     this.updateUI();
 
     const multText = useElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
     const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
     const foeAtk = useElemental ? `Ataque Elemental (${(this.currentEnemy.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
-    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}! ${active.nickname} recibe ${damage} de daño.`);
+    const focusBandText = focusBandTriggered ? ' 🥊 ¡Cinta Foco evitó que fenezca, queda con 1 HP!' : '';
+    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}! ${active.nickname} recibe ${finalDamage} de daño.${focusBandText}`);
 
     if (active.currentHp <= 0) {
       setTimeout(() => this.handlePlayerFaint(active), 750);
@@ -1835,7 +2111,26 @@ class BalancedNuzlockeEngine {
   }
 
   handleEnemyDefeated() {
-    this.log(`🏆 ¡VICTORIA! Derrotaste a ${this.currentEnemy.speciesName}.`);
+    let baseReward = 80 + Math.round((this.currentEnemy.level || 5) * 12);
+    if (this.isBoss) baseReward = Math.round(baseReward * 1.8);
+    if (this.hasRelic('gold_amulet')) baseReward = Math.round(baseReward * 1.35);
+    this.money = (this.money || 0) + baseReward;
+    this.updateMoneyUI();
+
+    let leftoversMsg = '';
+    if (this.hasRelic('leftovers')) {
+      let healedAny = false;
+      this.team.forEach(p => {
+        if (p.currentHp > 0 && p.currentHp < p.maxHp) {
+          const healAmt = Math.max(1, Math.round(p.maxHp * 0.10));
+          p.currentHp = Math.min(p.maxHp, p.currentHp + healAmt);
+          healedAny = true;
+        }
+      });
+      if (healedAny) leftoversMsg = ' 🍎 ¡Restos curó 10% HP a tu equipo!';
+    }
+
+    this.log(`🏆 ¡VICTORIA! Derrotaste a ${this.currentEnemy.speciesName}. Ganaste ₽${baseReward}.${leftoversMsg}`);
     if (this.isBoss) {
       const step = this.getStoryLine()[this.storyStep];
       if (step && (step.type === 'legendary' || step.type === 'static_boss')) {
@@ -1844,7 +2139,7 @@ class BalancedNuzlockeEngine {
           soundEngine.playBadge();
           const defeatedEnemy = this.currentEnemy;
           defeatedEnemy.currentHp = defeatedEnemy.maxHp;
-          this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo (${catchChance}%).`);
+          this.log(`🏆 ¡VICTORIA Y CAPTURA! Derrotaste a ${defeatedEnemy.speciesName} y se une a tu equipo (${catchChance}%). Ganaste ₽${baseReward}.${leftoversMsg}`);
           this.pendingCatch = defeatedEnemy;
           this.pendingCatchMsg = `¡Capturaste a ${defeatedEnemy.speciesName}! Asigna un mote:`;
           this.currentEnemy = null;
@@ -1874,24 +2169,70 @@ class BalancedNuzlockeEngine {
     const isStaticBoss = step && step.type === 'static_boss';
     if ((this.isBoss && !isLegendary && !isStaticBoss) || !this.currentEnemy) return;
 
-    if (this.inventory.pokeball <= 0) {
-      this.log('❌ ¡No te quedan Pokéballs en la Mochila! Debes luchar o huir.');
+    const pokeball = this.inventory.pokeball || 0;
+    const greatball = this.inventory.greatball || 0;
+    const ultraball = this.inventory.ultraball || 0;
+    const totalBalls = pokeball + greatball + ultraball;
+
+    if (totalBalls <= 0) {
+      this.log('❌ ¡No te quedan Pokéballs en la Mochila! Debes luchar o huir (o comprar en la Tienda).');
       return;
     }
 
-    this.inventory.pokeball--;
+    const availableTypes = [];
+    if (pokeball > 0) availableTypes.push({ type: 'pokeball', name: 'Pokéball', icon: '🔴', bonus: 0, count: pokeball });
+    if (greatball > 0) availableTypes.push({ type: 'greatball', name: 'Superball', icon: '🔵', bonus: 12, count: greatball });
+    if (ultraball > 0) availableTypes.push({ type: 'ultraball', name: 'Ultraball', icon: '🟡', bonus: 25, count: ultraball });
+
+    if (availableTypes.length === 1) {
+      this.executeCatch(availableTypes[0].type);
+    } else {
+      const optionsContainer = document.getElementById('catch-ball-options');
+      optionsContainer.innerHTML = availableTypes.map(b => `
+        <button class="game-btn" style="display:flex; justify-content:space-between; align-items:center; padding:10px; font-size:6.5px;" onclick="game.selectBallAndCatch('${b.type}')">
+          <span>${b.icon} <strong>${b.name}</strong> ${b.bonus ? `(+${b.bonus}%)` : '(Base)'}</span>
+          <span style="color:#ffd700;">x${b.count}</span>
+        </button>
+      `).join('');
+      document.getElementById('catch-modal').style.display = 'flex';
+    }
+  }
+
+  closeCatchModal() {
+    document.getElementById('catch-modal').style.display = 'none';
+  }
+
+  selectBallAndCatch(ballType) {
+    this.closeCatchModal();
+    this.executeCatch(ballType);
+  }
+
+  executeCatch(ballType) {
+    const step = this.getStoryLine()[this.storyStep];
+    const isLegendary = step && step.type === 'legendary';
+    const isStaticBoss = step && step.type === 'static_boss';
+    if ((this.isBoss && !isLegendary && !isStaticBoss) || !this.currentEnemy) return;
+
+    if (!this.inventory[ballType] || this.inventory[ballType] <= 0) return;
+    this.inventory[ballType]--;
+
     this.setButtons(false, false, false, false);
+
+    const ballBonus = ballType === 'ultraball' ? 25 : ballType === 'greatball' ? 12 : 0;
+    const ballName = ballType === 'ultraball' ? 'Ultraball' : ballType === 'greatball' ? 'Superball' : 'Pokéball';
 
     const h = this.hardcoreOdds;
     const hpFactor = (1 - (this.currentEnemy.currentHp / this.currentEnemy.maxHp));
-    const catchRate = isLegendary
+    const baseCatch = isLegendary
       ? h.catchLegend
       : isStaticBoss
       ? h.catchStatic
       : Math.min(100, Math.round(hpFactor * h.catchWildHp + h.catchWildBase));
 
+    const catchRate = Math.min(100, baseCatch + ballBonus);
+
     soundEngine.playCatch();
-    this.log(`Lanzaste una Pokéball a ${this.currentEnemy.speciesName} (${catchRate}% por salud)... Te quedan ${this.inventory.pokeball} Pokéballs.`);
+    this.log(`Lanzaste una ${ballName} a ${this.currentEnemy.speciesName} (${catchRate}% prob)... Te quedan ${this.inventory[ballType]} ${ballName}s.`);
 
     if (!isLegendary && !isStaticBoss && !this.currentEnemy.isShiny) {
       this.capturedZones.add(step.loc);
@@ -1902,13 +2243,13 @@ class BalancedNuzlockeEngine {
       if (Math.random() * 100 <= catchRate) {
         soundEngine.playBadge();
         this.pendingCatch = this.currentEnemy;
-        this.pendingCatchMsg = `¡Captura exitosa! Asigna un mote a tu ${this.pendingCatch.speciesName}:`;
+        this.pendingCatchMsg = `¡Captura exitosa con ${ballName}! Asigna un mote a tu ${this.pendingCatch.speciesName}:`;
         this.currentEnemy = null;
         this.saveGame();
         this.showNickModal(this.pendingCatchMsg);
       } else {
         soundEngine.playHit();
-        this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la Pokéball! Continúa el combate.`);
+        this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la ${ballName}! Continúa el combate.`);
         setTimeout(() => this.enemyTurn(), 750);
       }
     }, 700);
@@ -1919,24 +2260,58 @@ class BalancedNuzlockeEngine {
     const active = this.team[this.activeIdx];
     const canHeal = active && active.currentHp > 0 && active.currentHp < active.maxHp;
 
-    list.innerHTML = `
-      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
-        <span>🔴 <strong>Pokéballs:</strong> ${this.inventory.pokeball}</span>
+    const ballsHtml = `
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+        <span>🔴 <strong>Pokéballs:</strong> ${this.inventory.pokeball || 0} | 🔵 <strong>Superballs:</strong> ${this.inventory.greatball || 0} | 🟡 <strong>Ultraballs:</strong> ${this.inventory.ultraball || 0}</span>
         <span style="color:#aaa; font-size:6px;">(Usa 'Capturar' en combate)</span>
       </div>
-      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
-        <span>🧪 <strong>Poción (+20 HP):</strong> ${this.inventory.potion}</span>
-        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.potion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('potion', 20)">Usar en Activo</button>
+    `;
+
+    const potionsHtml = `
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+        <span>🧪 <strong>Poción (+20 HP):</strong> ${this.inventory.potion || 0}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.potion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('potion', 20)">Usar en Activo</button>
       </div>
-      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
-        <span>🧪 <strong>Superpoción (+50 HP):</strong> ${this.inventory.superPotion}</span>
-        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.superPotion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('superPotion', 50)">Usar en Activo</button>
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+        <span>🧪 <strong>Superpoción (+50 HP):</strong> ${this.inventory.superPotion || 0}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.superPotion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('superPotion', 50)">Usar en Activo</button>
       </div>
-      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px;">
-        <span>🧪 <strong>Poción Máx (100% HP):</strong> ${this.inventory.maxPotion}</span>
-        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${this.inventory.maxPotion > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('maxPotion', 9999)">Usar en Activo</button>
+      <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+        <span>🧪 <strong>Poción Máx (100% HP):</strong> ${this.inventory.maxPotion || 0}</span>
+        <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.maxPotion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('maxPotion', 9999)">Usar en Activo</button>
       </div>
     `;
+
+    let stonesHtml = '';
+    const stoneKeys = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone'];
+    const ownedStones = stoneKeys.filter(k => (this.inventory[k] || 0) > 0);
+
+    if (ownedStones.length > 0) {
+      stonesHtml += `<div style="font-size:6.5px; font-weight:bold; color:#ffd700; margin-top:8px; margin-bottom:4px;">✨ Piedras Evolutivas en Mochila:</div>`;
+      ownedStones.forEach(k => {
+        const conf = STONE_EVOLUTIONS[k];
+        const count = this.inventory[k];
+        const compatibleMembers = [];
+        this.team.forEach((p, idx) => {
+          if (p && conf.targets[p.id]) {
+            compatibleMembers.push({ p, idx });
+          }
+        });
+
+        const evoButtons = compatibleMembers.map(item => `
+          <button class="game-btn" style="padding:4px 6px; font-size:6px; background:#ffd700; color:#000; font-weight:bold; margin-left:4px;" onclick="game.useEvolutionStone('${k}', ${item.idx})">Evolucionar a ${item.p.nickname}</button>
+        `).join('');
+
+        stonesHtml += `
+          <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+            <span>💎 <strong>${conf.name}:</strong> ${count}</span>
+            <div>${compatibleMembers.length > 0 ? evoButtons : '<span style="color:#888; font-size:5.5px;">(Sin Pokémon compatibles en equipo)</span>'}</div>
+          </div>
+        `;
+      });
+    }
+
+    list.innerHTML = ballsHtml + potionsHtml + stonesHtml;
     document.getElementById('bag-modal').style.display = 'flex';
   }
 
@@ -1947,7 +2322,7 @@ class BalancedNuzlockeEngine {
   usePotion(type, amount) {
     const active = this.team[this.activeIdx];
     if (!active || active.currentHp <= 0 || active.currentHp >= active.maxHp) return;
-    if (this.inventory[type] <= 0) return;
+    if (!this.inventory[type] || this.inventory[type] <= 0) return;
 
     this.inventory[type]--;
     const oldHp = active.currentHp;
@@ -1964,6 +2339,129 @@ class BalancedNuzlockeEngine {
       this.setButtons(false, false, false, false);
       setTimeout(() => this.enemyTurn(), 800);
     }
+  }
+
+  async useEvolutionStone(stoneKey, teamIdx) {
+    const p = this.team[teamIdx];
+    const conf = STONE_EVOLUTIONS[stoneKey];
+    if (!p || !conf || !conf.targets[p.id] || (this.inventory[stoneKey] || 0) <= 0) return;
+
+    this.inventory[stoneKey]--;
+    const targetId = conf.targets[p.id];
+    this.closeBag();
+    await this.performEvolution(p, targetId);
+    this.updateUI();
+    this.saveGame();
+  }
+
+  // --- 🏺 Sistema de Reliquias Roguelite ---
+  canDraftRelic() {
+    const allIds = Object.keys(ROGUELITE_RELICS);
+    return allIds.some(id => !this.hasRelic(id));
+  }
+
+  showRelicDraftModal(onFinish) {
+    this.pendingDraftCallback = onFinish;
+    const unowned = Object.keys(ROGUELITE_RELICS).filter(id => !this.hasRelic(id));
+    if (unowned.length === 0) {
+      if (onFinish) onFinish();
+      return;
+    }
+
+    const shuffled = [...unowned].sort(() => 0.5 - Math.random());
+    const choices = shuffled.slice(0, 3).map(id => ROGUELITE_RELICS[id]);
+
+    const container = document.getElementById('relic-draft-options');
+    container.innerHTML = choices.map(r => `
+      <div class="relic-card" onclick="game.chooseRelic('${r.id}')">
+        <div class="relic-icon">${r.icon}</div>
+        <div class="relic-title">${r.name}</div>
+        <div class="relic-desc">${r.desc}</div>
+        <button class="game-btn" style="margin-top:12px; width:100%; background:#ffd700; color:#000; font-weight:bold; font-size:6px;">Elegir Reliquia</button>
+      </div>
+    `).join('');
+
+    soundEngine.playBadge();
+    document.getElementById('relic-draft-modal').style.display = 'flex';
+  }
+
+  chooseRelic(relicId) {
+    document.getElementById('relic-draft-modal').style.display = 'none';
+    if (!this.relics.includes(relicId)) {
+      this.relics.push(relicId);
+    }
+    const relic = ROGUELITE_RELICS[relicId];
+    soundEngine.playBadge();
+    this.log(`🏺 ¡Has obtenido la Reliquia: ${relic ? relic.name : relicId}! ${relic ? relic.desc : ''}`);
+    this.updateUI();
+    this.saveGame();
+
+    const cb = this.pendingDraftCallback;
+    this.pendingDraftCallback = null;
+    if (cb) cb();
+  }
+
+  openRelicsModal() {
+    const list = document.getElementById('relics-active-list');
+    if (!this.relics || this.relics.length === 0) {
+      list.innerHTML = '<div style="color:#aaa; font-size:6px; padding:8px;">No has obtenido reliquias aún. ¡Vence a líderes de gimnasio o rivales para desbloquearlas!</div>';
+    } else {
+      list.innerHTML = this.relics.map(id => {
+        const r = ROGUELITE_RELICS[id];
+        if (!r) return '';
+        return `
+          <div class="pc-item" style="display:flex; gap:10px; align-items:center; padding:8px;">
+            <span style="font-size:20px;">${r.icon}</span>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <strong style="color:#ffd700; font-size:7px;">${r.name}</strong>
+              <span style="color:#cbd5e1; font-size:5.5px;">${r.desc}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    document.getElementById('relics-list-modal').style.display = 'flex';
+  }
+
+  closeRelicsModal() {
+    document.getElementById('relics-list-modal').style.display = 'none';
+  }
+
+  // --- 🏪 Tienda Pokémon (Poké Mart) ---
+  openShop() {
+    this.updateMoneyUI();
+    const grid = document.getElementById('shop-grid');
+    grid.innerHTML = POKEMART_ITEMS.map(item => {
+      const canAfford = (this.money || 0) >= item.cost;
+      const ownedCount = this.inventory[item.id] || 0;
+      return `
+        <div class="shop-item">
+          <div class="shop-item-info">
+            <div class="shop-item-name">${item.icon} ${item.name} <span style="color:#aaa; font-size:5.5px;">(Tienes: ${ownedCount})</span></div>
+            <div class="shop-item-desc">${item.desc}</div>
+            <div class="shop-item-cost">₽${item.cost}</div>
+          </div>
+          <button class="game-btn" style="padding:6px 10px; font-size:6px; background:#ffd700; color:#000; font-weight:bold;" ${canAfford ? '' : 'disabled'} onclick="game.buyShopItem('${item.id}', ${item.cost})">Comprar</button>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('shop-modal').style.display = 'flex';
+  }
+
+  closeShop() {
+    document.getElementById('shop-modal').style.display = 'none';
+  }
+
+  buyShopItem(itemId, cost) {
+    if ((this.money || 0) < cost) return;
+    this.money -= cost;
+    this.inventory[itemId] = (this.inventory[itemId] || 0) + 1;
+    soundEngine.playTone(520, 0.08, 'square');
+    setTimeout(() => soundEngine.playTone(780, 0.12, 'square'), 70);
+    this.log(`🛒 ¡Compraste 1x ${itemId} por ₽${cost}!`);
+    this.updateMoneyUI();
+    this.openShop();
+    this.saveGame();
   }
 
   async performEvolution(p, targetIdOrName) {
@@ -2351,6 +2849,8 @@ class BalancedNuzlockeEngine {
         <div><strong>Alto Mando:</strong> ${e4Label}</div>
         <div>💀 <strong>Bajas Totales:</strong> <span style="color:#ff5252;">${this.graveyard.length}</span></div>
         <div><strong>Especies Capturadas:</strong> <span style="color:#00e5ff;">${this.caughtSpecies.size}</span></div>
+        <div>🏺 <strong>Reliquias Obtenidas:</strong> <span style="color:#ffd700;">${(this.relics || []).length}</span></div>
+        <div>💰 <strong>Dinero Final:</strong> <span style="color:#ffd700;">₽${this.money || 0}</span></div>
       </div>
       <div style="margin-top:10px;">
         <span style="font-weight:bold; color:#e2e8f0;">Colección de Medallas Obtenidas:</span>
@@ -2504,6 +3004,7 @@ class BalancedNuzlockeEngine {
         this.log(`⚠️ ¡RETO EN RIESGO! Ya has perdido ${pdx.lost} especies por zonas perdidas (umbral ${LOST_ZONE_WARNING_THRESHOLD}). ¡Cada captura cuenta de aquí en adelante!`);
       }
     }
+    this.updateMoneyUI();
     this.saveGame();
   }
 
@@ -2513,17 +3014,22 @@ class BalancedNuzlockeEngine {
     const btnCatch = document.getElementById('btn-catch');
     const btnRun = document.getElementById('btn-run');
     const btnBag = document.getElementById('btn-bag');
+    const btnShop = document.getElementById('btn-shop');
     const btnPc = document.getElementById('btn-pc');
+    const btnGrave = document.getElementById('btn-grave');
 
     if (btnPhys) btnPhys.disabled = !atk;
     if (btnSpec) btnSpec.disabled = !atk;
     if (btnCatch) {
       btnCatch.disabled = !catchBtn;
-      btnCatch.innerText = `🫳 Capturar (${this.inventory ? this.inventory.pokeball : 0})`;
+      const totalBalls = (this.inventory ? ((this.inventory.pokeball || 0) + (this.inventory.greatball || 0) + (this.inventory.ultraball || 0)) : 0);
+      btnCatch.innerText = `🫳 Capturar (${totalBalls})`;
     }
     if (btnRun) btnRun.disabled = !runBtn;
     if (btnBag) btnBag.disabled = !pcBag;
+    if (btnShop) btnShop.disabled = !pcBag;
     if (btnPc) btnPc.disabled = !pcBag;
+    if (btnGrave) btnGrave.disabled = !pcBag;
   }
 
   log(msg) { document.getElementById('textbox').innerText = msg; }
@@ -2540,6 +3046,8 @@ class BalancedNuzlockeEngine {
         storyStep: this.storyStep,
         badges: this.badges,
         activeIdx: this.activeIdx,
+        money: this.money,
+        relics: this.relics,
         team: this.team,
         pcBox: this.pcBox,
         graveyard: this.graveyard,
@@ -2565,7 +3073,7 @@ class BalancedNuzlockeEngine {
     if (!raw) return false;
     try {
       const d = JSON.parse(raw);
-      if (!d || d.version !== SAVE_VERSION) return false;
+      if (!d || (d.version !== 1 && d.version !== 2)) return false;
 
       this.playerName = d.playerName || "RED";
       this.rivalName = d.rivalName || "BLUE";
@@ -2573,10 +3081,16 @@ class BalancedNuzlockeEngine {
       this.rivalStarterId = d.rivalStarterId || 4;
       this.storyStep = d.storyStep || 0;
       this.badges = d.badges || 0;
+      this.money = typeof d.money === 'number' ? d.money : 500;
+      this.relics = Array.isArray(d.relics) ? d.relics : [];
       this.team = Array.isArray(d.team) ? d.team : [];
       this.pcBox = Array.isArray(d.pcBox) ? d.pcBox : [];
       this.graveyard = Array.isArray(d.graveyard) ? d.graveyard : [];
-      this.inventory = d.inventory || { potion: 3, superPotion: 1, maxPotion: 0, pokeball: 5 };
+      this.inventory = Object.assign({
+        potion: 3, superPotion: 1, maxPotion: 0,
+        pokeball: 5, greatball: 0, ultraball: 0,
+        fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0
+      }, d.inventory || {});
       this.activeIdx = Math.min(d.activeIdx || 0, Math.max(0, this.team.length - 1));
       this.capturedZones = new Set(Array.isArray(d.capturedZones) ? d.capturedZones : []);
       this.caughtSpecies = new Set(Array.isArray(d.caughtSpecies) ? d.caughtSpecies : []);
@@ -2615,6 +3129,7 @@ class BalancedNuzlockeEngine {
       // Re-renderizar la UI de estado persistente
       document.getElementById('setup-modal').style.display = 'none';
       document.getElementById('header-player').innerText = this.playerName;
+      this.updateMoneyUI();
       for (let i = 0; i < 8; i++) {
         const b = document.getElementById(`badge-${i}`);
         if (b) b.className = i < this.badges ? 'badge-slot obtained' : 'badge-slot';
@@ -2819,6 +3334,23 @@ window.testGame = function testGame() {
   const missingLocs = [...usedLocs].filter(loc => !(loc in ROUTE_ENCOUNTERS));
   add('Locs de encuentro presentes en ROUTE_ENCOUNTERS', missingLocs.length === 0,
     missingLocs.length ? missingLocs.join(', ') : 'OK');
+
+  // ── 6. Catálogos Roguelite (Reliquias, Tienda y Piedras Evolutivas) ──
+  const relicKeys = Object.keys(ROGUELITE_RELICS);
+  const relicsValid = relicKeys.length >= 7 && relicKeys.every(k => ROGUELITE_RELICS[k].id && ROGUELITE_RELICS[k].name && ROGUELITE_RELICS[k].icon && ROGUELITE_RELICS[k].desc);
+  const martValid = POKEMART_ITEMS.length >= 10 && POKEMART_ITEMS.every(i => i.id && i.name && i.cost > 0 && i.icon);
+  const stoneIssues = [];
+  Object.entries(STONE_EVOLUTIONS).forEach(([k, stone]) => {
+    Object.entries(stone.targets).forEach(([src, tgt]) => {
+      const s = parseInt(src, 10);
+      const t = parseInt(tgt, 10);
+      if (s < 1 || s > 151 || t < 1 || t > 151) stoneIssues.push(`${k}: ${s}→${t} fuera de Gen 1`);
+    });
+  });
+  add('Sistema Roguelite (Reliquias, Tienda y Piedras)', relicsValid && martValid && stoneIssues.length === 0,
+    relicsValid && martValid && stoneIssues.length === 0
+      ? `OK: ${relicKeys.length} reliquias, ${POKEMART_ITEMS.length} items de tienda, piedras Gen 1 verificadas`
+      : `PROBLEMA: Reliquias: ${relicsValid}, Tienda: ${martValid}, Piedras: ${stoneIssues.join(', ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
