@@ -1595,6 +1595,7 @@ class BalancedNuzlockeEngine {
   }
 
   getTypeBadgeHTML(types) {
+    if (!Array.isArray(types) || types.length === 0) return '';
     const typeGradients = {
       fire: 'linear-gradient(180deg, #F75231 0%, #B82200 100%)',
       water: 'linear-gradient(180deg, #539DDF 0%, #1B65AD 100%)',
@@ -1973,7 +1974,7 @@ class BalancedNuzlockeEngine {
     document.getElementById('nickname-modal').style.display = 'flex';
   }
 
-  confirmNickname() {
+  async confirmNickname() {
     const input = document.getElementById('nick-input');
     const nick = input.value.trim() || this.getRandomNickname();
     this.pendingCatch.nickname = nick;
@@ -1983,15 +1984,22 @@ class BalancedNuzlockeEngine {
     // Garantizar salud al 100% para todo Pokémon capturado o de regalo
     this.pendingCatch.currentHp = this.pendingCatch.maxHp;
 
-    if (this.team.length < 6) this.team.push(this.pendingCatch);
+    const isStarter = Boolean(this.starterPending);
+    const wasAddedToTeam = this.team.length < 6;
+    if (wasAddedToTeam) this.team.push(this.pendingCatch);
     else this.pcBox.push(this.pendingCatch);
 
     document.getElementById('nickname-modal').style.display = 'none';
     input.value = "";
 
     const step = this.getStoryLine()[this.storyStep];
-    if (step && step.type === 'route' && !this.pendingCatch.isShiny) {
-      this.capturedZones.add(step.loc);
+    if (step && !isStarter) {
+      if (step.type === 'route' && !this.pendingCatch.isShiny) {
+        this.capturedZones.add(step.loc);
+        await this.applyTeamLevelGain(1, 'capturar al Pokémon salvaje');
+      } else if (step.optional) {
+        await this.applyTeamLevelGain(2, `capturar a ${nick}`);
+      }
     }
 
     // El pendiente ya fue consumido (está en el equipo/PC): limpiar para el guardado
@@ -2015,26 +2023,65 @@ class BalancedNuzlockeEngine {
     }, 750);
   }
 
+  async applyTeamLevelGain(levels, reason) {
+    if (!levels || levels <= 0) return;
+    const leveledUpList = [];
+    const aliveToEvolve = [];
+    for (let p of this.team) {
+      if (p.currentHp > 0) {
+        const oldLevel = p.level || 5;
+        p.level = Math.min(100, oldLevel + levels);
+
+        const oldMax = p.maxHp || 1;
+        const oldCur = (p.currentHp !== undefined) ? p.currentHp : oldMax;
+        const hpRatio = oldMax > 0 ? (oldCur / oldMax) : 1;
+
+        const effHpBonus = p.bonusHp || 0;
+        p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * p.level) / 100) + p.level + 10 + effHpBonus;
+        // Conservar el daño previo del Pokémon (no curar gratis al subir nivel)
+        p.currentHp = Math.max(1, Math.min(p.maxHp, Math.round(p.maxHp * hpRatio)));
+
+        leveledUpList.push(`${p.nickname} (Lv.${p.level})`);
+        aliveToEvolve.push(p);
+      }
+    }
+    if (leveledUpList.length > 0) {
+      soundEngine.playBadge();
+      this.log(`📈 ¡PROGRESIÓN! +${levels} nivel(es) por ${reason}: ${leveledUpList.join(', ')}.`);
+    }
+    this.updateUI();
+    this.saveGame();
+
+    for (let p of aliveToEvolve) {
+      await this.checkEvolution(p);
+    }
+  }
+
   async normalizeTeamLevels(targetCap) {
+    const aliveToEvolve = [];
     for (let p of this.team) {
       if (p.currentHp > 0) {
         const oldMax = p.maxHp || 1;
         const oldCur = (p.currentHp !== undefined) ? p.currentHp : oldMax;
         const hpRatio = oldMax > 0 ? (oldCur / oldMax) : 1;
 
-        // En PokéLite: El nivel del rival es referencial; el Pokémon nunca pierde nivel si está por encima
-        if (!p.level || p.level < targetCap) {
-          p.level = targetCap;
+        // En PokéLite: El nivel del rival es referencial; la progresión se gana combatiendo (+1 salvaje, +2 opcional, +4 jefes)
+        if (!p.level) {
+          p.level = Math.max(5, targetCap || 5);
         }
         const effHpBonus = p.bonusHp || 0;
         p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * p.level) / 100) + p.level + 10 + effHpBonus;
         
-        // Conservar el daño previo del Pokémon (no curar gratis al subir nivel referencial)
+        // Conservar el daño previo del Pokémon (no curar gratis al entrar a una zona)
         p.currentHp = Math.max(1, Math.min(p.maxHp, Math.round(p.maxHp * hpRatio)));
-        await this.checkEvolution(p);
+        aliveToEvolve.push(p);
       }
     }
     this.saveGame();
+
+    for (let p of aliveToEvolve) {
+      await this.checkEvolution(p);
+    }
   }
 
   async initCurrentStep() {
@@ -2298,12 +2345,15 @@ class BalancedNuzlockeEngine {
       this.log("¡Batalla ganada!");
       const step = this.getStoryLine()[this.storyStep];
 
-      // Recompensa de dinero extra para combates opcionales (entrenadores, villanos, etc.)
+      // Progresión de nivel: +2 para encuentros opcionales, +4 para rivales, líderes, Alto Mando y jefes mayores
       if (step && step.optional) {
         const bonusMoney = step.rewardMoney || (100 + (step.cap || 10) * 12);
         this.money = (this.money || 0) + bonusMoney;
         this.updateMoneyUI();
         this.log(`🏆 ¡Victoria sobre ${step.title}! Recibes +₽${bonusMoney} Pokécuartos.`);
+        await this.applyTeamLevelGain(2, `vencer en combate opcional a ${step.title}`);
+      } else if (step) {
+        await this.applyTeamLevelGain(4, `vencer a ${step.title}`);
       }
 
       if (step && (step.type === 'e4' || step.type === 'champion')) {
@@ -2736,7 +2786,7 @@ class BalancedNuzlockeEngine {
     }, 900);
   }
 
-  handleEnemyDefeated() {
+  async handleEnemyDefeated() {
     let baseReward = 80 + Math.round((this.currentEnemy.level || 5) * 12);
     if (this.isBoss) baseReward = Math.round(baseReward * 1.8);
     if (this.hasRelic('gold_amulet')) baseReward = Math.round(baseReward * 1.35);
@@ -2782,6 +2832,7 @@ class BalancedNuzlockeEngine {
       if (step && step.type === 'route' && !this.currentEnemy.isShiny) {
         this.capturedZones.add(step.loc);
       }
+      await this.applyTeamLevelGain(1, 'derrotar al Pokémon salvaje');
       this.healAliveTeam();
       this.currentEnemy = null;
       this.storyStep++;
@@ -4542,6 +4593,53 @@ window.testGame = function testGame() {
   }
   add('Combates Opcionales vs Batallas Obligatorias (Entrenadores, Villanos y Jefes)', battlesCategoryOk,
     battlesCategoryOk ? 'OK: Gimnasios, Rivales clave y Liga obligatorios; Entrenadores, Villanos secundarios y Legendarios opcionales con salto y huida segura' : `FALLO: ${battlesCategoryDetails.join(' | ')}`);
+
+  // ── 13. Progresión de Niveles Dinámica (+1 Salvaje, +2 Opcional, +4 Jefes / Liga) ──
+  let levelProgressionOk = true;
+  const levelProgressionDetails = [];
+  try {
+    const origTeam = game.team;
+    const dummyAlive1 = { nickname: 'Pikachu', speciesName: 'PIKACHU', types: ['electric'], level: 10, baseHp: 35, maxHp: 30, currentHp: 25, bonusHp: 0 };
+    const dummyAlive2 = { nickname: 'Bulbasaur', speciesName: 'BULBASAUR', types: ['grass', 'poison'], level: 12, baseHp: 45, maxHp: 35, currentHp: 35, bonusHp: 0 };
+    const dummyDead = { nickname: 'Pidgey', speciesName: 'PIDGEY', types: ['normal', 'flying'], level: 8, baseHp: 40, maxHp: 28, currentHp: 0, bonusHp: 0 };
+    game.team = [dummyAlive1, dummyAlive2, dummyDead];
+
+    // +1 por salvaje
+    game.applyTeamLevelGain(1, 'test salvaje');
+    if (dummyAlive1.level !== 11 || dummyAlive2.level !== 13 || dummyDead.level !== 8) {
+      levelProgressionOk = false;
+      levelProgressionDetails.push(`Ganancia +1 incorrecta: P1 Lv.${dummyAlive1.level} (esp. 11), P2 Lv.${dummyAlive2.level} (esp. 13), Caído Lv.${dummyDead.level} (esp. 8)`);
+    }
+
+    // +2 por combate opcional
+    game.applyTeamLevelGain(2, 'test opcional');
+    if (dummyAlive1.level !== 13 || dummyAlive2.level !== 15 || dummyDead.level !== 8) {
+      levelProgressionOk = false;
+      levelProgressionDetails.push(`Ganancia +2 incorrecta: P1 Lv.${dummyAlive1.level} (esp. 13), P2 Lv.${dummyAlive2.level} (esp. 15), Caído Lv.${dummyDead.level} (esp. 8)`);
+    }
+
+    // +4 por líder / rival / liga
+    game.applyTeamLevelGain(4, 'test jefe');
+    if (dummyAlive1.level !== 17 || dummyAlive2.level !== 19 || dummyDead.level !== 8) {
+      levelProgressionOk = false;
+      levelProgressionDetails.push(`Ganancia +4 incorrecta: P1 Lv.${dummyAlive1.level} (esp. 17), P2 Lv.${dummyAlive2.level} (esp. 19), Caído Lv.${dummyDead.level} (esp. 8)`);
+    }
+
+    // Comprobar que normalizeTeamLevels no sobrescribe los niveles ganados
+    game.normalizeTeamLevels(25);
+    if (dummyAlive1.level !== 17 || dummyAlive2.level !== 19) {
+      levelProgressionOk = false;
+      levelProgressionDetails.push(`normalizeTeamLevels no debe igualar niveles inferiores a targetCap (P1 Lv.${dummyAlive1.level}, P2 Lv.${dummyAlive2.level})`);
+    }
+
+    // Restaurar equipo
+    game.team = origTeam;
+  } catch (e) {
+    levelProgressionOk = false;
+    levelProgressionDetails.push(`Error en test de progresión de niveles: ${e.message}`);
+  }
+  add('Progresión de Niveles Dinámica (+1 Salvaje, +2 Opcional, +4 Jefes / Liga)', levelProgressionOk,
+    levelProgressionOk ? 'OK: Vivos suben +1 (salvaje), +2 (opcional) y +4 (rival/líder/liga); caídos no suben de nivel; normalizeTeamLevels respeta el nivel ganado' : `FALLO: ${levelProgressionDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
