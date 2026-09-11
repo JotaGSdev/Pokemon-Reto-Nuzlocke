@@ -1123,6 +1123,107 @@ function speciesKeyName(rawName) {
   return lower;
 }
 
+// ⚔️ Tabla de tipos oficial (Efectividades x2.0, x0.5 e Inmunidad x0.0)
+const TYPE_CHART = {
+  normal:   { double_to: [], half_to: ['rock', 'steel'], zero_to: ['ghost'] },
+  fire:     { double_to: ['grass', 'ice', 'bug', 'steel'], half_to: ['fire', 'water', 'rock', 'dragon'], zero_to: [] },
+  water:    { double_to: ['fire', 'ground', 'rock'], half_to: ['water', 'grass', 'dragon'], zero_to: [] },
+  grass:    { double_to: ['water', 'ground', 'rock'], half_to: ['fire', 'grass', 'poison', 'flying', 'bug', 'dragon', 'steel'], zero_to: [] },
+  electric: { double_to: ['water', 'flying'], half_to: ['electric', 'grass', 'dragon'], zero_to: ['ground'] },
+  ice:      { double_to: ['grass', 'ground', 'flying', 'dragon'], half_to: ['fire', 'water', 'ice', 'steel'], zero_to: [] },
+  fighting: { double_to: ['normal', 'ice', 'rock', 'dark', 'steel'], half_to: ['poison', 'flying', 'psychic', 'bug', 'fairy'], zero_to: ['ghost'] },
+  poison:   { double_to: ['grass', 'fairy'], half_to: ['poison', 'ground', 'rock', 'ghost'], zero_to: ['steel'] },
+  ground:   { double_to: ['fire', 'electric', 'poison', 'rock', 'steel'], half_to: ['grass', 'bug'], zero_to: ['flying'] },
+  flying:   { double_to: ['grass', 'fighting', 'bug'], half_to: ['electric', 'rock', 'steel'], zero_to: [] },
+  psychic:  { double_to: ['fighting', 'poison'], half_to: ['psychic', 'steel'], zero_to: ['dark'] },
+  bug:      { double_to: ['grass', 'psychic', 'dark'], half_to: ['fire', 'fighting', 'poison', 'flying', 'ghost', 'steel', 'fairy'], zero_to: [] },
+  rock:     { double_to: ['fire', 'ice', 'flying', 'bug'], half_to: ['fighting', 'ground', 'steel'], zero_to: [] },
+  ghost:    { double_to: ['psychic', 'ghost'], half_to: ['dark'], zero_to: ['normal'] },
+  dragon:   { double_to: ['dragon'], half_to: ['steel'], zero_to: ['fairy'] },
+  steel:    { double_to: ['ice', 'rock', 'fairy'], half_to: ['fire', 'water', 'electric', 'steel'], zero_to: [] },
+  dark:     { double_to: ['psychic', 'ghost'], half_to: ['fighting', 'dark', 'fairy'], zero_to: [] },
+  fairy:    { double_to: ['fighting', 'dragon', 'dark'], half_to: ['fire', 'poison', 'steel'], zero_to: [] }
+};
+
+// 📖 Tipos canónicos de Kanto 1-151 para fallback offline garantizado
+const POKEMON_GEN1_TYPES = {
+  1: ['grass', 'poison'], 2: ['grass', 'poison'], 3: ['grass', 'poison'],
+  4: ['fire'], 5: ['fire'], 6: ['fire', 'flying'],
+  7: ['water'], 8: ['water'], 9: ['water'],
+  10: ['bug'], 11: ['bug'], 12: ['bug', 'flying'],
+  13: ['bug', 'poison'], 14: ['bug', 'poison'], 15: ['bug', 'poison'],
+  16: ['normal', 'flying'], 17: ['normal', 'flying'], 18: ['normal', 'flying'],
+  19: ['normal'], 20: ['normal'],
+  21: ['normal', 'flying'], 22: ['normal', 'flying'],
+  23: ['poison'], 24: ['poison'],
+  25: ['electric'], 26: ['electric'],
+  27: ['ground'], 28: ['ground'],
+  29: ['poison'], 30: ['poison'], 31: ['poison', 'ground'],
+  32: ['poison'], 33: ['poison'], 34: ['poison', 'ground'],
+  35: ['normal'], 36: ['normal'],
+  37: ['fire'], 38: ['fire'],
+  39: ['normal'], 40: ['normal'],
+  41: ['poison', 'flying'], 42: ['poison', 'flying'],
+  43: ['grass', 'poison'], 44: ['grass', 'poison'], 45: ['grass', 'poison'],
+  46: ['bug', 'grass'], 47: ['bug', 'grass'],
+  48: ['bug', 'poison'], 49: ['bug', 'poison'],
+  50: ['ground'], 51: ['ground'],
+  52: ['normal'], 53: ['normal'],
+  54: ['water'], 55: ['water'],
+  56: ['fighting'], 57: ['fighting'],
+  58: ['fire'], 59: ['fire'],
+  60: ['water'], 61: ['water'], 62: ['water', 'fighting'],
+  63: ['psychic'], 64: ['psychic'], 65: ['psychic'],
+  66: ['fighting'], 67: ['fighting'], 68: ['fighting'],
+  69: ['grass', 'poison'], 70: ['grass', 'poison'], 71: ['grass', 'poison'],
+  72: ['water', 'poison'], 73: ['water', 'poison'],
+  74: ['rock', 'ground'], 75: ['rock', 'ground'], 76: ['rock', 'ground'],
+  77: ['fire'], 78: ['fire'],
+  79: ['water', 'psychic'], 80: ['water', 'psychic'],
+  81: ['electric', 'steel'], 82: ['electric', 'steel'],
+  83: ['normal', 'flying'],
+  84: ['normal', 'flying'], 85: ['normal', 'flying'],
+  86: ['water'], 87: ['water', 'ice'],
+  88: ['poison'], 89: ['poison'],
+  90: ['water'], 91: ['water', 'ice'],
+  92: ['ghost', 'poison'], 93: ['ghost', 'poison'], 94: ['ghost', 'poison'],
+  95: ['rock', 'ground'],
+  96: ['psychic'], 97: ['psychic'],
+  98: ['water'], 99: ['water'],
+  100: ['electric'], 101: ['electric'],
+  102: ['grass', 'psychic'], 103: ['grass', 'psychic'],
+  104: ['ground'], 105: ['ground'],
+  106: ['fighting'], 107: ['fighting'],
+  108: ['normal'],
+  109: ['poison'], 110: ['poison'],
+  111: ['ground', 'rock'], 112: ['ground', 'rock'],
+  113: ['normal'],
+  114: ['grass'],
+  115: ['normal'],
+  116: ['water'], 117: ['water'],
+  118: ['water'], 119: ['water'],
+  120: ['water'], 121: ['water', 'psychic'],
+  122: ['psychic'],
+  123: ['bug', 'flying'],
+  124: ['ice', 'psychic'],
+  125: ['electric'],
+  126: ['fire'],
+  127: ['bug'],
+  128: ['normal'],
+  129: ['water'], 130: ['water', 'flying'],
+  131: ['water', 'ice'],
+  132: ['normal'],
+  133: ['normal'], 134: ['water'], 135: ['electric'], 136: ['fire'],
+  137: ['normal'],
+  138: ['rock', 'water'], 139: ['rock', 'water'],
+  140: ['rock', 'water'], 141: ['rock', 'water'],
+  142: ['rock', 'flying'],
+  143: ['normal'],
+  144: ['ice', 'flying'], 145: ['electric', 'flying'], 146: ['fire', 'flying'],
+  147: ['dragon'], 148: ['dragon'], 149: ['dragon', 'flying'],
+  150: ['psychic'], 151: ['psychic']
+};
+
 // 🎨 Sprites oficiales de ítems extraídos de PokéAPI con fallback local/remoto
 function getItemSprite(slug) {
   const clean = String(slug).toLowerCase().replace(/_/g, '-');
@@ -1224,7 +1325,7 @@ class BalancedNuzlockeEngine {
     this.activeIdx = 0;
     this.storyStep = 0;
     this.badges = 0;
-    this.typeMatchups = {};
+    this.typeMatchups = JSON.parse(JSON.stringify(TYPE_CHART));
     this.capturedZones = new Set();
     this.caughtSpecies = new Set();
     this.seenSpecies = new Set(); // especies avistadas en combate (Pokédex de Kanto)
@@ -1469,6 +1570,8 @@ class BalancedNuzlockeEngine {
   }
 
   async loadTypeMatchups() {
+    // Inicializar siempre con la tabla canónica completa (18 tipos con zero_to, double_to y half_to)
+    this.typeMatchups = JSON.parse(JSON.stringify(TYPE_CHART));
     try {
       const res = await fetch('https://pokeapi.co/api/v2/type/');
       const data = await res.json();
@@ -1477,17 +1580,12 @@ class BalancedNuzlockeEngine {
         const tData = await tRes.json();
         this.typeMatchups[t.name] = {
           double_to: tData.damage_relations.double_damage_to.map(x => x.name),
-          half_to: tData.damage_relations.half_damage_to.map(x => x.name)
+          half_to: tData.damage_relations.half_damage_to.map(x => x.name),
+          zero_to: (tData.damage_relations.no_damage_to || []).map(x => x.name)
         };
       }
     } catch(e) {
-      // Fallback base type matchups
-      this.typeMatchups = {
-        fire: { double_to: ['grass', 'ice', 'bug'], half_to: ['water', 'fire', 'rock', 'dragon'] },
-        water: { double_to: ['fire', 'ground', 'rock'], half_to: ['water', 'grass', 'dragon'] },
-        grass: { double_to: ['water', 'ground', 'rock'], half_to: ['fire', 'grass', 'poison', 'flying', 'bug', 'dragon'] },
-        electric: { double_to: ['water', 'flying'], half_to: ['electric', 'grass', 'dragon'] }
-      };
+      // Si no hay red, this.typeMatchups ya cuenta con la tabla canónica TYPE_CHART
     }
   }
 
@@ -1589,6 +1687,7 @@ class BalancedNuzlockeEngine {
 
     const frontFallback = isShiny ? `${ANIM}/shiny/${numId}.gif` : `${ANIM}/${numId}.gif`;
 
+    const fallbackTypes = POKEMON_GEN1_TYPES[numId] || ['normal'];
     return {
       id: numId,
       speciesName: sName,
@@ -1600,7 +1699,7 @@ class BalancedNuzlockeEngine {
       baseHp: 60,
       attack: 60,
       defense: 55,
-      types: ['normal'],
+      types: [...fallbackTypes],
       isShiny: isShiny,
       frontSprite: frontSprite,
       backSprite: frontSprite,
@@ -1922,26 +2021,87 @@ class BalancedNuzlockeEngine {
     this.updateUI();
   }
 
-  calcTypeMultiplier(atkTypes, defTypes) {
+  // Multiplicador de un tipo atacante contra los tipos defensores (2.0x, 0.5x, 0.0x)
+  getSingleTypeMultiplier(atkType, defTypes) {
     let mult = 1.0;
-    for (let a of atkTypes) {
-      const rel = this.typeMatchups[a];
-      if (rel) {
-        for (let d of defTypes) {
-          if (rel.double_to.includes(d)) mult *= 1.6;
-          if (rel.half_to.includes(d)) mult *= 0.6;
-        }
-      }
+    const rel = (this.typeMatchups && this.typeMatchups[atkType]) || TYPE_CHART[atkType];
+    if (!rel) return 1.0;
+    for (let d of (defTypes || ['normal'])) {
+      if (rel.zero_to && rel.zero_to.includes(d)) return 0.0;
+      if (rel.double_to && rel.double_to.includes(d)) mult *= 2.0;
+      else if (rel.half_to && rel.half_to.includes(d)) mult *= 0.5;
     }
     return mult;
+  }
+
+  // Multiplicador general para un conjunto de tipos atacantes contra defensores (el mejor de los tipos atacantes)
+  calcTypeMultiplier(atkTypes, defTypes) {
+    const list = (atkTypes && atkTypes.length > 0) ? atkTypes : ['normal'];
+    let bestMult = 0.0;
+    for (let a of list) {
+      const m = this.getSingleTypeMultiplier(a, defTypes);
+      if (m > bestMult) bestMult = m;
+    }
+    return bestMult;
+  }
+
+  // Determinar la mejor opción elemental del atacante y si goza de bonificador STAB (x1.5)
+  getAttackConfig(attacker, defender, isElemental) {
+    const atkTypes = (attacker && attacker.types && attacker.types.length > 0) ? attacker.types : ['normal'];
+    const defTypes = (defender && defender.types && defender.types.length > 0) ? defender.types : ['normal'];
+
+    if (!isElemental) {
+      // ⚔️ Ataque Físico: tipo Normal (potencia 40)
+      const atkType = 'normal';
+      const typeMult = this.getSingleTypeMultiplier(atkType, defTypes);
+      const isSTAB = atkTypes.includes('normal');
+      const stabMult = isSTAB ? 1.5 : 1.0;
+      return {
+        isElemental: false,
+        atkType: atkType,
+        basePower: 40,
+        typeMult: typeMult,
+        isSTAB: isSTAB,
+        stabMult: stabMult,
+        displayName: 'Ataque Físico'
+      };
+    }
+
+    // 🔥 Ataque Elemental: escoge el tipo elemental del Pokémon que cause mayor daño al defensor
+    let bestType = atkTypes[0] || 'normal';
+    let bestMult = -1;
+    for (let t of atkTypes) {
+      const m = this.getSingleTypeMultiplier(t, defTypes);
+      if (m > bestMult) {
+        bestMult = m;
+        bestType = t;
+      }
+    }
+
+    const typeMult = this.getSingleTypeMultiplier(bestType, defTypes);
+    const isSTAB = atkTypes.includes(bestType); // Siempre true porque proviene de sus tipos nativos
+    const stabMult = isSTAB ? 1.5 : 1.0;
+
+    return {
+      isElemental: true,
+      atkType: bestType,
+      basePower: 55,
+      typeMult: typeMult,
+      isSTAB: isSTAB,
+      stabMult: stabMult,
+      displayName: `Ataque Elemental (${bestType.toUpperCase()})`
+    };
   }
 
   calcDamage(attacker, defender, isElemental) {
     const lvl = attacker.level || 5;
     const atkStat = Math.max(attacker.attack || 50, 10);
     const defStat = Math.max(defender.defense || 50, 10);
-    const basePower = isElemental ? 55 : 40;
-    let typeMult = isElemental ? this.calcTypeMultiplier(attacker.types, defender.types) : 1.0;
+    const attackConfig = this.getAttackConfig(attacker, defender, isElemental);
+
+    const basePower = attackConfig.basePower;
+    let typeMult = attackConfig.typeMult;
+    const stabMult = attackConfig.stabMult;
     const isAttackerPlayer = this.team.includes(attacker);
     const isDefenderPlayer = this.team.includes(defender);
 
@@ -1949,18 +2109,24 @@ class BalancedNuzlockeEngine {
       typeMult *= 1.25;
     }
 
+    // Si hay inmunidad (0x), el daño es 0 directo
+    if (typeMult === 0) {
+      return { damage: 0, typeMult: 0, isCrit: false, isSTAB: attackConfig.isSTAB, atkType: attackConfig.atkType, attackConfig };
+    }
+
     const raw = ((((2 * lvl) / 5 + 2) * basePower * (atkStat / defStat)) / 50 + 2);
     const randomVariance = 0.85 + Math.random() * 0.3; // 85% a 115%
     const critChance = (isAttackerPlayer && this.hasRelic('scope_lens')) ? 0.22 : 0.08;
     const isCrit = Math.random() < critChance;
     const critMult = isCrit ? 1.5 : 1.0;
-    let damage = Math.max(1, Math.round(raw * typeMult * critMult * randomVariance));
+
+    let damage = Math.max(1, Math.round(raw * typeMult * stabMult * critMult * randomVariance));
 
     if (isDefenderPlayer && this.hasRelic('assault_vest')) {
       damage = Math.max(1, Math.round(damage * 0.85));
     }
 
-    return { damage, typeMult, isCrit };
+    return { damage, typeMult, isCrit, isSTAB: attackConfig.isSTAB, atkType: attackConfig.atkType, attackConfig };
   }
 
   attackPhysical() {
@@ -1977,7 +2143,7 @@ class BalancedNuzlockeEngine {
 
     this.setButtons(false, false, false, false);
 
-    const { damage, typeMult, isCrit } = this.calcDamage(active, this.currentEnemy, isElemental);
+    const { damage, typeMult, isCrit, isSTAB, atkType, attackConfig } = this.calcDamage(active, this.currentEnemy, isElemental);
 
     const foeImg = document.getElementById('foe-sprite');
     const battleScreen = document.getElementById('battle-screen');
@@ -1985,12 +2151,14 @@ class BalancedNuzlockeEngine {
       foeImg.classList.add('hit-flash');
       setTimeout(() => foeImg.classList.remove('hit-flash'), 320);
     }
-    if (typeMult > 1.2 || isCrit) {
+    if (typeMult >= 2.0 || isCrit) {
       soundEngine.playSuperEffective();
       if (battleScreen) {
         battleScreen.classList.add('shake');
         setTimeout(() => battleScreen.classList.remove('shake'), 350);
       }
+    } else if (typeMult === 0) {
+      soundEngine.playTone(200, 0.1, 'sawtooth');
     } else {
       soundEngine.playHit();
     }
@@ -1998,10 +2166,23 @@ class BalancedNuzlockeEngine {
     this.currentEnemy.currentHp = Math.max(0, this.currentEnemy.currentHp - damage);
     this.updateUI();
 
-    const multText = isElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
+    let multText = '';
+    if (typeMult === 0) {
+      multText = ' [¡No tuvo ningún efecto!]';
+    } else if (typeMult >= 3.9) {
+      multText = ' [¡Ultra Eficaz x4!]';
+    } else if (typeMult >= 1.9) {
+      multText = ' [¡Super Eficaz x2!]';
+    } else if (typeMult <= 0.26) {
+      multText = ' [¡Muy Poco Eficaz x0.25!]';
+    } else if (typeMult <= 0.51) {
+      multText = ' [Poco Eficaz x0.5]';
+    }
+
+    const stabText = (isSTAB && damage > 0) ? ' [¡STAB x1.5!]' : '';
     const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
-    const atkName = isElemental ? `Ataque Elemental (${(active.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
-    this.log(`⚔️ ${active.nickname} usa ${atkName}${critText} causando ${damage} de daño a ${this.currentEnemy.speciesName}${multText}.`);
+    const atkName = attackConfig.displayName;
+    this.log(`⚔️ ${active.nickname} usa ${atkName}${critText}${stabText} causando ${damage} de daño a ${this.currentEnemy.speciesName}${multText}.`);
 
     if (this.currentEnemy.currentHp <= 0) {
       setTimeout(() => this.handleEnemyDefeated(), 750);
@@ -2015,9 +2196,13 @@ class BalancedNuzlockeEngine {
     const active = this.team[this.activeIdx];
     if (!active || active.currentHp <= 0) return;
 
-    const typeMult = this.calcTypeMultiplier(this.currentEnemy.types, active.types);
-    const useElemental = typeMult >= 1.0;
-    const { damage, isCrit } = this.calcDamage(this.currentEnemy, active, useElemental);
+    // IA Táctica e Inteligente: simula daño de Ataque Elemental vs Ataque Físico y elige el más contundente
+    const elemSim = this.calcDamage(this.currentEnemy, active, true);
+    const physSim = this.calcDamage(this.currentEnemy, active, false);
+
+    // Si el elemental tiene inmunidad o causa menos daño neto que el físico, usa Físico
+    const useElemental = elemSim.damage >= physSim.damage;
+    const { damage, typeMult, isCrit, isSTAB, attackConfig } = useElemental ? elemSim : physSim;
 
     const plyrImg = document.getElementById('player-sprite');
     const battleScreen = document.getElementById('battle-screen');
@@ -2025,19 +2210,21 @@ class BalancedNuzlockeEngine {
       plyrImg.classList.add('hit-flash');
       setTimeout(() => plyrImg.classList.remove('hit-flash'), 320);
     }
-    if (typeMult > 1.2 || isCrit) {
+    if (typeMult >= 2.0 || isCrit) {
       soundEngine.playSuperEffective();
       if (battleScreen) {
         battleScreen.classList.add('shake');
         setTimeout(() => battleScreen.classList.remove('shake'), 350);
       }
+    } else if (typeMult === 0) {
+      soundEngine.playTone(200, 0.1, 'sawtooth');
     } else {
       soundEngine.playHit();
     }
 
     let finalDamage = damage;
     let focusBandTriggered = false;
-    if (active.currentHp - damage <= 0) {
+    if (damage > 0 && active.currentHp - damage <= 0) {
       if (this.hasRelic('focus_band') && !this.focusBandUsedInBattle && active.currentHp > (active.maxHp * 0.5)) {
         this.focusBandUsedInBattle = true;
         finalDamage = active.currentHp - 1;
@@ -2048,11 +2235,24 @@ class BalancedNuzlockeEngine {
     active.currentHp = Math.max(0, active.currentHp - finalDamage);
     this.updateUI();
 
-    const multText = useElemental ? (typeMult > 1.2 ? ' [¡Super Eficaz!]' : typeMult < 0.8 ? ' [Poco Eficaz]' : '') : '';
+    let multText = '';
+    if (typeMult === 0) {
+      multText = ' [¡No tuvo ningún efecto!]';
+    } else if (typeMult >= 3.9) {
+      multText = ' [¡Ultra Eficaz x4!]';
+    } else if (typeMult >= 1.9) {
+      multText = ' [¡Super Eficaz x2!]';
+    } else if (typeMult <= 0.26) {
+      multText = ' [¡Muy Poco Eficaz x0.25!]';
+    } else if (typeMult <= 0.51) {
+      multText = ' [Poco Eficaz x0.5]';
+    }
+
+    const stabText = (isSTAB && finalDamage > 0) ? ' [¡STAB x1.5!]' : '';
     const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
-    const foeAtk = useElemental ? `Ataque Elemental (${(this.currentEnemy.types[0] || 'normal').toUpperCase()})` : 'Ataque Físico';
+    const foeAtk = attackConfig.displayName;
     const focusBandText = focusBandTriggered ? ' [Cinta Foco] ¡Resistió el golpe mortal con 1 HP!' : '';
-    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}! ${active.nickname} recibe ${finalDamage} de daño.${focusBandText}`);
+    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}${stabText}! ${active.nickname} recibe ${finalDamage} de daño.${multText}${focusBandText}`);
 
     if (active.currentHp <= 0) {
       setTimeout(() => this.handlePlayerFaint(active), 750);
@@ -2997,12 +3197,23 @@ class BalancedNuzlockeEngine {
 
       // Preview de Combate previo a atacar: Tipos y Efectividad
       if (this.currentEnemy) {
-        const playerMult = this.calcTypeMultiplier(active.types, this.currentEnemy.types);
-        const multText = playerMult > 1.2 ? 'Elemental Super Eficaz (x1.6)' : playerMult < 0.8 ? 'Elemental Poco Eficaz (x0.6)' : 'Elemental Eficacia Normal (x1.0)';
+        const elemConfig = this.getAttackConfig(active, this.currentEnemy, true);
+        const physConfig = this.getAttackConfig(active, this.currentEnemy, false);
+        const playerMult = elemConfig.typeMult;
+        
+        let multText = '';
+        if (playerMult === 0) multText = 'Sin Efecto (x0)';
+        else if (playerMult >= 3.9) multText = 'Ultra Eficaz (x4)';
+        else if (playerMult >= 1.9) multText = 'Super Eficaz (x2)';
+        else if (playerMult <= 0.26) multText = 'Muy Poco Eficaz (x0.25)';
+        else if (playerMult <= 0.51) multText = 'Poco Eficaz (x0.5)';
+        else multText = 'Eficaz (x1.0)';
+
+        const stabLabel = elemConfig.isSTAB ? ' + STAB x1.5' : '';
         const playerTypeBadges = this.getTypeBadgeHTML(active.types);
         const foeTypeBadges = this.getTypeBadgeHTML(this.currentEnemy.types);
 
-        document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${multText}]</span>`;
+        document.getElementById('preview-matchup').innerHTML = `${playerTypeBadges} vs ${foeTypeBadges} <span style="font-size:6px; color:#aaa; margin-left:6px;">[${elemConfig.atkType.toUpperCase()}: ${multText}${stabLabel}]</span>`;
         const hpPct = Math.max(0, Math.round((this.currentEnemy.currentHp / this.currentEnemy.maxHp) * 100));
         document.getElementById('preview-win-val').innerText = `${hpPct}% HP Rival`;
       } else {
@@ -3054,8 +3265,23 @@ class BalancedNuzlockeEngine {
     const btnPc = document.getElementById('btn-pc');
     const btnGrave = document.getElementById('btn-grave');
 
-    if (btnPhys) btnPhys.disabled = !atk;
-    if (btnSpec) btnSpec.disabled = !atk;
+    const active = this.team[this.activeIdx];
+    if (btnPhys) {
+      btnPhys.disabled = !atk;
+      const isNormal = active && active.types && active.types.includes('normal');
+      btnPhys.innerText = isNormal ? '⚔️ Físico (STAB)' : '⚔️ Físico (Normal)';
+    }
+    if (btnSpec) {
+      btnSpec.disabled = !atk;
+      if (active && this.currentEnemy) {
+        const config = this.getAttackConfig(active, this.currentEnemy, true);
+        btnSpec.innerText = `🔥 Elemental (${config.atkType.toUpperCase()})`;
+      } else if (active && active.types && active.types[0]) {
+        btnSpec.innerText = `🔥 Elemental (${active.types[0].toUpperCase()})`;
+      } else {
+        btnSpec.innerText = '🔥 Elemental';
+      }
+    }
     if (btnCatch) {
       btnCatch.disabled = !catchBtn;
       const totalBalls = (this.inventory ? ((this.inventory.pokeball || 0) + (this.inventory.greatball || 0) + (this.inventory.ultraball || 0)) : 0);
@@ -3387,6 +3613,64 @@ window.testGame = function testGame() {
     relicsValid && martValid && stoneIssues.length === 0
       ? `OK: ${relicKeys.length} reliquias, ${POKEMART_ITEMS.length} items de tienda, piedras Gen 1 verificadas`
       : `PROBLEMA: Reliquias: ${relicsValid}, Tienda: ${martValid}, Piedras: ${stoneIssues.join(', ')}`);
+
+  // ── 7. Sistema de Combate: STAB x1.5, Efectividades e Inmunidades ──
+  let combatOk = true;
+  const combatDetails = [];
+  try {
+    const fireVsGrass = game.getSingleTypeMultiplier('fire', ['grass']);
+    const grassVsFire = game.getSingleTypeMultiplier('grass', ['fire']);
+    const elecVsGround = game.getSingleTypeMultiplier('electric', ['ground']);
+    const normVsGhost = game.getSingleTypeMultiplier('normal', ['ghost']);
+    const grassVsWaterGround = game.getSingleTypeMultiplier('grass', ['water', 'ground']);
+
+    if (fireVsGrass !== 2.0) { combatOk = false; combatDetails.push(`Fuego vs Planta: ${fireVsGrass} ≠ 2.0`); }
+    if (grassVsFire !== 0.5) { combatOk = false; combatDetails.push(`Planta vs Fuego: ${grassVsFire} ≠ 0.5`); }
+    if (elecVsGround !== 0.0) { combatOk = false; combatDetails.push(`Eléctrico vs Tierra: ${elecVsGround} ≠ 0.0`); }
+    if (normVsGhost !== 0.0) { combatOk = false; combatDetails.push(`Normal vs Fantasma: ${normVsGhost} ≠ 0.0`); }
+    if (grassVsWaterGround !== 4.0) { combatOk = false; combatDetails.push(`Planta vs Agua/Tierra: ${grassVsWaterGround} ≠ 4.0`); }
+
+    // Probar STAB y debilidad/resistencia en Pokémon Planta pura vs Fuego
+    const tangela = { id: 114, speciesName: 'TANGELA', types: ['grass'], level: 10, attack: 50, defense: 50 };
+    const charmy = { id: 4, speciesName: 'CHARMANDER', types: ['fire'], level: 10, attack: 50, defense: 50 };
+    const tangelaElem = game.getAttackConfig(tangela, charmy, true);
+    const tangelaPhys = game.getAttackConfig(tangela, charmy, false);
+
+    if (!tangelaElem.isSTAB || tangelaElem.stabMult !== 1.5) {
+      combatOk = false;
+      combatDetails.push('Tangela no recibió STAB x1.5 en Elemental');
+    }
+    if (tangelaElem.typeMult !== 0.5) {
+      combatOk = false;
+      combatDetails.push(`Tangela elemental contra Charmander: mult ${tangelaElem.typeMult} ≠ 0.5`);
+    }
+    if (tangelaPhys.isSTAB) {
+      combatOk = false;
+      combatDetails.push('Tangela recibió STAB erróneo en Físico');
+    }
+
+    // Probar Bulbasaur (Planta/Veneno) eligiendo su mejor tipo elemental contra Fuego (elige Veneno x1.0 en vez de Planta x0.5)
+    const bulba = { id: 1, speciesName: 'BULBASAUR', types: ['grass', 'poison'], level: 10, attack: 50, defense: 50 };
+    const bulbaElem = game.getAttackConfig(bulba, charmy, true);
+    if (bulbaElem.atkType !== 'poison' || bulbaElem.typeMult !== 1.0 || !bulbaElem.isSTAB) {
+      combatOk = false;
+      combatDetails.push(`Bulbasaur vs Charmander debió elegir Veneno (1.0x STAB), obtuvo: ${bulbaElem.atkType} (${bulbaElem.typeMult}x)`);
+    }
+
+    // Probar Snorlax (tipo Normal) recibiendo STAB en Físico
+    const snorlax = { id: 143, speciesName: 'SNORLAX', types: ['normal'], level: 30, attack: 110, defense: 65 };
+    const snorlaxPhys = game.getAttackConfig(snorlax, charmy, false);
+    if (!snorlaxPhys.isSTAB || snorlaxPhys.stabMult !== 1.5) {
+      combatOk = false;
+      combatDetails.push('Snorlax (Normal) no recibió STAB en Ataque Físico');
+    }
+  } catch (err) {
+    combatOk = false;
+    combatDetails.push(`Error en simulación: ${err.message}`);
+  }
+
+  add('Sistema de Combate (STAB x1.5, Efectividades e Inmunidades)', combatOk,
+    combatOk ? 'OK: STAB x1.5 verificado, debilidades x2/x4, resistencias x0.5 e inmunidades x0 funcionales' : `FALLO: ${combatDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
