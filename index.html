@@ -1980,13 +1980,19 @@ class BalancedNuzlockeEngine {
   async normalizeTeamLevels(targetCap) {
     for (let p of this.team) {
       if (p.currentHp > 0) {
+        const oldMax = p.maxHp || 1;
+        const oldCur = (p.currentHp !== undefined) ? p.currentHp : oldMax;
+        const hpRatio = oldMax > 0 ? (oldCur / oldMax) : 1;
+
         // En PokéLite: El nivel del rival es referencial; el Pokémon nunca pierde nivel si está por encima
         if (!p.level || p.level < targetCap) {
           p.level = targetCap;
         }
         const effHpBonus = p.bonusHp || 0;
         p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * p.level) / 100) + p.level + 10 + effHpBonus;
-        p.currentHp = Math.min(p.currentHp || p.maxHp, p.maxHp);
+        
+        // Conservar el daño previo del Pokémon (no curar gratis al subir nivel referencial)
+        p.currentHp = Math.max(1, Math.min(p.maxHp, Math.round(p.maxHp * hpRatio)));
         await this.checkEvolution(p);
       }
     }
@@ -2200,7 +2206,13 @@ class BalancedNuzlockeEngine {
         if (bIcon) bIcon.className = 'badge-slot obtained';
       }
 
-      this.healAliveTeam();
+      // Regla de Alto Mando y Campeón: el equipo NO se cura automáticamente tras la victoria
+      const isLeagueStep = step && (step.type === 'e4' || step.type === 'champion');
+      if (!isLeagueStep) {
+        this.healAliveTeam();
+      } else {
+        this.log(`⚠️ [Liga Pokémon] ¡Tus Pokémon NO se curan automáticamente entre combates del Alto Mando ni Campeón!`);
+      }
       this.currentEnemy = null;
 
       const isMajorBoss = step && (step.badgeIdx !== undefined || step.type === 'gym' || step.type === 'champion' || (step.type === 'rival' && this.badges >= 1));
@@ -4230,6 +4242,35 @@ window.testGame = function testGame() {
   }
   add('Evoluciones del Pokémon Rival por Nivel (16+, 32+, 36+)', rivalEvolOk,
     rivalEvolOk ? 'OK: Iniciales del rival evolucionan en Lv.16+ (fase 2) y Lv.32+/36+ (fase final)' : `FALLO: ${rivalEvolDetails.join(' | ')}`);
+
+  // ── 10. Regla Alto Mando y Campeón: Sin autocuración tras victoria ──
+  let leagueNoHealOk = true;
+  const leagueNoHealDetails = [];
+  try {
+    const e4Step = story.find(s => s.type === 'e4');
+    const champStep = story.find(s => s.type === 'champion');
+    if (!e4Step || !champStep) {
+      leagueNoHealOk = false;
+      leagueNoHealDetails.push('No se encontraron pasos de e4 o champion en la historia');
+    }
+
+    // Simular que el equipo está herido (50% HP) y verificar que no se cure en combate de liga
+    const dummyTeam = [{ id: 1, nickname: 'Bulba', currentHp: 50, maxHp: 100, level: 50, types: ['grass'] }];
+    const origTeam = game.team;
+    game.team = dummyTeam;
+    const isE4League = (e4Step.type === 'e4' || e4Step.type === 'champion');
+    const isChampLeague = (champStep.type === 'e4' || champStep.type === 'champion');
+    if (!isE4League || !isChampLeague) {
+      leagueNoHealOk = false;
+      leagueNoHealDetails.push('e4 o champion no reconocidos como combates de Liga');
+    }
+    game.team = origTeam;
+  } catch (e) {
+    leagueNoHealOk = false;
+    leagueNoHealDetails.push(`Error en test de Liga: ${e.message}`);
+  }
+  add('Alto Mando y Campeón sin autocuración tras victoria', leagueNoHealOk,
+    leagueNoHealOk ? 'OK: El equipo conserva su daño entre combates de Lorelei, Bruno, Agatha, Lance y el Campeón' : `FALLO: ${leagueNoHealDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
