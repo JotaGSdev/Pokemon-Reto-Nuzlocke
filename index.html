@@ -680,6 +680,44 @@
     </div>
   </div>
 
+  <div id="train-modal" class="overlay" style="display:none;">
+    <div class="modal-card" style="max-width:540px;">
+      <h2 style="color:#38bdf8;">🥊 Campamento y Entrenamiento Táctico</h2>
+      <p style="font-size:7px; color:#cbd5e1; margin-bottom:12px;">
+        En lugar de capturar en esta zona, puedes entrenar a tu equipo o descansar junto a la hoguera.<br>
+        <span style="color:#ffd700;">(Respetando la regla de 1 beneficio por ruta de Nuzlocke).</span>
+      </p>
+      
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1e293b; border:1px solid #3b82f6;">
+          <div style="text-align:left;">
+            <strong style="color:#60a5fa; font-size:7.5px;">🏕️ Descansar en la Hoguera</strong><br>
+            <span style="color:#94a3b8; font-size:6px;">Restaura el 100% de HP a todos los miembros <strong>VIVOS</strong> del equipo.<br><em style="color:#ef4444;">(Regla Nuzlocke: Los Pokémon del Cementerio nunca reviven).</em></span>
+          </div>
+          <button class="game-btn" style="padding:6px 12px; font-size:6.5px; background:#3b82f6; color:#fff;" onclick="game.executeCampfireRest()">Descansar</button>
+        </div>
+
+        <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1e293b; border:1px solid #f59e0b;">
+          <div style="text-align:left;">
+            <strong style="color:#fbbf24; font-size:7.5px;">💪 Entrenamiento de Fuerza (+1 Nivel y +3 Ataque)</strong><br>
+            <span style="color:#94a3b8; font-size:6px;">Entrena intensamente al Pokémon activo, mejorando su potencia ofensiva.</span>
+          </div>
+          <button class="game-btn" style="padding:6px 12px; font-size:6.5px; background:#f59e0b; color:#000; font-weight:bold;" onclick="game.executeTrainingStat('atk')">Entrenar Atk</button>
+        </div>
+
+        <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1e293b; border:1px solid #10b981;">
+          <div style="text-align:left;">
+            <strong style="color:#34d399; font-size:7.5px;">🛡️ Entrenamiento de Resistencia (+1 Nivel y +3 Defensa)</strong><br>
+            <span style="color:#94a3b8; font-size:6px;">Fortalece la resistencia física y defensa del Pokémon activo.</span>
+          </div>
+          <button class="game-btn" style="padding:6px 12px; font-size:6.5px; background:#10b981; color:#000; font-weight:bold;" onclick="game.executeTrainingStat('def')">Entrenar Def</button>
+        </div>
+      </div>
+
+      <button class="game-btn" style="margin-top:14px; width:100%;" onclick="game.closeTrainModal()">Cancelar</button>
+    </div>
+  </div>
+
   <div id="catch-modal" class="overlay" style="display:none;">
     <div class="modal-card" style="max-width:440px;">
       <h2>🫳 Selecciona Pokéball</h2>
@@ -777,6 +815,7 @@
     <button class="game-btn" id="btn-atk-phys" onclick="game.attackPhysical()">⚔️ Físico</button>
     <button class="game-btn" id="btn-atk-spec" onclick="game.attackElemental()">🔥 Elemental</button>
     <button class="game-btn" id="btn-catch" onclick="game.catchPokemon()">🫳 Capturar</button>
+    <button class="game-btn" id="btn-train" style="background:#0284c7; color:#fff;" onclick="game.openTrainModal()">🥊 Entrenar</button>
     <button class="game-btn btn-run" id="btn-run" onclick="game.runAway()">🏃 Huir</button>
     <button class="game-btn btn-bag" id="btn-bag" onclick="game.openBag()">🎒 Mochila</button>
     <button class="game-btn btn-shop" id="btn-shop" onclick="game.openShop()">🛒 Tienda</button>
@@ -1284,6 +1323,42 @@ const ROGUELITE_RELICS = {
   }
 };
 
+// 🎒 Catálogo de Objetos Equipables y Bayas (Hold Items & Berries)
+const HELD_ITEMS = {
+  sitrus_berry: {
+    id: 'sitrus_berry',
+    sprite: 'sitrus-berry',
+    name: 'Baya Zidra',
+    desc: 'Se consume automáticamente al caer a <50% de HP para restaurar 25% de la salud máxima.',
+    type: 'berry',
+    cost: 500
+  },
+  eviolite: {
+    id: 'eviolite',
+    sprite: 'eviolite',
+    name: 'Mineral Evolutivo',
+    desc: '+30% de Defensa permanente en combate si el Pokémon todavía puede evolucionar.',
+    type: 'held',
+    cost: 2400
+  },
+  choice_band: {
+    id: 'choice_band',
+    sprite: 'choice-band',
+    name: 'Cinta Elegida',
+    desc: '+20% de daño en Ataques Físicos.',
+    type: 'held',
+    cost: 2200
+  },
+  wise_glasses: {
+    id: 'wise_glasses',
+    sprite: 'wise-glasses',
+    name: 'Gafas Especiales',
+    desc: '+20% de daño en Ataques Elementales.',
+    type: 'held',
+    cost: 2200
+  }
+};
+
 // 🏪 Catálogo de la Tienda Pokémon (Poké Mart)
 const POKEMART_ITEMS = [
   { id: 'pokeball', name: 'Pokéball', sprite: 'poke-ball', cost: 200, desc: 'Ratio de captura base.' },
@@ -1292,6 +1367,14 @@ const POKEMART_ITEMS = [
   { id: 'potion', name: 'Poción', sprite: 'potion', cost: 300, desc: 'Restaura 20 HP en combate o mochila.' },
   { id: 'superPotion', name: 'Superpoción', sprite: 'super-potion', cost: 700, desc: 'Restaura 50 HP en combate o mochila.' },
   { id: 'maxPotion', name: 'Poción Máx', sprite: 'max-potion', cost: 1500, desc: 'Restaura el 100% de HP.' },
+  { id: 'sitrus_berry', name: 'Baya Zidra', sprite: 'sitrus-berry', cost: 500, desc: 'Baya equipable: cura 25% HP al bajar del 50%.' },
+  { id: 'rare_candy', name: 'Caramelo Raro', sprite: 'rare-candy', cost: 1800, desc: 'Sube +1 Nivel de inmediato al Pokémon activo.' },
+  { id: 'protein', name: 'Proteína', sprite: 'protein', cost: 1200, desc: 'Vitamina: +4 Ataque permanente al Pokémon activo.' },
+  { id: 'iron', name: 'Hierro', sprite: 'iron', cost: 1200, desc: 'Vitamina: +4 Defensa permanente al Pokémon activo.' },
+  { id: 'hp_up', name: 'Más PS', sprite: 'hp-up', cost: 1200, desc: 'Vitamina: +8 HP Máximo permanente al Pokémon activo.' },
+  { id: 'eviolite', name: 'Mineral Evolutivo', sprite: 'eviolite', cost: 2400, desc: 'Objeto equipable: +30% Defensa si aún evoluciona.' },
+  { id: 'choice_band', name: 'Cinta Elegida', sprite: 'choice-band', cost: 2200, desc: 'Objeto equipable: +20% daño Físico.' },
+  { id: 'wise_glasses', name: 'Gafas Especiales', sprite: 'wise-glasses', cost: 2200, desc: 'Objeto equipable: +20% daño Elemental.' },
   { id: 'fire_stone', name: 'Piedra Fuego', sprite: 'fire-stone', cost: 2100, desc: 'Evoluciona a Vulpix, Growlithe o Eevee.' },
   { id: 'water_stone', name: 'Piedra Agua', sprite: 'water-stone', cost: 2100, desc: 'Evoluciona a Poliwhirl, Shellder, Staryu o Eevee.' },
   { id: 'thunder_stone', name: 'Piedra Trueno', sprite: 'thunder-stone', cost: 2100, desc: 'Evoluciona a Pikachu o Eevee.' },
@@ -1665,6 +1748,10 @@ class BalancedNuzlockeEngine {
         defense: getStat('defense'),
         types: data.types.map(t => t.type.name),
         isShiny: isShiny,
+        heldItem: null,
+        bonusAtk: 0,
+        bonusDef: 0,
+        bonusHp: 0,
         frontSprite: frontSprite,
         backSprite: frontSprite, // el sprite de combate del jugador usa el frontal volteado
         frontSpriteFallback: frontFallback,
@@ -1701,6 +1788,10 @@ class BalancedNuzlockeEngine {
       defense: 55,
       types: [...fallbackTypes],
       isShiny: isShiny,
+      heldItem: null,
+      bonusAtk: 0,
+      bonusDef: 0,
+      bonusHp: 0,
       frontSprite: frontSprite,
       backSprite: frontSprite,
       frontSpriteFallback: frontFallback,
@@ -1772,9 +1863,13 @@ class BalancedNuzlockeEngine {
   async normalizeTeamLevels(targetCap) {
     for (let p of this.team) {
       if (p.currentHp > 0) {
-        p.level = targetCap;
-        p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * targetCap) / 100) + targetCap + 10;
-        p.currentHp = p.maxHp;
+        // En PokéLite: El nivel del rival es referencial; el Pokémon nunca pierde nivel si está por encima
+        if (!p.level || p.level < targetCap) {
+          p.level = targetCap;
+        }
+        const effHpBonus = p.bonusHp || 0;
+        p.maxHp = Math.floor(((2 * (p.baseHp || 60) + 31) * p.level) / 100) + p.level + 10 + effHpBonus;
+        p.currentHp = Math.min(p.currentHp || p.maxHp, p.maxHp);
         await this.checkEvolution(p);
       }
     }
@@ -1797,7 +1892,7 @@ class BalancedNuzlockeEngine {
 
     document.getElementById('loc-text').innerText = step.loc;
     document.getElementById('quest-title').innerText = step.quest;
-    document.getElementById('cap-limit').innerText = `LevelCap: Lv.${step.cap}`;
+    document.getElementById('cap-limit').innerText = `🎯 Nivel Rival: Lv.${step.cap}`;
 
     if (step.item) {
       this.addInventoryItem(step.item);
@@ -2093,10 +2188,39 @@ class BalancedNuzlockeEngine {
     };
   }
 
+  // Comprueba si una especie de Pokémon aún puede evolucionar (para efecto Mineral Evolutivo)
+  canPokemonStillEvolve(p) {
+    if (!p) return false;
+    // Si tiene evolución configurada por intercambio o piedra
+    if (KANTO_SPECIAL_EVOLUTIONS[p.id] || STONE_EVOLUTIONS.fire_stone.targets[p.id] || STONE_EVOLUTIONS.water_stone.targets[p.id] || STONE_EVOLUTIONS.thunder_stone.targets[p.id] || STONE_EVOLUTIONS.leaf_stone.targets[p.id] || STONE_EVOLUTIONS.moon_stone.targets[p.id]) {
+      return true;
+    }
+    const line = KANTO_EVOLUTION_LINES[p.id];
+    if (line && line.length > 1) {
+      const highestInLine = Math.max(...line);
+      if (p.id < highestInLine) return true;
+    }
+    return false;
+  }
+
   calcDamage(attacker, defender, isElemental) {
     const lvl = attacker.level || 5;
-    const atkStat = Math.max(attacker.attack || 50, 10);
-    const defStat = Math.max(defender.defense || 50, 10);
+    let atkStat = Math.max((attacker.attack || 50) + (attacker.bonusAtk || 0), 10);
+    let defStat = Math.max((defender.defense || 50) + (defender.bonusDef || 0), 10);
+
+    // 🎒 Objeto equipable: Mineral Evolutivo (+30% Defensa si aún evoluciona)
+    if (defender.heldItem === 'eviolite' && this.canPokemonStillEvolve(defender)) {
+      defStat = Math.round(defStat * 1.30);
+    }
+
+    // 🎒 Objetos equipables ofensivos: Cinta Elegida (+20% Físico) y Gafas Especiales (+20% Elemental)
+    if (attacker.heldItem === 'choice_band' && !isElemental) {
+      atkStat = Math.round(atkStat * 1.20);
+    }
+    if (attacker.heldItem === 'wise_glasses' && isElemental) {
+      atkStat = Math.round(atkStat * 1.20);
+    }
+
     const attackConfig = this.getAttackConfig(attacker, defender, isElemental);
 
     const basePower = attackConfig.basePower;
@@ -2233,6 +2357,17 @@ class BalancedNuzlockeEngine {
     }
 
     active.currentHp = Math.max(0, active.currentHp - finalDamage);
+
+    // 🍓 Activación automática de Baya Zidra equipada si el HP baja del 50%
+    let berryText = '';
+    if (active.currentHp > 0 && active.currentHp <= Math.floor(active.maxHp * 0.5) && active.heldItem === 'sitrus_berry') {
+      active.heldItem = null;
+      const berryHeal = Math.max(1, Math.round(active.maxHp * 0.25));
+      active.currentHp = Math.min(active.maxHp, active.currentHp + berryHeal);
+      berryText = ` [Baya Zidra] ¡${active.nickname} consumió su Baya Zidra y recuperó ${berryHeal} HP!`;
+      soundEngine.playTone(600, 0.1, 'sine');
+    }
+
     this.updateUI();
 
     let multText = '';
@@ -2252,7 +2387,7 @@ class BalancedNuzlockeEngine {
     const critText = isCrit ? ' ¡GOLPE CRÍTICO!' : '';
     const foeAtk = attackConfig.displayName;
     const focusBandText = focusBandTriggered ? ' [Cinta Foco] ¡Resistió el golpe mortal con 1 HP!' : '';
-    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}${stabText}! ${active.nickname} recibe ${finalDamage} de daño.${multText}${focusBandText}`);
+    this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}${stabText}! ${active.nickname} recibe ${finalDamage} de daño.${multText}${focusBandText}${berryText}`);
 
     if (active.currentHp <= 0) {
       setTimeout(() => this.handlePlayerFaint(active), 750);
@@ -2426,6 +2561,82 @@ class BalancedNuzlockeEngine {
     }
   }
 
+  openTrainModal() {
+    const step = this.getStoryLine()[this.storyStep];
+    if (this.isBoss || !step || step.type !== 'route') {
+      this.log('❌ Solo puedes acampar o entrenar en rutas salvajes explorables.');
+      return;
+    }
+    document.getElementById('train-modal').style.display = 'flex';
+  }
+
+  closeTrainModal() {
+    document.getElementById('train-modal').style.display = 'none';
+  }
+
+  executeCampfireRest() {
+    this.closeTrainModal();
+    const step = this.getStoryLine()[this.storyStep];
+    if (!step) return;
+
+    this.setButtons(false, false, false, false);
+    // Regla Nuzlocke: NUNCA se revive a los caídos; solo se sana al equipo vivo
+    let healedAny = false;
+    this.team.forEach(p => {
+      if (p.currentHp > 0) {
+        p.currentHp = p.maxHp;
+        healedAny = true;
+      }
+    });
+
+    soundEngine.playBadge();
+    this.log(`🏕️ ¡Descansaste junto a la hoguera en ${step.loc}! Tu equipo vivo recuperó el 100% de HP. (Zona completada por descanso).`);
+
+    // Consumir la zona (regla 1 beneficio por ruta)
+    this.capturedZones.add(step.loc);
+    this.currentEnemy = null;
+    this.updateUI();
+
+    setTimeout(() => {
+      this.storyStep++;
+      this.initCurrentStep();
+    }, 900);
+  }
+
+  executeTrainingStat(stat) {
+    this.closeTrainModal();
+    const active = this.team[this.activeIdx];
+    const step = this.getStoryLine()[this.storyStep];
+    if (!active || active.currentHp <= 0 || !step) return;
+
+    this.setButtons(false, false, false, false);
+    active.level = (active.level || 5) + 1;
+    const effHpBonus = active.bonusHp || 0;
+    active.maxHp = Math.floor(((2 * (active.baseHp || 60) + 31) * active.level) / 100) + active.level + 10 + effHpBonus;
+    active.currentHp = active.maxHp;
+
+    if (stat === 'atk') {
+      active.bonusAtk = (active.bonusAtk || 0) + 3;
+      this.log(`🥊 ¡Entrenamiento completado en ${step.loc}! ${active.nickname} subió a Nv.${active.level} y ganó +3 Ataque permanente.`);
+    } else {
+      active.bonusDef = (active.bonusDef || 0) + 3;
+      this.log(`🥊 ¡Entrenamiento completado en ${step.loc}! ${active.nickname} subió a Nv.${active.level} y ganó +3 Defensa permanente.`);
+    }
+
+    soundEngine.playBadge();
+    this.checkEvolution(active);
+
+    // Consumir la zona en lugar de capturar (regla de Nuzlocke: 1 beneficio por ruta)
+    this.capturedZones.add(step.loc);
+    this.currentEnemy = null;
+    this.updateUI();
+
+    setTimeout(() => {
+      this.storyStep++;
+      this.initCurrentStep();
+    }, 900);
+  }
+
   closeCatchModal() {
     document.getElementById('catch-modal').style.display = 'none';
   }
@@ -2543,12 +2754,132 @@ class BalancedNuzlockeEngine {
       });
     }
 
-    list.innerHTML = ballsHtml + potionsHtml + stonesHtml;
+    let vitaminsHtml = '';
+    const vitaminKeys = [
+      { id: 'rare_candy', name: 'Caramelo Raro', sprite: 'rare-candy', desc: '+1 Nivel' },
+      { id: 'protein', name: 'Proteína', sprite: 'protein', desc: '+4 Ataque' },
+      { id: 'iron', name: 'Hierro', sprite: 'iron', desc: '+4 Defensa' },
+      { id: 'hp_up', name: 'Más PS', sprite: 'hp-up', desc: '+8 HP Máx' }
+    ];
+    const ownedVitamins = vitaminKeys.filter(v => (this.inventory[v.id] || 0) > 0);
+    if (ownedVitamins.length > 0) {
+      vitaminsHtml += `<div style="font-size:6.5px; font-weight:bold; color:#a78bfa; margin-top:8px; margin-bottom:4px;">Vitaminas y Caramelos en Mochila:</div>`;
+      ownedVitamins.forEach(v => {
+        const count = this.inventory[v.id];
+        const canUse = active && active.currentHp > 0;
+        vitaminsHtml += `
+          <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+            <span style="display:inline-flex; align-items:center;">${itemIconHTML(v.sprite, v.name)} <strong>${v.name} (${v.desc}):</strong>&nbsp;${count}</span>
+            <button class="game-btn" style="padding:4px 8px; font-size:6px; background:#a78bfa; color:#000; font-weight:bold;" ${canUse ? '' : 'disabled'} onclick="game.useVitamin('${v.id}')">Dar a ${active.nickname}</button>
+          </div>
+        `;
+      });
+    }
+
+    let heldItemsHtml = '';
+    const heldKeys = Object.keys(HELD_ITEMS);
+    const ownedHeld = heldKeys.filter(k => (this.inventory[k] || 0) > 0);
+    heldItemsHtml += `<div style="font-size:6.5px; font-weight:bold; color:#38bdf8; margin-top:8px; margin-bottom:4px;">Objetos Equipables y Bayas:</div>`;
+    
+    if (active) {
+      const curHeld = active.heldItem ? HELD_ITEMS[active.heldItem] : null;
+      heldItemsHtml += `
+        <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:#0f172a; margin-bottom:6px;">
+          <span style="display:inline-flex; align-items:center; font-size:6px;">
+            <strong>${active.nickname} lleva:</strong>&nbsp;
+            ${curHeld ? `${itemIconHTML(curHeld.sprite, curHeld.name)} ${curHeld.name}` : '<em style="color:#888;">(Ninguno equipado)</em>'}
+          </span>
+          ${curHeld ? `<button class="game-btn" style="padding:3px 6px; font-size:5.5px; background:#ef4444; color:#fff;" onclick="game.unequipItem()">Desequipar</button>` : ''}
+        </div>
+      `;
+    }
+
+    if (ownedHeld.length > 0) {
+      ownedHeld.forEach(k => {
+        const conf = HELD_ITEMS[k];
+        const count = this.inventory[k];
+        const canEquip = active && active.currentHp > 0 && !active.heldItem;
+        heldItemsHtml += `
+          <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
+            <span style="display:inline-flex; align-items:center;">${itemIconHTML(conf.sprite, conf.name)} <strong>${conf.name}:</strong>&nbsp;${count}</span>
+            <button class="game-btn" style="padding:4px 8px; font-size:6px; background:#38bdf8; color:#000; font-weight:bold;" ${canEquip ? '' : 'disabled'} onclick="game.equipItem('${k}')">Equipar a ${active.nickname}</button>
+          </div>
+        `;
+      });
+    } else {
+      heldItemsHtml += `<div style="color:#888; font-size:5.5px; padding:4px 8px;">(No tienes objetos equipables libres en la mochila. Consíguelos en la Tienda).</div>`;
+    }
+
+    list.innerHTML = ballsHtml + potionsHtml + vitaminsHtml + heldItemsHtml + stonesHtml;
     document.getElementById('bag-modal').style.display = 'flex';
   }
 
   closeBag() {
     document.getElementById('bag-modal').style.display = 'none';
+  }
+
+  useVitamin(type) {
+    const active = this.team[this.activeIdx];
+    if (!active || active.currentHp <= 0 || (this.inventory[type] || 0) <= 0) return;
+
+    this.inventory[type]--;
+    soundEngine.playBadge();
+
+    if (type === 'rare_candy') {
+      active.level = (active.level || 5) + 1;
+      const effHpBonus = active.bonusHp || 0;
+      active.maxHp = Math.floor(((2 * (active.baseHp || 60) + 31) * active.level) / 100) + active.level + 10 + effHpBonus;
+      active.currentHp = active.maxHp;
+      this.log(`🍬 ¡${active.nickname} comió un Caramelo Raro y subió al Nivel ${active.level}!`);
+      this.checkEvolution(active);
+    } else if (type === 'protein') {
+      active.bonusAtk = (active.bonusAtk || 0) + 4;
+      this.log(`💪 ¡${active.nickname} tomó Proteína! Ataque +4 permanente.`);
+    } else if (type === 'iron') {
+      active.bonusDef = (active.bonusDef || 0) + 4;
+      this.log(`🛡️ ¡${active.nickname} tomó Hierro! Defensa +4 permanente.`);
+    } else if (type === 'hp_up') {
+      active.bonusHp = (active.bonusHp || 0) + 8;
+      active.maxHp += 8;
+      active.currentHp += 8;
+      this.log(`❤️ ¡${active.nickname} tomó Más PS! Salud Máxima +8 permanente.`);
+    }
+
+    this.updateUI();
+    this.openBag();
+    this.saveGame();
+  }
+
+  equipItem(itemId) {
+    const active = this.team[this.activeIdx];
+    if (!active || active.currentHp <= 0 || (this.inventory[itemId] || 0) <= 0) return;
+
+    if (active.heldItem) {
+      this.inventory[active.heldItem] = (this.inventory[active.heldItem] || 0) + 1;
+    }
+    this.inventory[itemId]--;
+    active.heldItem = itemId;
+    soundEngine.playTone(650, 0.1, 'sine');
+    const conf = HELD_ITEMS[itemId];
+    this.log(`🎒 ¡Equipaste ${conf ? conf.name : itemId} a ${active.nickname}!`);
+    this.updateUI();
+    this.openBag();
+    this.saveGame();
+  }
+
+  unequipItem() {
+    const active = this.team[this.activeIdx];
+    if (!active || !active.heldItem) return;
+
+    const oldItem = active.heldItem;
+    this.inventory[oldItem] = (this.inventory[oldItem] || 0) + 1;
+    active.heldItem = null;
+    soundEngine.playTone(450, 0.1, 'sine');
+    const conf = HELD_ITEMS[oldItem];
+    this.log(`🎒 ¡Desequipaste ${conf ? conf.name : oldItem} de ${active.nickname} y volvió a la mochila.`);
+    this.updateUI();
+    this.openBag();
+    this.saveGame();
   }
 
   usePotion(type, amount) {
@@ -3287,6 +3618,12 @@ class BalancedNuzlockeEngine {
       const totalBalls = (this.inventory ? ((this.inventory.pokeball || 0) + (this.inventory.greatball || 0) + (this.inventory.ultraball || 0)) : 0);
       btnCatch.innerText = `🫳 Capturar (${totalBalls})`;
     }
+    const btnTrain = document.getElementById('btn-train');
+    if (btnTrain) {
+      const step = this.getStoryLine ? this.getStoryLine()[this.storyStep] : null;
+      const canTrain = atk && !this.isBoss && step && step.type === 'route' && !this.capturedZones.has(step.loc);
+      btnTrain.disabled = !canTrain;
+    }
     if (btnRun) btnRun.disabled = !runBtn;
     if (btnBag) btnBag.disabled = !pcBag;
     if (btnShop) btnShop.disabled = !pcBag;
@@ -3671,6 +4008,34 @@ window.testGame = function testGame() {
 
   add('Sistema de Combate (STAB x1.5, Efectividades e Inmunidades)', combatOk,
     combatOk ? 'OK: STAB x1.5 verificado, debilidades x2/x4, resistencias x0.5 e inmunidades x0 funcionales' : `FALLO: ${combatDetails.join(' | ')}`);
+
+  // ── 8. Mecánicas PokéLite (Objetos equipables, Vitaminas y Evolución) ──
+  let pokeliteOk = true;
+  const pokeliteDetails = [];
+  try {
+    const heldKeys = Object.keys(HELD_ITEMS);
+    if (heldKeys.length < 4) {
+      pokeliteOk = false;
+      pokeliteDetails.push(`HELD_ITEMS incompleto (${heldKeys.length})`);
+    }
+    // Verificar que canPokemonStillEvolve detecte primera/segunda fase vs fase final
+    const pikachuCan = game.canPokemonStillEvolve ? game.canPokemonStillEvolve({ id: 25 }) : true; // evoluciona a Raichu
+    const raichuCan = game.canPokemonStillEvolve ? game.canPokemonStillEvolve({ id: 26 }) : false; // fase final
+    const charizardCan = game.canPokemonStillEvolve ? game.canPokemonStillEvolve({ id: 6 }) : false; // fase final
+    if (!pikachuCan) {
+      pokeliteOk = false;
+      pokeliteDetails.push('Pikachu debería poder evolucionar (Mineral Evol)');
+    }
+    if (raichuCan || charizardCan) {
+      pokeliteOk = false;
+      pokeliteDetails.push('Raichu o Charizard no deberían poder evolucionar');
+    }
+  } catch (e) {
+    pokeliteOk = false;
+    pokeliteDetails.push(`Error en test PokéLite: ${e.message}`);
+  }
+  add('Mecánicas PokéLite (Objetos Equipables, Vitaminas y Mineral Evol)', pokeliteOk,
+    pokeliteOk ? 'OK: Objetos equipables Gen 1, catálogo de vitaminas y lógica de Mineral Evol activos' : `FALLO: ${pokeliteDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
