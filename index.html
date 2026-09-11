@@ -388,6 +388,9 @@
       font-size: 7px;
       font-weight: bold;
       color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .shop-item-desc {
       font-size: 5.5px;
@@ -398,6 +401,14 @@
       font-size: 6.5px;
       color: #ffd700;
       font-weight: bold;
+    }
+    .item-icon-img {
+      width: 22px;
+      height: 22px;
+      image-rendering: pixelated;
+      vertical-align: middle;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+      flex-shrink: 0;
     }
     .relics-grid {
       display: grid;
@@ -423,10 +434,13 @@
       border-color: #ffd700;
       box-shadow: 0 6px 18px rgba(255, 215, 0, 0.4);
     }
-    .relic-icon {
-      font-size: 32px;
+    .relic-icon-img {
+      width: 38px;
+      height: 38px;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
       margin-bottom: 8px;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+      object-fit: contain;
     }
     .relic-title {
       font-size: 8px;
@@ -1109,47 +1123,61 @@ function speciesKeyName(rawName) {
   return lower;
 }
 
+// 🎨 Sprites oficiales de ítems extraídos de PokéAPI con fallback local/remoto
+function getItemSprite(slug) {
+  const clean = String(slug).toLowerCase().replace(/_/g, '-');
+  return {
+    local: `assets/sprites/items/${clean}.png`,
+    remote: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${clean}.png`
+  };
+}
+
+function itemIconHTML(slug, alt = 'item', className = 'item-icon-img') {
+  const { local, remote } = getItemSprite(slug);
+  return `<img src="${local}" alt="${alt}" class="${className}" onerror="this.onerror=null;this.src='${remote}'">`;
+}
+
 // 🏺 Catálogo de Reliquias Roguelite
 const ROGUELITE_RELICS = {
   focus_band: {
     id: 'focus_band',
-    icon: '🥊',
+    sprite: 'focus-band',
     name: 'Cinta Foco',
     desc: 'Sobrevive con 1 HP a un golpe mortal si tenías más del 50% de HP (1 vez por combate).'
   },
   gold_amulet: {
     id: 'gold_amulet',
-    icon: '🪙',
+    sprite: 'amulet-coin',
     name: 'Amuleto Avaro',
     desc: '+35% de dinero obtenido en todas las victorias en combate.'
   },
   leftovers: {
     id: 'leftovers',
-    icon: '🍎',
+    sprite: 'leftovers',
     name: 'Restos',
     desc: 'Recupera un 10% de la salud máxima de tu equipo vivo tras ganar cada combate.'
   },
   scope_lens: {
     id: 'scope_lens',
-    icon: '🔍',
+    sprite: 'scope-lens',
     name: 'Lente Precisa',
     desc: 'Probabilidad de golpe crítico aumentada del 8% al 22%.'
   },
   power_belt: {
     id: 'power_belt',
-    icon: '⚡',
+    sprite: 'power-belt',
     name: 'Cinto de Poder',
     desc: '+25% de daño con todos los ataques elementales de tu Pokémon.'
   },
   assault_vest: {
     id: 'assault_vest',
-    icon: '🛡️',
+    sprite: 'assault-vest',
     name: 'Chaleco Asalto',
     desc: 'Reduce un 15% todo el daño recibido por tu Pokémon en combate.'
   },
   shiny_charm: {
     id: 'shiny_charm',
-    icon: '✨',
+    sprite: 'shiny-charm',
     name: 'Amuleto Iris',
     desc: 'Probabilidad de encuentro Shiny aumentada a 1/64 (en lugar de 1/256).'
   }
@@ -1157,26 +1185,26 @@ const ROGUELITE_RELICS = {
 
 // 🏪 Catálogo de la Tienda Pokémon (Poké Mart)
 const POKEMART_ITEMS = [
-  { id: 'pokeball', name: 'Pokéball', icon: '🔴', cost: 200, desc: 'Ratio de captura base.' },
-  { id: 'greatball', name: 'Superball', icon: '🔵', cost: 600, desc: '+12% al ratio de captura.' },
-  { id: 'ultraball', name: 'Ultraball', icon: '🟡', cost: 1200, desc: '+25% al ratio de captura.' },
-  { id: 'potion', name: 'Poción', icon: '🧪', cost: 300, desc: 'Restaura 20 HP en combate o mochila.' },
-  { id: 'superPotion', name: 'Superpoción', icon: '🧪', cost: 700, desc: 'Restaura 50 HP en combate o mochila.' },
-  { id: 'maxPotion', name: 'Poción Máx', icon: '🧪', cost: 1500, desc: 'Restaura el 100% de HP.' },
-  { id: 'fire_stone', name: 'Piedra Fuego', icon: '🔥', cost: 2100, desc: 'Evoluciona a Vulpix, Growlithe o Eevee.' },
-  { id: 'water_stone', name: 'Piedra Agua', icon: '💧', cost: 2100, desc: 'Evoluciona a Poliwhirl, Shellder, Staryu o Eevee.' },
-  { id: 'thunder_stone', name: 'Piedra Trueno', icon: '⚡', cost: 2100, desc: 'Evoluciona a Pikachu o Eevee.' },
-  { id: 'leaf_stone', name: 'Piedra Hoja', icon: '🍃', cost: 2100, desc: 'Evoluciona a Gloom, Weepinbell o Exeggcute.' },
-  { id: 'moon_stone', name: 'Piedra Lunar', icon: '🌙', cost: 2100, desc: 'Evoluciona a Nidorina, Nidorino, Clefairy o Jigglypuff.' }
+  { id: 'pokeball', name: 'Pokéball', sprite: 'poke-ball', cost: 200, desc: 'Ratio de captura base.' },
+  { id: 'greatball', name: 'Superball', sprite: 'great-ball', cost: 600, desc: '+12% al ratio de captura.' },
+  { id: 'ultraball', name: 'Ultraball', sprite: 'ultra-ball', cost: 1200, desc: '+25% al ratio de captura.' },
+  { id: 'potion', name: 'Poción', sprite: 'potion', cost: 300, desc: 'Restaura 20 HP en combate o mochila.' },
+  { id: 'superPotion', name: 'Superpoción', sprite: 'super-potion', cost: 700, desc: 'Restaura 50 HP en combate o mochila.' },
+  { id: 'maxPotion', name: 'Poción Máx', sprite: 'max-potion', cost: 1500, desc: 'Restaura el 100% de HP.' },
+  { id: 'fire_stone', name: 'Piedra Fuego', sprite: 'fire-stone', cost: 2100, desc: 'Evoluciona a Vulpix, Growlithe o Eevee.' },
+  { id: 'water_stone', name: 'Piedra Agua', sprite: 'water-stone', cost: 2100, desc: 'Evoluciona a Poliwhirl, Shellder, Staryu o Eevee.' },
+  { id: 'thunder_stone', name: 'Piedra Trueno', sprite: 'thunder-stone', cost: 2100, desc: 'Evoluciona a Pikachu o Eevee.' },
+  { id: 'leaf_stone', name: 'Piedra Hoja', sprite: 'leaf-stone', cost: 2100, desc: 'Evoluciona a Gloom, Weepinbell o Exeggcute.' },
+  { id: 'moon_stone', name: 'Piedra Lunar', sprite: 'moon-stone', cost: 2100, desc: 'Evoluciona a Nidorina, Nidorino, Clefairy o Jigglypuff.' }
 ];
 
 // Mapeo de piedras evolutivas a IDs de destino en Gen 1
 const STONE_EVOLUTIONS = {
-  fire_stone: { name: 'Piedra Fuego', targets: { 37: 38, 58: 59, 133: 136 } },
-  water_stone: { name: 'Piedra Agua', targets: { 61: 62, 90: 91, 120: 121, 133: 134 } },
-  thunder_stone: { name: 'Piedra Trueno', targets: { 25: 26, 133: 135 } },
-  leaf_stone: { name: 'Piedra Hoja', targets: { 44: 45, 70: 71, 102: 103 } },
-  moon_stone: { name: 'Piedra Lunar', targets: { 30: 31, 33: 34, 35: 36, 39: 40 } }
+  fire_stone: { name: 'Piedra Fuego', sprite: 'fire-stone', targets: { 37: 38, 58: 59, 133: 136 } },
+  water_stone: { name: 'Piedra Agua', sprite: 'water-stone', targets: { 61: 62, 90: 91, 120: 121, 133: 134 } },
+  thunder_stone: { name: 'Piedra Trueno', sprite: 'thunder-stone', targets: { 25: 26, 133: 135 } },
+  leaf_stone: { name: 'Piedra Hoja', sprite: 'leaf-stone', targets: { 44: 45, 70: 71, 102: 103 } },
+  moon_stone: { name: 'Piedra Lunar', sprite: 'moon-stone', targets: { 30: 31, 33: 34, 35: 36, 39: 40 } }
 };
 
 // 💾 Clave y versión del guardado automático en localStorage
@@ -2180,17 +2208,17 @@ class BalancedNuzlockeEngine {
     }
 
     const availableTypes = [];
-    if (pokeball > 0) availableTypes.push({ type: 'pokeball', name: 'Pokéball', icon: '🔴', bonus: 0, count: pokeball });
-    if (greatball > 0) availableTypes.push({ type: 'greatball', name: 'Superball', icon: '🔵', bonus: 12, count: greatball });
-    if (ultraball > 0) availableTypes.push({ type: 'ultraball', name: 'Ultraball', icon: '🟡', bonus: 25, count: ultraball });
+    if (pokeball > 0) availableTypes.push({ type: 'pokeball', name: 'Pokéball', sprite: 'poke-ball', bonus: 0, count: pokeball });
+    if (greatball > 0) availableTypes.push({ type: 'greatball', name: 'Superball', sprite: 'great-ball', bonus: 12, count: greatball });
+    if (ultraball > 0) availableTypes.push({ type: 'ultraball', name: 'Ultraball', sprite: 'ultra-ball', bonus: 25, count: ultraball });
 
     if (availableTypes.length === 1) {
       this.executeCatch(availableTypes[0].type);
     } else {
       const optionsContainer = document.getElementById('catch-ball-options');
       optionsContainer.innerHTML = availableTypes.map(b => `
-        <button class="game-btn" style="display:flex; justify-content:space-between; align-items:center; padding:10px; font-size:6.5px;" onclick="game.selectBallAndCatch('${b.type}')">
-          <span>${b.icon} <strong>${b.name}</strong> ${b.bonus ? `(+${b.bonus}%)` : '(Base)'}</span>
+        <button class="game-btn" style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; font-size:6.5px;" onclick="game.selectBallAndCatch('${b.type}')">
+          <span style="display:flex; align-items:center; gap:6px;">${itemIconHTML(b.sprite, b.name)} <strong>${b.name}</strong> ${b.bonus ? `(+${b.bonus}%)` : '(Base)'}</span>
           <span style="color:#ffd700;">x${b.count}</span>
         </button>
       `).join('');
@@ -2262,22 +2290,26 @@ class BalancedNuzlockeEngine {
 
     const ballsHtml = `
       <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
-        <span>🔴 <strong>Pokéballs:</strong> ${this.inventory.pokeball || 0} | 🔵 <strong>Superballs:</strong> ${this.inventory.greatball || 0} | 🟡 <strong>Ultraballs:</strong> ${this.inventory.ultraball || 0}</span>
+        <span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="display:inline-flex; align-items:center;">${itemIconHTML('poke-ball', 'Pokéball')} <strong>Pokéballs:</strong>&nbsp;${this.inventory.pokeball || 0}</span>
+          <span style="display:inline-flex; align-items:center;">${itemIconHTML('great-ball', 'Superball')} <strong>Superballs:</strong>&nbsp;${this.inventory.greatball || 0}</span>
+          <span style="display:inline-flex; align-items:center;">${itemIconHTML('ultra-ball', 'Ultraball')} <strong>Ultraballs:</strong>&nbsp;${this.inventory.ultraball || 0}</span>
+        </span>
         <span style="color:#aaa; font-size:6px;">(Usa 'Capturar' en combate)</span>
       </div>
     `;
 
     const potionsHtml = `
       <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
-        <span>🧪 <strong>Poción (+20 HP):</strong> ${this.inventory.potion || 0}</span>
+        <span style="display:inline-flex; align-items:center;">${itemIconHTML('potion', 'Poción')} <strong>Poción (+20 HP):</strong>&nbsp;${this.inventory.potion || 0}</span>
         <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.potion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('potion', 20)">Usar en Activo</button>
       </div>
       <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
-        <span>🧪 <strong>Superpoción (+50 HP):</strong> ${this.inventory.superPotion || 0}</span>
+        <span style="display:inline-flex; align-items:center;">${itemIconHTML('super-potion', 'Superpoción')} <strong>Superpoción (+50 HP):</strong>&nbsp;${this.inventory.superPotion || 0}</span>
         <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.superPotion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('superPotion', 50)">Usar en Activo</button>
       </div>
       <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
-        <span>🧪 <strong>Poción Máx (100% HP):</strong> ${this.inventory.maxPotion || 0}</span>
+        <span style="display:inline-flex; align-items:center;">${itemIconHTML('max-potion', 'Poción Máx')} <strong>Poción Máx (100% HP):</strong>&nbsp;${this.inventory.maxPotion || 0}</span>
         <button class="game-btn" style="padding:4px 8px; font-size:6px;" ${(this.inventory.maxPotion || 0) > 0 && canHeal ? '' : 'disabled'} onclick="game.usePotion('maxPotion', 9999)">Usar en Activo</button>
       </div>
     `;
@@ -2287,7 +2319,7 @@ class BalancedNuzlockeEngine {
     const ownedStones = stoneKeys.filter(k => (this.inventory[k] || 0) > 0);
 
     if (ownedStones.length > 0) {
-      stonesHtml += `<div style="font-size:6.5px; font-weight:bold; color:#ffd700; margin-top:8px; margin-bottom:4px;">✨ Piedras Evolutivas en Mochila:</div>`;
+      stonesHtml += `<div style="font-size:6.5px; font-weight:bold; color:#ffd700; margin-top:8px; margin-bottom:4px;">Piedras Evolutivas en Mochila:</div>`;
       ownedStones.forEach(k => {
         const conf = STONE_EVOLUTIONS[k];
         const count = this.inventory[k];
@@ -2304,7 +2336,7 @@ class BalancedNuzlockeEngine {
 
         stonesHtml += `
           <div class="pc-item" style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px;">
-            <span>💎 <strong>${conf.name}:</strong> ${count}</span>
+            <span style="display:inline-flex; align-items:center;">${itemIconHTML(conf.sprite, conf.name)} <strong>${conf.name}:</strong>&nbsp;${count}</span>
             <div>${compatibleMembers.length > 0 ? evoButtons : '<span style="color:#888; font-size:5.5px;">(Sin Pokémon compatibles en equipo)</span>'}</div>
           </div>
         `;
@@ -2374,7 +2406,7 @@ class BalancedNuzlockeEngine {
     const container = document.getElementById('relic-draft-options');
     container.innerHTML = choices.map(r => `
       <div class="relic-card" onclick="game.chooseRelic('${r.id}')">
-        <div class="relic-icon">${r.icon}</div>
+        ${itemIconHTML(r.sprite, r.name, 'relic-icon-img')}
         <div class="relic-title">${r.name}</div>
         <div class="relic-desc">${r.desc}</div>
         <button class="game-btn" style="margin-top:12px; width:100%; background:#ffd700; color:#000; font-weight:bold; font-size:6px;">Elegir Reliquia</button>
@@ -2411,7 +2443,7 @@ class BalancedNuzlockeEngine {
         if (!r) return '';
         return `
           <div class="pc-item" style="display:flex; gap:10px; align-items:center; padding:8px;">
-            <span style="font-size:20px;">${r.icon}</span>
+            ${itemIconHTML(r.sprite, r.name, 'item-icon-img')}
             <div style="display:flex; flex-direction:column; gap:2px;">
               <strong style="color:#ffd700; font-size:7px;">${r.name}</strong>
               <span style="color:#cbd5e1; font-size:5.5px;">${r.desc}</span>
@@ -2437,7 +2469,11 @@ class BalancedNuzlockeEngine {
       return `
         <div class="shop-item">
           <div class="shop-item-info">
-            <div class="shop-item-name">${item.icon} ${item.name} <span style="color:#aaa; font-size:5.5px;">(Tienes: ${ownedCount})</span></div>
+            <div class="shop-item-name">
+              ${itemIconHTML(item.sprite, item.name, 'item-icon-img')}
+              <span>${item.name}</span>
+              <span style="color:#aaa; font-size:5.5px; margin-left:4px;">(Tienes: ${ownedCount})</span>
+            </div>
             <div class="shop-item-desc">${item.desc}</div>
             <div class="shop-item-cost">₽${item.cost}</div>
           </div>
@@ -3337,8 +3373,8 @@ window.testGame = function testGame() {
 
   // ── 6. Catálogos Roguelite (Reliquias, Tienda y Piedras Evolutivas) ──
   const relicKeys = Object.keys(ROGUELITE_RELICS);
-  const relicsValid = relicKeys.length >= 7 && relicKeys.every(k => ROGUELITE_RELICS[k].id && ROGUELITE_RELICS[k].name && ROGUELITE_RELICS[k].icon && ROGUELITE_RELICS[k].desc);
-  const martValid = POKEMART_ITEMS.length >= 10 && POKEMART_ITEMS.every(i => i.id && i.name && i.cost > 0 && i.icon);
+  const relicsValid = relicKeys.length >= 7 && relicKeys.every(k => ROGUELITE_RELICS[k].id && ROGUELITE_RELICS[k].name && ROGUELITE_RELICS[k].sprite && ROGUELITE_RELICS[k].desc);
+  const martValid = POKEMART_ITEMS.length >= 10 && POKEMART_ITEMS.every(i => i.id && i.name && i.cost > 0 && i.sprite);
   const stoneIssues = [];
   Object.entries(STONE_EVOLUTIONS).forEach(([k, stone]) => {
     Object.entries(stone.targets).forEach(([src, tgt]) => {
