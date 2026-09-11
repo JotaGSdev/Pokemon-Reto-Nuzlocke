@@ -165,63 +165,112 @@
     }
 
     #battle-screen {
-      height: 250px;
-      background: linear-gradient(to bottom, #6ec68d 0%, #8ac760 50%, #b3d674 100%);
+      height: 270px;
+      background: radial-gradient(circle at 50% 120%, #7dbb46 0%, #529633 45%, #2d5a1e 95%);
       position: relative;
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
       overflow: hidden;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
+      box-shadow: inset 0 0 45px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.15);
+    }
+
+    /* Subtle pitch stadium lines */
+    #battle-screen::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 40px),
+        radial-gradient(ellipse 90% 45% at 50% 55%, rgba(255,255,255,0.08) 0%, transparent 65%);
+      pointer-events: none;
     }
 
     .shadow-platform {
       position: absolute;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.22);
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      background: radial-gradient(ellipse at center, rgba(16, 38, 12, 0.75) 0%, rgba(20, 48, 15, 0.4) 60%, transparent 80%);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
       z-index: 1;
       pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .foe-shadow {
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 30px;
+    }
+    .player-shadow {
       bottom: 2px;
       left: 50%;
       transform: translateX(-50%);
-      width: 105px;
-      height: 24px;
-    }
-    .player-shadow {
-      bottom: -2px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 135px;
-      height: 28px;
+      width: 155px;
+      height: 34px;
     }
 
-    .combatant { position: absolute; width: 210px; }
-    #foe { top: 12px; right: 20px; }
-    #player { bottom: 12px; left: 20px; }
+    .combatant {
+      position: absolute;
+      width: 225px;
+      transition: transform 0.2s ease;
+    }
+    #foe { top: 14px; right: 22px; }
+    #player { bottom: 14px; left: 22px; }
 
     .hud {
-      background: var(--textbox-bg); border: 3px solid var(--ui-border);
-      border-radius: 8px; padding: 7px 9px; font-size: 7px;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+      background: linear-gradient(180deg, #fffdf2 0%, #f7f3d6 100%);
+      border: 3px solid var(--ui-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 7px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.8);
+      position: relative;
     }
 
     .hp-bar-outer {
-      width: 100%; height: 9px; background: #333; border-radius: 5px;
-      margin-top: 5px; border: 1.5px solid #000; overflow: hidden;
+      width: 100%;
+      height: 10px;
+      background: #1a1c24;
+      border-radius: 6px;
+      margin-top: 6px;
+      border: 2px solid #090a10;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+      position: relative;
     }
 
     .hp-bar-inner {
-      height: 100%; width: 100%; background: var(--hp-green); transition: width 0.3s ease, background 0.3s ease;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(180deg, #58e07a 0%, #2ecc71 55%, #27ae60 100%);
+      transition: width 0.35s ease, background 0.35s ease;
+      box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
     }
 
-    .sprite-box { position: relative; display: flex; justify-content: center; align-items: flex-end; }
-    #foe .sprite-box { width: 110px; height: 105px; margin: 4px auto 0 auto; }
-    #player .sprite-box { width: 140px; height: 125px; margin: 0 auto 2px auto; }
+    .sprite-box {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    #foe .sprite-box { width: 120px; height: 110px; margin: 4px auto 0 auto; }
+    #player .sprite-box { width: 145px; height: 130px; margin: 0 auto 2px auto; }
 
-    .sprite { display: block; margin: 0 auto; image-rendering: pixelated; filter: none; z-index: 2; position: relative; }
-    #foe-sprite { width: 95px; height: 95px; object-fit: contain; }
-    #player-sprite { width: 110px; height: 110px; object-fit: contain; transform: scaleX(-1) scale(1.15); transform-origin: bottom center; }
+    .sprite {
+      display: block;
+      margin: 0 auto;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45));
+      z-index: 2;
+      position: relative;
+    }
+    #foe-sprite { width: 100px; height: 100px; object-fit: contain; }
+    #player-sprite {
+      width: 115px;
+      height: 115px;
+      object-fit: contain;
+      transform: scaleX(-1) scale(1.18);
+      transform-origin: bottom center;
+    }
 
     @keyframes screen-shake {
       0% { transform: translate(0, 0); }
@@ -309,25 +358,54 @@
     }
 
     @media (max-width: 640px) {
-      body { padding: 6px; }
-      #game-container { padding: 10px; border-width: 5px; }
-      header { flex-direction: column; gap: 8px; text-align: center; }
-      .sound-toggle-btn { font-size: 6px; padding: 4px 6px; }
+      body { padding: 4px; }
+      #game-container { padding: 8px; border-width: 4px; border-radius: 14px; }
+      header { flex-direction: column; gap: 8px; text-align: center; padding: 8px 10px; }
+      .sound-toggle-btn { font-size: 6px; padding: 5px 7px; min-height: 28px; }
+      #badge-bar { padding: 6px 8px; }
+      .badge-slot { width: 32px; height: 32px; }
+      .badge-slot img { width: 20px; height: 20px; }
+      #quest-bar { font-size: 6px; padding: 6px 10px; }
+      #combat-preview { font-size: 6px; padding: 6px 10px; }
+      #battle-screen { height: 230px; }
+      .combatant { width: 170px; }
+      #foe { top: 8px; right: 8px; }
+      #player { bottom: 8px; left: 8px; }
+      .hud { padding: 6px 8px; font-size: 6px; }
+      .hp-bar-outer { height: 8px; margin-top: 4px; }
+      #foe-sprite { width: 80px; height: 80px; }
+      #player-sprite { width: 90px; height: 90px; }
+      .foe-shadow { width: 95px; height: 22px; }
+      .player-shadow { width: 115px; height: 24px; }
+      #team-bar { padding: 6px; gap: 4px; }
+      .team-slot { font-size: 5.5px; height: 34px; border-radius: 5px; }
+      #textbox { height: 58px; font-size: 7px; padding: 8px 12px; }
       #controls { grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
-      button.game-btn { font-size: 6px; padding: 10px 4px; }
-      .badge-slot { width: 30px; height: 30px; }
-      .badge-slot img { width: 18px; height: 18px; }
-      #battle-screen { height: 210px; }
-      .combatant { width: 160px; }
-      #foe { top: 8px; right: 10px; }
-      #player { bottom: 8px; left: 10px; }
-      #foe-sprite { width: 75px; height: 75px; }
-      #player-sprite { width: 85px; height: 85px; }
-      .team-slot { font-size: 5px; height: 32px; }
-      .modal-card { padding: 14px; }
+      button.game-btn { font-size: 6.5px; padding: 11px 4px; min-height: 38px; }
+      .modal-card { padding: 14px; width: 98%; }
       .hall-grid { grid-template-columns: repeat(2, 1fr); }
       .shop-grid { grid-template-columns: 1fr; }
       .relics-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 440px) {
+      #game-container { padding: 6px; border-width: 3px; }
+      .badge-slot { width: 28px; height: 28px; }
+      .badge-slot img { width: 16px; height: 16px; }
+      #battle-screen { height: 215px; }
+      .combatant { width: 145px; }
+      #foe-sprite { width: 70px; height: 70px; }
+      #player-sprite { width: 78px; height: 78px; }
+      .foe-shadow { width: 85px; height: 18px; }
+      .player-shadow { width: 100px; height: 20px; }
+      .hud { padding: 5px 6px; font-size: 5.5px; }
+      .team-slot { font-size: 5px; height: 30px; }
+      #controls { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 6px; }
+      button.game-btn { font-size: 6px; padding: 10px 2px; }
+      .modal-card h2 { font-size: 10px; }
+      .modal-card p { font-size: 7px; }
+      .starter-btn { width: 88px; padding: 6px; }
+      .starter-btn img { width: 52px; height: 52px; }
     }
 
     button.game-btn {
@@ -1527,10 +1605,10 @@ class BalancedNuzlockeEngine {
   getStoryLine() {
     return [
       // Capítulo 1: Inicio en Kanto
-      { type: 'rival', loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.rivalStarterId, lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
+      { type: 'rival', loc: 'Pueblo Paleta', title: `Rival ${this.rivalName} #1`, team: [{ id: this.getRivalStarterForm(5), lvl: 5 }], cap: 5, quest: `Batalla Inicial con ${this.rivalName}`, item: 'Poción' },
       { type: 'route', loc: 'Pueblo Paleta (Agua)', cap: 6, quest: 'Zona 1: Pesca/Surf en Pueblo Paleta' },
       { type: 'route', loc: 'Ruta 1', cap: 7, quest: 'Zona 2: Captura y entrena en Ruta 1', item: 'Pokéball x3' },
-      { type: 'rival', loc: 'Ruta 22', title: `Rival ${this.rivalName} #2`, team: [{ id: 16, lvl: 9 }, { id: this.rivalStarterId, lvl: 9 }], cap: 9, quest: `Combate 2 con ${this.rivalName}`, item: 'Poción Max' },
+      { type: 'rival', loc: 'Ruta 22', title: `Rival ${this.rivalName} #2`, team: [{ id: 16, lvl: 9 }, { id: this.getRivalStarterForm(9), lvl: 9 }], cap: 9, quest: `Combate 2 con ${this.rivalName}`, item: 'Poción Max' },
       { type: 'route', loc: 'Ruta 22', cap: 9, quest: 'Zona 3: Captura en Ruta 22' },
       { type: 'route', loc: 'Ruta 2', cap: 11, quest: 'Zona 4: Avanza por la Ruta 2', item: 'Superpoción' },
       { type: 'route', loc: 'Bosque Verde', cap: 13, quest: 'Zona 5: Atraviesa Bosque Verde', item: 'Antídoto' },
@@ -1545,13 +1623,13 @@ class BalancedNuzlockeEngine {
       // Gimnasio 2: Misty (Ciudad Celeste)
       { type: 'route', loc: 'Ciudad Celeste (Agua)', cap: 21, quest: 'Zona 9: Pesca/Surf en Ciudad Celeste' },
       { type: 'gym', loc: 'Ciudad Celeste', title: 'Líder Misty', team: [{ id: 120, lvl: 18 }, { id: 121, lvl: 21 }], cap: 21, badgeIdx: 1, quest: 'Gimnasio 2: Desafía a Misty (Medalla Cascada)' },
-      { type: 'rival', loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.rivalStarterId, lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
+      { type: 'rival', loc: 'Puente Pepita', title: `Rival ${this.rivalName} #3`, team: [{ id: 17, lvl: 18 }, { id: 63, lvl: 15 }, { id: this.getRivalStarterForm(19), lvl: 19 }], cap: 23, quest: `Derrota a ${this.rivalName} en el Puente Pepita` },
       { type: 'route', loc: 'Ruta 24', cap: 23, quest: 'Zona 10: Atraviesa la Ruta 24' },
       { type: 'route', loc: 'Ruta 25', cap: 24, quest: 'Zona 11: Explora la Ruta 25 hacia el Cabo Celeste' },
       { type: 'route', loc: 'Ruta 5', cap: 24, quest: 'Zona 12: Desciende por la Ruta 5' },
       { type: 'route', loc: 'Ruta 6', cap: 24, quest: 'Zona 13: Avanza por la Ruta 6 hacia Ciudad Carmín' },
       { type: 'route', loc: 'Ciudad Carmín (Agua)', cap: 24, quest: 'Zona 14: Pesca/Surf en Puerto Carmín' },
-      { type: 'rival', loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.rivalStarterId, lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
+      { type: 'rival', loc: 'S.S. Anne', title: `Rival ${this.rivalName} #4`, team: [{ id: 17, lvl: 19 }, { id: 20, lvl: 16 }, { id: 64, lvl: 18 }, { id: this.getRivalStarterForm(20), lvl: 20 }], cap: 24, quest: `Encuentro en el Crucero S.S. Anne` },
 
       // Gimnasio 3: Lt. Surge (Ciudad Carmín)
       { type: 'gym', loc: 'Ciudad Carmín', title: 'Líder Lt. Surge', team: [{ id: 100, lvl: 21 }, { id: 25, lvl: 18 }, { id: 26, lvl: 24 }], cap: 24, badgeIdx: 2, quest: 'Gimnasio 3: Desafía a Lt. Surge (Medalla Trueno)' },
@@ -1569,7 +1647,7 @@ class BalancedNuzlockeEngine {
       { type: 'rocket', loc: 'Guarida Rocket', title: 'Jefe Giovanni #1', team: [{ id: 95, lvl: 25 }, { id: 111, lvl: 24 }, { id: 115, lvl: 29 }], cap: 32, quest: 'Derrota a Giovanni en la Guarida Rocket' },
       { type: 'gym', loc: 'Ciudad Azulona', title: 'Líder Erika', team: [{ id: 71, lvl: 29 }, { id: 114, lvl: 24 }, { id: 45, lvl: 32 }], cap: 32, badgeIdx: 3, quest: 'Gimnasio 4: Desafía a Erika (Medalla Arcoíris)' },
       { type: 'gift_choice', loc: 'Mansión Azulona', title: 'Regalo Mansión Azulona: Elección de Eeveelución', choices: [{ id: 134, name: 'VAPOREON (Piedra Agua)' }, { id: 135, name: 'JOLTEON (Piedra Trueno)' }, { id: 136, name: 'FLAREON (Piedra Fuego)' }, { id: 133, name: 'EEVEE (Forma Base)' }], cap: 32, quest: 'Elige tu Eeveelución favorita (Vaporeon, Jolteon, Flareon o Eevee)' },
-      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.rivalStarterId, lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Silph Scope' },
+      { type: 'rival', loc: 'Torre Pokémon', title: `Rival ${this.rivalName} #5`, team: [{ id: 17, lvl: 25 }, { id: 58, lvl: 23 }, { id: 64, lvl: 20 }, { id: this.getRivalStarterForm(25), lvl: 25 }], cap: 35, quest: 'Purifica la Torre Pokémon con la Silph Scope' },
       
       // Rutas Centrales & Snorlax
       { type: 'route', loc: 'Ruta 16', cap: 35, quest: 'Zona 24: Camino Bici Ruta 16' },
@@ -1624,7 +1702,7 @@ class BalancedNuzlockeEngine {
       
       // Calle Victoria, Rival & Mewtwo
       { type: 'route', loc: 'Calle Victoria', cap: 53, quest: 'Zona 51: Atraviesa la peligrosa Calle Victoria' },
-      { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.rivalStarterId, lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
+      { type: 'rival', loc: 'Liga Pokémon', title: `Rival ${this.rivalName} Pre-Liga`, team: [{ id: 18, lvl: 47 }, { id: 65, lvl: 47 }, { id: 112, lvl: 45 }, { id: 130, lvl: 45 }, { id: 59, lvl: 45 }, { id: this.getRivalStarterForm(53), lvl: 53 }], cap: 53, quest: 'Último combate con tu Rival antes del Alto Mando' },
       { type: 'route', loc: 'Cueva Celeste', cap: 54, quest: 'Zona 52: Adéntrate en Cueva Celeste' },
       { type: 'legendary', loc: 'Cueva Celeste', title: 'Desafío Legendario Supremo: MEWTWO', team: [{ id: 150, lvl: 54 }], cap: 54, quest: '¡Encuentro Legendario Supremo con Mewtwo en Cueva Celeste!' },
 
@@ -1633,8 +1711,47 @@ class BalancedNuzlockeEngine {
       { type: 'e4', loc: 'Alto Mando #2', title: 'Bruno (Lucha/Roca)', team: [{ id: 95, lvl: 51 }, { id: 107, lvl: 53 }, { id: 106, lvl: 53 }, { id: 95, lvl: 54 }, { id: 68, lvl: 56 }], cap: 56, quest: 'Alto Mando 2: Enfrenta a Bruno' },
       { type: 'e4', loc: 'Alto Mando #3', title: 'Agatha (Fantasma/Veneno)', team: [{ id: 94, lvl: 54 }, { id: 42, lvl: 54 }, { id: 93, lvl: 53 }, { id: 24, lvl: 56 }, { id: 94, lvl: 58 }], cap: 58, quest: 'Alto Mando 3: Enfrenta a Agatha' },
       { type: 'e4', loc: 'Alto Mando #4', title: 'Lance (Dragón)', team: [{ id: 130, lvl: 56 }, { id: 148, lvl: 54 }, { id: 148, lvl: 54 }, { id: 142, lvl: 58 }, { id: 149, lvl: 60 }], cap: 60, quest: 'Alto Mando 4: Enfrenta al Gran Lance' },
-      { type: 'champion', loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: (this.rivalStarterId === 4 ? 6 : this.rivalStarterId === 7 ? 9 : 3), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
+      { type: 'champion', loc: 'Salón de la Fama', title: `CAMPEÓN DE KANTO: ${this.rivalName}`, team: [{ id: 18, lvl: 61 }, { id: 65, lvl: 59 }, { id: 112, lvl: 61 }, { id: 103, lvl: 61 }, { id: 130, lvl: 63 }, { id: this.getRivalStarterForm(65), lvl: 65 }], cap: 65, quest: '¡COMBATE FINAL POR EL TÍTULO DE CAMPEÓN!' }
     ];
+  }
+
+  getRivalStarterForm(lvl = 5) {
+    const base = this.rivalStarterId || 4;
+    // Bulbasaur (1) -> Ivysaur (2, Lv.16) -> Venusaur (3, Lv.32)
+    if (base === 1 || base === 2 || base === 3) {
+      if (lvl >= 32) return 3;
+      if (lvl >= 16) return 2;
+      return 1;
+    }
+    // Charmander (4) -> Charmeleon (5, Lv.16) -> Charizard (6, Lv.36)
+    if (base === 4 || base === 5 || base === 6) {
+      if (lvl >= 36) return 6;
+      if (lvl >= 16) return 5;
+      return 4;
+    }
+    // Squirtle (7) -> Wartortle (8, Lv.16) -> Blastoise (9, Lv.36)
+    if (base === 7 || base === 8 || base === 9) {
+      if (lvl >= 36) return 9;
+      if (lvl >= 16) return 8;
+      return 7;
+    }
+    // Pikachu (25) -> Raichu (26, Lv.30+)
+    if (base === 25 || base === 26) {
+      if (lvl >= 30) return 26;
+      return 25;
+    }
+    // Eevee (133) -> Vaporeon (134, Lv.30+) / Jolteon / Flareon
+    if (base === 133 || base === 134 || base === 135 || base === 136) {
+      if (lvl >= 30) {
+        // Asignar evolución complementaria canónica si es posible
+        if (this.playerStarterId === 1) return 136; // Flareon vs Bulbasaur
+        if (this.playerStarterId === 4) return 134; // Vaporeon vs Charmander
+        if (this.playerStarterId === 7) return 135; // Jolteon vs Squirtle
+        return 134; // Vaporeon por defecto
+      }
+      return 133;
+    }
+    return base;
   }
 
   determineRivalStarter(playerChoice) {
@@ -4036,6 +4153,83 @@ window.testGame = function testGame() {
   }
   add('Mecánicas PokéLite (Objetos Equipables, Vitaminas y Mineral Evol)', pokeliteOk,
     pokeliteOk ? 'OK: Objetos equipables Gen 1, catálogo de vitaminas y lógica de Mineral Evol activos' : `FALLO: ${pokeliteDetails.join(' | ')}`);
+
+  // ── 9. Evolución del Pokémon del Rival por Nivel Canónico ──
+  let rivalEvolOk = true;
+  const rivalEvolDetails = [];
+  try {
+    const origRivalStarter = game.rivalStarterId;
+    const testStarters = [1, 4, 7, 25, 133];
+    testStarters.forEach(sId => {
+      game.rivalStarterId = sId;
+      const sStory = game.getStoryLine();
+      const r3 = sStory.find(s => s.type === 'rival' && s.loc === 'Puente Pepita');
+      const r4 = sStory.find(s => s.type === 'rival' && s.loc === 'S.S. Anne');
+      const r5 = sStory.find(s => s.type === 'rival' && s.loc === 'Torre Pokémon');
+      const rPre = sStory.find(s => s.type === 'rival' && s.loc === 'Liga Pokémon');
+      const rChamp = sStory.find(s => s.type === 'champion');
+
+      const r3Starter = r3.team[r3.team.length - 1];
+      const r4Starter = r4.team[r4.team.length - 1];
+      const r5Starter = r5.team[r5.team.length - 1];
+      const rPreStarter = rPre.team[rPre.team.length - 1];
+      const rChampStarter = rChamp.team[rChamp.team.length - 1];
+
+      // Bulbasaur (1) -> Ivysaur (2) at Lv. 16+, Venusaur (3) at Lv. 32+
+      if (sId === 1) {
+        if (r3Starter.id !== 2 || r4Starter.id !== 2 || r5Starter.id !== 2) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Bulbasaur rival no evolucionó a Ivysaur (2) en Lv.19/20/25`);
+        }
+        if (rPreStarter.id !== 3 || rChampStarter.id !== 3) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Bulbasaur rival no evolucionó a Venusaur (3) en Liga/Champ`);
+        }
+      }
+      // Charmander (4) -> Charmeleon (5) at Lv. 16+, Charizard (6) at Lv. 36+
+      if (sId === 4) {
+        if (r3Starter.id !== 5 || r4Starter.id !== 5 || r5Starter.id !== 5) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Charmander rival no evolucionó a Charmeleon (5) en Lv.19/20/25`);
+        }
+        if (rPreStarter.id !== 6 || rChampStarter.id !== 6) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Charmander rival no evolucionó a Charizard (6) en Liga/Champ`);
+        }
+      }
+      // Squirtle (7) -> Wartortle (8) at Lv. 16+, Blastoise (9) at Lv. 36+
+      if (sId === 7) {
+        if (r3Starter.id !== 8 || r4Starter.id !== 8 || r5Starter.id !== 8) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Squirtle rival no evolucionó a Wartortle (8) en Lv.19/20/25`);
+        }
+        if (rPreStarter.id !== 9 || rChampStarter.id !== 9) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Squirtle rival no evolucionó a Blastoise (9) en Liga/Champ`);
+        }
+      }
+      // Pikachu (25) -> Raichu (26) at Lv. 30+
+      if (sId === 25) {
+        if (rPreStarter.id !== 26 || rChampStarter.id !== 26) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Pikachu rival no evolucionó a Raichu (26) en Liga/Champ`);
+        }
+      }
+      // Eevee (133) -> Eeveelution (134-136) at Lv. 30+
+      if (sId === 133) {
+        if (![134, 135, 136].includes(rPreStarter.id) || ![134, 135, 136].includes(rChampStarter.id)) {
+          rivalEvolOk = false;
+          rivalEvolDetails.push(`Eevee rival no evolucionó en Liga/Champ`);
+        }
+      }
+    });
+    game.rivalStarterId = origRivalStarter;
+  } catch (e) {
+    rivalEvolOk = false;
+    rivalEvolDetails.push(`Error al validar evoluciones del rival: ${e.message}`);
+  }
+  add('Evoluciones del Pokémon Rival por Nivel (16+, 32+, 36+)', rivalEvolOk,
+    rivalEvolOk ? 'OK: Iniciales del rival evolucionan en Lv.16+ (fase 2) y Lv.32+/36+ (fase final)' : `FALLO: ${rivalEvolDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
