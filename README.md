@@ -1,8 +1,8 @@
-# Pokémon Nuzlocke Challenge
+# 🔥 PokéRed Nuzlike
 
 <div align="center">
 
-![Pokémon Nuzlocke Banner](https://img.shields.io/badge/Pokémon-Rojo%20Fuego%20Nuzlocke-d32f2f?style=for-the-badge&logo=pokemon&logoColor=white)
+![PokéRed Nuzlike Banner](https://img.shields.io/badge/PokéRed-Nuzlike-d32f2f?style=for-the-badge&logo=pokemon&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Online-brightgreen?style=for-the-badge)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 <p align="center">
-  <b>Una experiencia web interactiva, adictiva y táctica estilo GBA retro para revivir el clásico desafío Pokémon Nuzlocke en Kanto e Islas Sete.</b><br>
+  <b>Una experiencia web roguelite táctica con permadeath inspirada en Pokémon Rojo / Rojo Fuego para Kanto e Islas Sete.</b><br>
   <i>Juega directamente en tu navegador, sin emuladores, sin descargas.</i>
 </p>
 
