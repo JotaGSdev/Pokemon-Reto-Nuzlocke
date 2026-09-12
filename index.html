@@ -171,6 +171,7 @@
       border-left: 3px solid var(--ui-border); border-right: 3px solid var(--ui-border);
       overflow: hidden;
       box-shadow: inset 0 0 45px rgba(0,0,0,0.4), inset 0 2px 8px rgba(255,255,255,0.15);
+      transition: background 0.6s ease;
     }
 
     /* Subtle pitch stadium lines */
@@ -184,6 +185,61 @@
       pointer-events: none;
     }
 
+    /* Biomas dinámicos por zona */
+    #battle-screen.biome-grass {
+      background: radial-gradient(circle at 50% 120%, #7dbb46 0%, #529633 45%, #2d5a1e 95%);
+    }
+    #battle-screen.biome-cave {
+      background: radial-gradient(circle at 50% 120%, #475569 0%, #334155 45%, #0f172a 95%);
+    }
+    #battle-screen.biome-cave::before {
+      background-image: 
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 2px, transparent 2px, transparent 22px),
+        radial-gradient(ellipse 90% 45% at 50% 55%, rgba(255,255,255,0.05) 0%, transparent 65%);
+    }
+    #battle-screen.biome-water {
+      background: radial-gradient(circle at 50% 120%, #38bdf8 0%, #0284c7 45%, #075985 95%);
+    }
+    #battle-screen.biome-water::before {
+      background-image: 
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 3px, transparent 3px, transparent 24px),
+        radial-gradient(ellipse 90% 45% at 50% 55%, rgba(255,255,255,0.12) 0%, transparent 65%);
+    }
+    #battle-screen.biome-gym {
+      background: radial-gradient(circle at 50% 120%, #d97706 0%, #92400e 45%, #451a03 95%);
+    }
+    #battle-screen.biome-gym::before {
+      background-image: 
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 50px),
+        radial-gradient(ellipse 90% 45% at 50% 55%, rgba(255,255,255,0.1) 0%, transparent 65%);
+    }
+    #battle-screen.biome-tower {
+      background: radial-gradient(circle at 50% 120%, #7e22ce 0%, #581c87 45%, #2e1065 95%);
+    }
+    #battle-screen.biome-tower::before {
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(216,180,254,0.18) 0%, transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(192,132,252,0.15) 0%, transparent 35%);
+    }
+    #battle-screen.biome-rocket {
+      background: radial-gradient(circle at 50% 120%, #64748b 0%, #334155 45%, #1e293b 95%);
+    }
+    #battle-screen.biome-rocket::before {
+      background-image: 
+        repeating-linear-gradient(-45deg, rgba(234,179,8,0.12) 0px, rgba(234,179,8,0.12) 8px, transparent 8px, transparent 24px);
+    }
+    #battle-screen.biome-volcano {
+      background: radial-gradient(circle at 50% 120%, #f97316 0%, #c2410c 45%, #7c2d12 95%);
+    }
+    #battle-screen.biome-league {
+      background: radial-gradient(circle at 50% 120%, #e11d48 0%, #881337 40%, #2e1065 95%);
+    }
+    #battle-screen.biome-league::before {
+      background-image: 
+        radial-gradient(ellipse 90% 50% at 50% 50%, rgba(251,191,36,0.18) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, rgba(251,191,36,0.08) 0px, rgba(251,191,36,0.08) 2px, transparent 2px, transparent 35px);
+    }
+
     .shadow-platform {
       position: absolute;
       border-radius: 50%;
@@ -192,7 +248,37 @@
       z-index: 1;
       pointer-events: none;
       border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
+    #battle-screen.biome-cave .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.45) 60%, transparent 80%);
+      border-color: rgba(148,163,184,0.15);
+    }
+    #battle-screen.biome-water .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(12,74,96,0.85) 0%, rgba(14,116,144,0.45) 60%, transparent 80%);
+      border-color: rgba(56,189,248,0.3);
+    }
+    #battle-screen.biome-gym .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(69,26,3,0.85) 0%, rgba(120,53,15,0.45) 60%, transparent 80%);
+      border-color: rgba(251,191,36,0.25);
+    }
+    #battle-screen.biome-tower .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(46,16,101,0.85) 0%, rgba(88,28,135,0.45) 60%, transparent 80%);
+      border-color: rgba(192,132,252,0.3);
+    }
+    #battle-screen.biome-rocket .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(15,23,42,0.85) 0%, rgba(30,41,59,0.5) 60%, transparent 80%);
+      border-color: rgba(234,179,8,0.25);
+    }
+    #battle-screen.biome-volcano .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(67,20,7,0.85) 0%, rgba(154,52,18,0.45) 60%, transparent 80%);
+      border-color: rgba(249,115,22,0.3);
+    }
+    #battle-screen.biome-league .shadow-platform {
+      background: radial-gradient(ellipse at center, rgba(76,29,149,0.85) 0%, rgba(136,19,55,0.45) 60%, transparent 80%);
+      border-color: rgba(251,191,36,0.4);
+    }
+
     .foe-shadow {
       bottom: 6px;
       left: 50%;
@@ -274,13 +360,62 @@
 
     @keyframes screen-shake {
       0% { transform: translate(0, 0); }
-      20% { transform: translate(-4px, 2px); }
-      40% { transform: translate(4px, -2px); }
-      60% { transform: translate(-3px, 3px); }
-      80% { transform: translate(3px, -2px); }
+      20% { transform: translate(-6px, 4px); }
+      40% { transform: translate(6px, -4px); }
+      60% { transform: translate(-4px, 3px); }
+      80% { transform: translate(4px, -2px); }
       100% { transform: translate(0, 0); }
     }
     .shake { animation: screen-shake 0.35s ease-in-out; }
+
+    @keyframes hp-pulse {
+      0% { filter: brightness(1); }
+      50% { filter: brightness(1.7) drop-shadow(0 0 6px #ef4444); }
+      100% { filter: brightness(1); }
+    }
+    .hp-low-pulse { animation: hp-pulse 0.7s infinite alternate ease-in-out; }
+
+    @keyframes flash-fade {
+      0% { opacity: 0; }
+      40% { opacity: 0.55; }
+      100% { opacity: 0; }
+    }
+    #atk-flash-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 12;
+      border-radius: 4px;
+      display: none;
+    }
+    .atk-flash-active {
+      animation: flash-fade 0.32s ease-out forwards;
+    }
+
+    #boss-speech-bubble {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #ffc107;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #f8fafc;
+      font-size: 7px;
+      max-width: 88%;
+      text-align: center;
+      z-index: 25;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      display: none;
+      cursor: pointer;
+      line-height: 1.4;
+      animation: fadeInBubble 0.25s ease-out;
+    }
+    @keyframes fadeInBubble {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
 
     @keyframes hit-flash {
       0%, 100% { filter: none; }
@@ -869,7 +1004,9 @@
     <div>Prob. Victoria: <strong id="preview-win-val" style="color:#ffea00;">--%</strong></div>
   </div>
 
-  <div id="battle-screen">
+  <div id="battle-screen" class="biome-grass">
+    <div id="atk-flash-overlay"></div>
+    <div id="boss-speech-bubble" onclick="this.style.display='none'"></div>
     <div id="dupes-banner">DUPLICADO O LÍNEA DETECTADO ➔ RE-SORTEANDO</div>
 
     <div id="foe" class="combatant">
@@ -2086,6 +2223,60 @@ class BalancedNuzlockeEngine {
     }
   }
 
+  getBiomeForStep(step) {
+    if (!step) return 'biome-grass';
+    if (step.type === 'e4' || step.type === 'champion') return 'biome-league';
+    if (step.type === 'gym') {
+      if (step.loc && step.loc.includes('Canela')) return 'biome-volcano';
+      if (step.loc && step.loc.includes('Celeste')) return 'biome-water';
+      return 'biome-gym';
+    }
+    if (step.type === 'rocket' || (step.loc && (step.loc.includes('Silph') || step.loc.includes('Guarida')))) return 'biome-rocket';
+    if (step.loc && step.loc.includes('Torre Pokémon')) return 'biome-tower';
+    if (step.loc && (step.loc.includes('Cueva') || step.loc.includes('Túnel') || step.loc.includes('Monte Moon') || step.loc.includes('Calle Victoria'))) return 'biome-cave';
+    if (step.loc && step.loc.includes('Ember')) return 'biome-volcano';
+    if (step.loc && (step.loc.includes('Islas Espuma') || step.loc.includes('Ruta 19') || step.loc.includes('Ruta 20') || step.loc.includes('Ruta 21') || step.loc.includes('S.S. Anne'))) return 'biome-water';
+    return 'biome-grass';
+  }
+
+  getTypeColor(type) {
+    const colors = {
+      fire: '#ef4444',
+      water: '#3b82f6',
+      grass: '#22c55e',
+      electric: '#eab308',
+      ice: '#06b6d4',
+      fighting: '#b91c1c',
+      poison: '#a855f7',
+      ground: '#d97706',
+      flying: '#60a5fa',
+      psychic: '#ec4899',
+      bug: '#84cc16',
+      rock: '#78716c',
+      ghost: '#6366f1',
+      dragon: '#4f46e5',
+      steel: '#94a3b8',
+      fairy: '#f472b6',
+      normal: '#cbd5e1'
+    };
+    return colors[type] || '#cbd5e1';
+  }
+
+  triggerAttackFlash(atkType, isTargetFoe) {
+    const overlay = document.getElementById('atk-flash-overlay');
+    const color = this.getTypeColor(atkType);
+    if (overlay) {
+      overlay.style.background = color;
+      overlay.style.display = 'block';
+      overlay.classList.remove('atk-flash-active');
+      void overlay.offsetWidth;
+      overlay.classList.add('atk-flash-active');
+      setTimeout(() => {
+        if (overlay) overlay.style.display = 'none';
+      }, 330);
+    }
+  }
+
   async initCurrentStep() {
     const storyLine = this.getStoryLine();
     const step = storyLine[this.storyStep];
@@ -2099,6 +2290,11 @@ class BalancedNuzlockeEngine {
 
     this.focusBandUsedInBattle = false;
     this.updateMoneyUI();
+
+    const battleScreen = document.getElementById('battle-screen');
+    if (battleScreen) {
+      battleScreen.className = this.getBiomeForStep(step);
+    }
 
     document.getElementById('loc-text').innerText = step.loc;
     if (step.mandatory) {
@@ -2335,10 +2531,52 @@ class BalancedNuzlockeEngine {
     this.updateUI();
   }
 
+  getBossQuote(step) {
+    if (!step) return null;
+    const title = step.title || '';
+    if (title.includes('Brock')) return { speaker: 'LÍDER BROCK', quote: '¡Mi voluntad y la de mis Pokémon son duras como la roca viva! ¡Veamos si puedes quebrarla!' };
+    if (title.includes('Misty')) return { speaker: 'LÍDER MISTY', quote: '¡Mi política es un ataque total con Pokémon de Agua! ¡No te daré ninguna tregua!' };
+    if (title.includes('Surge')) return { speaker: 'LT. SURGE', quote: '¡Atención! ¡Los Pokémon eléctricos me salvaron en la guerra! ¡Siente esta descarga!' };
+    if (title.includes('Erika')) return { speaker: 'LÍDER ERIKA', quote: 'La belleza y la armonía de la naturaleza ocultan una fuerza inmensa. Luchemos con gracia.' };
+    if (title.includes('Koga')) return { speaker: 'LÍDER KOGA', quote: '¡El sigilo ninja, el veneno y la confusión te atraparán en las sombras!' };
+    if (title.includes('Sabrina')) return { speaker: 'LÍDER SABRINA', quote: 'Preveo el futuro con mis poderes psíquicos... ¡y en él no veo ninguna victoria para ti!' };
+    if (title.includes('Blaine')) return { speaker: 'LÍDER BLAINE', quote: '¡Mis ardientes Pokémon quemarán cualquier estrategia que traigas! ¡Más vale que tengas fuego!' };
+    if (title.includes('Giovanni')) return { speaker: 'GIOVANNI', quote: 'El Team Rocket controla las sombras de Kanto. Un mocoso jamás detendrá mis planes.' };
+    if (title.includes('Lorelei')) return { speaker: 'LORELEI', quote: 'Nadie puede superar la frialdad del hielo puro. ¡Tu camino termina congelado aquí!' };
+    if (title.includes('Bruno')) return { speaker: 'BRUNO', quote: '¡Hemos forjado nuestro cuerpo y espíritu hasta el límite absoluto! ¡Siente nuestro poder!' };
+    if (title.includes('Agatha')) return { speaker: 'AGATHA', quote: '¡El viejo Oak se ablandó con su tonta Pokédex! ¡Yo te enseñaré cómo lucha un auténtico maestro!' };
+    if (title.includes('Lance')) return { speaker: 'LANCE', quote: '¡Los dragones son seres míticos, sagrados e invencibles! ¡Siente la majestad de su cólera!' };
+    if (step.type === 'champion') return { speaker: `CAMPEÓN ${this.rivalName}`, quote: '¡Llegas tarde! ¡He derrotado al Alto Mando y soy el entrenador más fuerte del mundo! ¡Adelante!' };
+    if (step.type === 'rival') {
+      if (title.includes('#1')) return { speaker: `RIVAL ${this.rivalName}`, quote: '¡Adelante! ¡El Profesor Oak nos dio nuestros Pokémon para ver quién de los dos es el mejor!' };
+      if (title.includes('#2')) return { speaker: `RIVAL ${this.rivalName}`, quote: '¿Ya pretendes retar a los gimnasios? ¡Aún te falta mucho para llegar a mi nivel!' };
+      return { speaker: `RIVAL ${this.rivalName}`, quote: '¡Huele a derrota por aquí! ¡Mi equipo está mucho mejor entrenado que el tuyo!' };
+    }
+    return null;
+  }
+
+  showBossQuoteBanner(speaker, quote) {
+    const bubble = document.getElementById('boss-speech-bubble');
+    if (!bubble) return;
+    bubble.innerHTML = `<div style="font-weight:bold; color:#ffd700; margin-bottom:4px;">🗣️ ${speaker}:</div><div style="font-style:italic; line-height:1.4;">«${quote}»</div><div style="font-size:5.5px; color:#94a3b8; margin-top:4px;">(Toca para cerrar)</div>`;
+    bubble.style.display = 'block';
+    this.log(`🗣️ ${speaker}: «${quote}»`);
+    if (this._bossQuoteTimer) clearTimeout(this._bossQuoteTimer);
+    this._bossQuoteTimer = setTimeout(() => {
+      if (bubble) bubble.style.display = 'none';
+    }, 4500);
+  }
+
   async startBossBattle(step) {
     this.bossTeam = [...step.team];
     const prefix = step.mandatory ? '⚔️ [OBLIGATORIO] ' : step.optional ? '🥋 [OPCIONAL] ' : '';
     this.log(`${prefix}¡Combate con ${step.title}!`);
+
+    const quoteData = this.getBossQuote(step);
+    if (quoteData) {
+      this.showBossQuoteBanner(quoteData.speaker, quoteData.quote);
+    }
+
     await this.loadNextBossPokemon();
   }
 
@@ -2568,6 +2806,8 @@ class BalancedNuzlockeEngine {
       foeImg.classList.add('hit-flash');
       setTimeout(() => foeImg.classList.remove('hit-flash'), 320);
     }
+    this.triggerAttackFlash(atkType, true);
+
     if (typeMult >= 2.0 || isCrit) {
       soundEngine.playSuperEffective();
       if (battleScreen) {
@@ -2627,6 +2867,8 @@ class BalancedNuzlockeEngine {
       plyrImg.classList.add('hit-flash');
       setTimeout(() => plyrImg.classList.remove('hit-flash'), 320);
     }
+    this.triggerAttackFlash(attackConfig.atkType, false);
+
     if (typeMult >= 2.0 || isCrit) {
       soundEngine.playSuperEffective();
       if (battleScreen) {
@@ -2733,13 +2975,19 @@ class BalancedNuzlockeEngine {
     const step = this.getStoryLine()[this.storyStep];
     const deadName = active.nickname;
 
+    const killerName = this.currentEnemy ? this.currentEnemy.speciesName : 'Combate salvaje';
+    const locName = step ? step.loc : 'Kanto';
+    const enemyTitle = (step && step.title) ? ` de ${step.title}` : '';
+    const epitaph = `Cayó valientemente ante el ${killerName}${enemyTitle} en ${locName} (Nv.${active.level}).`;
+
     this.graveyard.push({
       id: active.id,
       nickname: active.nickname,
       speciesName: active.speciesName,
       level: active.level,
-      killedBy: this.currentEnemy ? this.currentEnemy.speciesName : 'Combate',
-      location: step ? step.loc : 'Kanto',
+      killedBy: killerName,
+      location: locName,
+      epitaph: epitaph,
       isShiny: active.isShiny,
       sprite: active.frontSprite,
       types: active.types
@@ -3535,14 +3783,18 @@ class BalancedNuzlockeEngine {
     list.innerHTML = '';
 
     if (this.graveyard.length === 0) {
-      list.innerHTML = '<div>No hay bajas registradas. ¡Tu equipo sigue intacto!</div>';
+      list.innerHTML = '<div style="padding:15px; text-align:center; color:#34d399;">🌱 No hay bajas registradas. ¡Tu equipo sigue intacto y con vida!</div>';
     } else {
       this.graveyard.forEach(g => {
         const shinyMark = g.isShiny ? '✨ ' : '';
+        const epitaphText = g.epitaph || `Cayó valientemente en ${g.location} ante ${g.killedBy} (Nv.${g.level}).`;
         list.innerHTML += `
-          <div class="grave-item">
-            <span>🪦 <strong>${shinyMark}${g.nickname}</strong> (${g.speciesName} Lv.${g.level})</span>
-            <span>Caído en ${g.location} por ${g.killedBy}</span>
+          <div class="grave-item" style="flex-direction:column; align-items:flex-start; gap:4px; padding:8px 10px; border-left:3px solid #ef4444; background:rgba(239,68,68,0.08); margin-bottom:6px; border-radius:4px; text-align:left;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <span style="color:#f8fafc;">🪦 <strong>${shinyMark}${g.nickname}</strong> (${g.speciesName} Lv.${g.level})</span>
+              <span style="font-size:6px; color:#f87171; background:rgba(239,68,68,0.15); padding:2px 5px; border-radius:3px;">${g.location}</span>
+            </div>
+            <div style="font-size:6px; color:#cbd5e1; font-style:italic; line-height:1.4;">«${epitaphText}»</div>
           </div>`;
       });
     }
@@ -3835,6 +4087,11 @@ class BalancedNuzlockeEngine {
       const foeHpBar = document.getElementById('foe-hp');
       foeHpBar.style.width = `${pct}%`;
       foeHpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+      if (pct <= 20 && this.currentEnemy.currentHp > 0) {
+        foeHpBar.classList.add('hp-low-pulse');
+      } else {
+        foeHpBar.classList.remove('hp-low-pulse');
+      }
     } else {
       document.getElementById('foe').style.display = 'none';
     }
@@ -3865,6 +4122,11 @@ class BalancedNuzlockeEngine {
       const hpBar = document.getElementById('player-hp');
       hpBar.style.width = `${pct}%`;
       hpBar.style.background = pct > 50 ? 'var(--hp-green)' : pct > 20 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+      if (pct <= 20 && active.currentHp > 0) {
+        hpBar.classList.add('hp-low-pulse');
+      } else {
+        hpBar.classList.remove('hp-low-pulse');
+      }
 
       // Preview de Combate previo a atacar: Tipos y Efectividad
       if (this.currentEnemy) {
@@ -4103,6 +4365,7 @@ class BalancedNuzlockeEngine {
 }
 
 const game = new BalancedNuzlockeEngine();
+window.game = game;
 
 // 💾 Restaurar la partida guardada automáticamente al recargar la página (si existe)
 game.tryRestoreSave();
