@@ -3291,12 +3291,10 @@ class BalancedNuzlockeEngine {
     soundEngine.playCatch();
     this.log(`Lanzaste una ${ballName} a ${this.currentEnemy.speciesName} (${catchRate}% prob)... Te quedan ${this.inventory[ballType]} ${ballName}s.`);
 
-    if (!isLegendary && !isStaticBoss && !this.currentEnemy.isShiny) {
-      this.capturedZones.add(step.loc);
-    }
     this.saveGame();
 
     setTimeout(() => {
+      if (!this.currentEnemy) return;
       if (Math.random() * 100 <= catchRate) {
         soundEngine.playBadge();
         this.pendingCatch = this.currentEnemy;
@@ -5019,6 +5017,66 @@ window.testGame = function testGame() {
   }
   add('Progresión de Niveles Dinámica (+1 Salvaje, +2 Opcional, +4 Jefes / Liga)', levelProgressionOk,
     levelProgressionOk ? 'OK: Vivos suben +1 (salvaje), +2 (opcional) y +4 (rival/líder/liga); caídos no suben de nivel; normalizeTeamLevels respeta el nivel ganado' : `FALLO: ${levelProgressionDetails.join(' | ')}`);
+
+  // ── 21. Intentos Múltiples de Captura en Combate Salvaje (Pokéballs sucesivas tras fallo) ──
+  let multiCatchOk = true;
+  const multiCatchDetails = [];
+  const prevSetTimeout = window.setTimeout;
+  try {
+    window.setTimeout = () => 0; // Evitar temporizadores huérfanos durante la suite síncrona
+    const origStep = game.storyStep;
+    const origCaptured = new Set(game.capturedZones);
+    const origEnemy = game.currentEnemy;
+    const origBoss = game.isBoss;
+    const origInv = { ...game.inventory };
+
+    const route1Idx = story.findIndex(s => s.type === 'route' && s.loc === 'Ruta 1');
+    if (route1Idx === -1) {
+      multiCatchOk = false;
+      multiCatchDetails.push('No se encontró paso de Ruta 1 en la historia');
+    } else {
+      game.storyStep = route1Idx;
+      game.isBoss = false;
+      game.capturedZones = new Set();
+      game.inventory.pokeball = 5;
+      game.currentEnemy = { id: 16, speciesName: 'PIDGEY', currentHp: 20, maxHp: 20, level: 3, types: ['normal', 'flying'], isShiny: false };
+
+      if (!game.canCatchCurrentEnemy()) {
+        multiCatchOk = false;
+        multiCatchDetails.push('canCatchCurrentEnemy() debe ser true al iniciar encuentro salvaje');
+      }
+
+      game.executeCatch('pokeball');
+
+      if (game.capturedZones.has('Ruta 1')) {
+        multiCatchOk = false;
+        multiCatchDetails.push('executeCatch no debe añadir la zona a capturedZones prematuramente');
+      }
+
+      if (!game.canCatchCurrentEnemy()) {
+        multiCatchOk = false;
+        multiCatchDetails.push('canCatchCurrentEnemy() debe seguir siendo true tras un lanzamiento fallido para permitir tirar otra Pokéball');
+      }
+
+      if (game.inventory.pokeball !== 4) {
+        multiCatchOk = false;
+        multiCatchDetails.push(`El inventario de Pokéballs no se descontó correctamente: ${game.inventory.pokeball} (esperado 4)`);
+      }
+    }
+
+    game.storyStep = origStep;
+    game.capturedZones = origCaptured;
+    game.currentEnemy = origEnemy;
+    game.isBoss = origBoss;
+    game.inventory = origInv;
+  } catch (e) {
+    multiCatchOk = false;
+    multiCatchDetails.push(`Error en test de intentos múltiples de captura: ${e.message}`);
+  } finally {
+    window.setTimeout = prevSetTimeout;
+  }
+  add('Lanzamientos Múltiples de Pokéballs en Combate Salvaje tras Liberarse', multiCatchOk,
+    multiCatchOk ? 'OK: Lanzar una Pokéball descuenta inventario sin bloquear la zona prematuramente; canCatchCurrentEnemy() se mantiene activo para tiros sucesivos' : `FALLO: ${multiCatchDetails.join(' | ')}`);
 
   // ── Salida ──
   const passed = checks.length - failed;
