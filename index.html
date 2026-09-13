@@ -811,7 +811,10 @@
       <h2>¡Mote Obligatorio!</h2>
       <p id="nick-prompt">Regla Nuzlocke:</p>
       <input type="text" id="nick-input" style="width:80%; padding:8px; font-family:inherit; font-size:8px; margin-bottom:10px;" maxlength="10">
-      <button class="game-btn" onclick="game.confirmNickname()">Confirmar Mote</button>
+      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        <button class="game-btn" onclick="game.confirmNickname()">Confirmar (Enter)</button>
+        <button class="game-btn" style="background:#475569;" onclick="game.confirmQuickNickname()">⚡ Conservar Nombre</button>
+      </div>
     </div>
   </div>
 
@@ -984,6 +987,7 @@
     <span id="loc-text" class="loc-badge">Pueblo Paleta</span>
     <span class="currency-badge" title="Dinero para la Tienda Pokémon">💰 ₽<span id="header-money">500</span></span>
     <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
+      <button class="sound-toggle-btn" id="speed-btn" title="Velocidad de Juego: 2x Rápido (15 min) (Atajo: T)" onclick="game.cycleBattleSpeed()" style="background:#0f172a; border-color:#38bdf8; color:#38bdf8; font-weight:bold;">⚡ Vel: 2x</button>
       <button class="sound-toggle-btn" id="relics-btn" title="Ver Reliquias activas" onclick="game.openRelicsModal()">🏺 0 Reliquias</button>
       <button class="sound-toggle-btn" id="sound-btn" onclick="soundEngine.toggleSound()">🔊 SFX: ON</button>
       <button class="sound-toggle-btn" id="bgm-btn" onclick="soundEngine.toggleBGM()">🎵 Música: ON</button>
@@ -1712,6 +1716,51 @@ class BalancedNuzlockeEngine {
       pokeball: 5, greatball: 0, ultraball: 0,
       fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0
     };
+
+    let storedSpeed = 2;
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem) {
+        const s = parseInt(localStorage.getItem('pokered_game_speed'), 10);
+        if (s === 1 || s === 2 || s === 3) storedSpeed = s;
+      }
+    } catch (e) {}
+    this.battleSpeed = storedSpeed; // 1 = 1x (Normal ~30m), 2 = 2x (Rápido ~15m por defecto), 3 = 3x (Turbo ~10m)
+  }
+
+  getDelay(baseMs) {
+    const s = this.battleSpeed || 2;
+    return Math.max(50, Math.round(baseMs / s));
+  }
+
+  cycleBattleSpeed() {
+    this.battleSpeed = this.battleSpeed === 1 ? 2 : this.battleSpeed === 2 ? 3 : 1;
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.setItem) {
+        localStorage.setItem('pokered_game_speed', this.battleSpeed.toString());
+      }
+    } catch (e) {}
+    this.updateSpeedUI();
+    soundEngine.playTone(400 + (this.battleSpeed * 150), 0.08, 'sine');
+    const label = this.battleSpeed === 1 ? '1x (Normal ~30 min)' : this.battleSpeed === 2 ? '2x (Rápido ~15 min)' : '3x (Turbo ~10 min)';
+    this.log(`⚡ Velocidad ajustada a ${label}.`);
+  }
+
+  updateSpeedUI() {
+    const btn = document.getElementById('speed-btn');
+    if (btn) {
+      const s = this.battleSpeed || 2;
+      btn.innerText = s === 1 ? '⏱️ Vel: 1x' : s === 2 ? '⚡ Vel: 2x' : '🚀 Vel: 3x';
+      btn.title = `Velocidad de Juego: ${s === 1 ? '1x Normal (~30m)' : s === 2 ? '2x Rápido (~15m)' : '3x Turbo (~10m)'} (Atajo: T)`;
+      btn.style.color = s === 3 ? '#ec4899' : s === 2 ? '#38bdf8' : '#94a3b8';
+      btn.style.borderColor = s === 3 ? '#ec4899' : s === 2 ? '#38bdf8' : '#475569';
+    }
+  }
+
+  confirmQuickNickname() {
+    if (!this.pendingCatch) return;
+    const input = document.getElementById('nick-input');
+    if (input) input.value = this.pendingCatch.speciesName;
+    this.confirmNickname();
   }
 
   hasRelic(id) {
@@ -2122,8 +2171,12 @@ class BalancedNuzlockeEngine {
     document.getElementById('nick-prompt').innerText = msg;
     const input = document.getElementById('nick-input');
     const randomDefault = this.getRandomNickname();
-    input.placeholder = `Ej: ${randomDefault} (vacío = aleatorio)`;
+    input.placeholder = `Ej: ${randomDefault} (o pulsa 'Conservar Nombre')`;
+    input.value = "";
     document.getElementById('nickname-modal').style.display = 'flex';
+    setTimeout(() => {
+      try { input.focus(); } catch (e) {}
+    }, 40);
   }
 
   async confirmNickname() {
@@ -2172,7 +2225,7 @@ class BalancedNuzlockeEngine {
         this.storyStep++;
       }
       this.initCurrentStep();
-    }, 750);
+    }, this.getDelay(750));
   }
 
   async applyTeamLevelGain(levels, reason) {
@@ -2336,7 +2389,7 @@ class BalancedNuzlockeEngine {
       this.log(`🎁 ¡Recibiste a ${giftPkmn.speciesName} de regalo en ${step.loc}!`);
       setTimeout(() => {
         this.showNickModal(this.pendingCatchMsg);
-      }, 500);
+      }, this.getDelay(400));
       return;
     }
 
@@ -2360,7 +2413,7 @@ class BalancedNuzlockeEngine {
         setTimeout(() => {
           this.storyStep++;
           this.initCurrentStep();
-        }, 750);
+        }, this.getDelay(400));
         return;
       }
 
@@ -2375,7 +2428,7 @@ class BalancedNuzlockeEngine {
         setTimeout(() => {
           this.storyStep++;
           this.initCurrentStep();
-        }, 900);
+        }, this.getDelay(450));
         return;
       }
 
@@ -2446,7 +2499,7 @@ class BalancedNuzlockeEngine {
     soundEngine.playTone(400, 0.1, 'sine');
     this.log(`🚶 Decidiste evitar el combate con ${step.title} para mantener a salvo tu equipo.`);
     this.storyStep++;
-    setTimeout(() => this.initCurrentStep(), 500);
+    setTimeout(() => this.initCurrentStep(), this.getDelay(400));
   }
 
   async showGiftChoiceModal(step) {
@@ -2538,13 +2591,13 @@ class BalancedNuzlockeEngine {
     if (dupesTriggered) {
       const banner = document.getElementById('dupes-banner');
       banner.style.display = 'block';
-      setTimeout(() => banner.style.display = 'none', 1800);
+      setTimeout(() => banner.style.display = 'none', this.getDelay(1200));
     }
 
     if (this.currentEnemy.isShiny) {
       soundEngine.playShiny();
       document.getElementById('shiny-sparkle').style.display = 'block';
-      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', 1500);
+      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', this.getDelay(1000));
     }
 
     // Comprobar posibilidad de captura mediante el validador centralizado
@@ -2590,7 +2643,7 @@ class BalancedNuzlockeEngine {
     if (this._bossQuoteTimer) clearTimeout(this._bossQuoteTimer);
     this._bossQuoteTimer = setTimeout(() => {
       if (bubble) bubble.style.display = 'none';
-    }, 4500);
+    }, this.getDelay(3500));
   }
 
   async startBossBattle(step) {
@@ -2653,7 +2706,7 @@ class BalancedNuzlockeEngine {
       }
 
       this.storyStep++;
-      setTimeout(() => this.initCurrentStep(), 700);
+      setTimeout(() => this.initCurrentStep(), this.getDelay(600));
       return;
     }
 
@@ -2664,7 +2717,7 @@ class BalancedNuzlockeEngine {
     if (this.currentEnemy.isShiny) {
       soundEngine.playShiny();
       document.getElementById('shiny-sparkle').style.display = 'block';
-      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', 1500);
+      setTimeout(() => document.getElementById('shiny-sparkle').style.display = 'none', this.getDelay(1000));
     }
 
     const step = this.getStoryLine()[this.storyStep];
@@ -2831,7 +2884,7 @@ class BalancedNuzlockeEngine {
     const battleScreen = document.getElementById('battle-screen');
     if (foeImg) {
       foeImg.classList.add('hit-flash');
-      setTimeout(() => foeImg.classList.remove('hit-flash'), 320);
+      setTimeout(() => foeImg.classList.remove('hit-flash'), this.getDelay(320));
     }
     this.triggerAttackFlash(atkType, true);
 
@@ -2839,7 +2892,7 @@ class BalancedNuzlockeEngine {
       soundEngine.playSuperEffective();
       if (battleScreen) {
         battleScreen.classList.add('shake');
-        setTimeout(() => battleScreen.classList.remove('shake'), 350);
+        setTimeout(() => battleScreen.classList.remove('shake'), this.getDelay(350));
       }
     } else if (typeMult === 0) {
       soundEngine.playTone(200, 0.1, 'sawtooth');
@@ -2869,9 +2922,9 @@ class BalancedNuzlockeEngine {
     this.log(`⚔️ ${active.nickname} usa ${atkName}${critText}${stabText} causando ${damage} de daño a ${this.currentEnemy.speciesName}${multText}.`);
 
     if (this.currentEnemy.currentHp <= 0) {
-      setTimeout(() => this.handleEnemyDefeated(), 750);
+      setTimeout(() => this.handleEnemyDefeated(), this.getDelay(650));
     } else {
-      setTimeout(() => this.enemyTurn(), 900);
+      setTimeout(() => this.enemyTurn(), this.getDelay(750));
     }
   }
 
@@ -2923,7 +2976,7 @@ class BalancedNuzlockeEngine {
     const battleScreen = document.getElementById('battle-screen');
     if (plyrImg) {
       plyrImg.classList.add('hit-flash');
-      setTimeout(() => plyrImg.classList.remove('hit-flash'), 320);
+      setTimeout(() => plyrImg.classList.remove('hit-flash'), this.getDelay(320));
     }
     this.triggerAttackFlash(attackConfig.atkType, false);
 
@@ -2931,7 +2984,7 @@ class BalancedNuzlockeEngine {
       soundEngine.playSuperEffective();
       if (battleScreen) {
         battleScreen.classList.add('shake');
-        setTimeout(() => battleScreen.classList.remove('shake'), 350);
+        setTimeout(() => battleScreen.classList.remove('shake'), this.getDelay(350));
       }
     } else if (typeMult === 0) {
       soundEngine.playTone(200, 0.1, 'sawtooth');
@@ -2983,7 +3036,7 @@ class BalancedNuzlockeEngine {
     this.log(`💥 ¡${this.currentEnemy.speciesName} contraataca con ${foeAtk}${critText}${stabText}! ${active.nickname} recibe ${finalDamage} de daño.${multText}${focusBandText}${berryText}`);
 
     if (active.currentHp <= 0) {
-      setTimeout(() => this.handlePlayerFaint(active), 750);
+      setTimeout(() => this.handlePlayerFaint(active), this.getDelay(650));
     } else {
       const step = this.getStoryLine()[this.storyStep];
       const canCatch = this.canCatchCurrentEnemy();
@@ -3020,11 +3073,11 @@ class BalancedNuzlockeEngine {
         this.healAliveTeam();
         this.storyStep++;
         this.initCurrentStep();
-      }, 900);
+      }, this.getDelay(600));
     } else {
       soundEngine.playHit();
       this.log(`🏃 ¡No pudiste escapar de ${this.currentEnemy.speciesName}! El enemigo aprovecha para atacar.`);
-      setTimeout(() => this.enemyTurn(), 700);
+      setTimeout(() => this.enemyTurn(), this.getDelay(550));
     }
   }
 
@@ -3074,7 +3127,7 @@ class BalancedNuzlockeEngine {
         const canRun = !this.isBoss && Boolean(step && step.type === 'route');
         this.setButtons(true, canCatch, canRun, true);
       }
-    }, 900);
+    }, this.getDelay(600));
   }
 
   async handleEnemyDefeated() {
@@ -3111,7 +3164,7 @@ class BalancedNuzlockeEngine {
           this.pendingCatchMsg = `¡Capturaste a ${defeatedEnemy.speciesName}! Asigna un mote:`;
           this.currentEnemy = null;
           this.saveGame();
-          setTimeout(() => this.showNickModal(this.pendingCatchMsg), 700);
+          setTimeout(() => this.showNickModal(this.pendingCatchMsg), this.getDelay(550));
           return;
         } else {
           this.log(`⚔️ Venciste a ${this.currentEnemy.speciesName}, pero escapó antes de capturarlo.`);
@@ -3127,7 +3180,7 @@ class BalancedNuzlockeEngine {
       this.healAliveTeam();
       this.currentEnemy = null;
       this.storyStep++;
-      setTimeout(() => this.initCurrentStep(), 800);
+      setTimeout(() => this.initCurrentStep(), this.getDelay(600));
     }
   }
 
@@ -3218,7 +3271,7 @@ class BalancedNuzlockeEngine {
     setTimeout(() => {
       this.storyStep++;
       this.initCurrentStep();
-    }, 900);
+    }, this.getDelay(600));
   }
 
   executeTrainingStat(stat) {
@@ -3252,7 +3305,7 @@ class BalancedNuzlockeEngine {
     setTimeout(() => {
       this.storyStep++;
       this.initCurrentStep();
-    }, 900);
+    }, this.getDelay(600));
   }
 
   closeCatchModal() {
@@ -3305,9 +3358,9 @@ class BalancedNuzlockeEngine {
       } else {
         soundEngine.playHit();
         this.log(`❌ ¡${this.currentEnemy.speciesName} se liberó de la ${ballName}! Continúa el combate.`);
-        setTimeout(() => this.enemyTurn(), 750);
+        setTimeout(() => this.enemyTurn(), this.getDelay(650));
       }
-    }, 700);
+    }, this.getDelay(600));
   }
 
   openBag() {
@@ -3516,7 +3569,7 @@ class BalancedNuzlockeEngine {
 
     if (this.currentEnemy && this.currentEnemy.currentHp > 0) {
       this.setButtons(false, false, false, false);
-      setTimeout(() => this.enemyTurn(), 800);
+      setTimeout(() => this.enemyTurn(), this.getDelay(650));
     }
   }
 
@@ -4131,6 +4184,7 @@ class BalancedNuzlockeEngine {
   }
 
   updateUI() {
+    this.updateSpeedUI();
     if (this.currentEnemy) {
       document.getElementById('foe').style.display = 'block';
       const foeStar = this.currentEnemy.isShiny ? '✨ ' : '';
@@ -5078,6 +5132,79 @@ window.testGame = function testGame() {
   add('Lanzamientos Múltiples de Pokéballs en Combate Salvaje tras Liberarse', multiCatchOk,
     multiCatchOk ? 'OK: Lanzar una Pokéball descuenta inventario sin bloquear la zona prematuramente; canCatchCurrentEnemy() se mantiene activo para tiros sucesivos' : `FALLO: ${multiCatchDetails.join(' | ')}`);
 
+  // ── 22. Motor de Partidas Rápidas (Velocidad Dinámica 1x, 2x Rápido ~15 min, 3x Turbo) ──
+  let speedEngineOk = true;
+  const speedEngineDetails = [];
+  try {
+    const origSpeed = game.battleSpeed;
+
+    // 1. Debe existir getDelay y battleSpeed
+    if (typeof game.getDelay !== 'function') {
+      speedEngineOk = false;
+      speedEngineDetails.push('game.getDelay no está definido como función');
+    }
+
+    if (typeof game.cycleBattleSpeed !== 'function') {
+      speedEngineOk = false;
+      speedEngineDetails.push('game.cycleBattleSpeed no está definido como función');
+    }
+
+    if (typeof game.confirmQuickNickname !== 'function') {
+      speedEngineOk = false;
+      speedEngineDetails.push('game.confirmQuickNickname no está definido');
+    }
+
+    // 2. Verificar escalado a velocidad 2x (~15 min)
+    game.battleSpeed = 2;
+    const delayAt2x = game.getDelay(600);
+    if (delayAt2x !== 300) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Escalado a 2x incorrecto: getDelay(600) retornó ${delayAt2x} (esperado 300)`);
+    }
+
+    // 3. Verificar escalado a velocidad 3x (Turbo)
+    game.battleSpeed = 3;
+    const delayAt3x = game.getDelay(600);
+    if (delayAt3x !== 200) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Escalado a 3x incorrecto: getDelay(600) retornó ${delayAt3x} (esperado 200)`);
+    }
+
+    // 4. Verificar escalado a velocidad 1x (Clásico)
+    game.battleSpeed = 1;
+    const delayAt1x = game.getDelay(600);
+    if (delayAt1x !== 600) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Escalado a 1x incorrecto: getDelay(600) retornó ${delayAt1x} (esperado 600)`);
+    }
+
+    // 5. Verificar ciclo de velocidad
+    game.battleSpeed = 1;
+    game.cycleBattleSpeed();
+    if (game.battleSpeed !== 2) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Ciclo de velocidad 1->2 falló: ${game.battleSpeed}`);
+    }
+    game.cycleBattleSpeed();
+    if (game.battleSpeed !== 3) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Ciclo de velocidad 2->3 falló: ${game.battleSpeed}`);
+    }
+    game.cycleBattleSpeed();
+    if (game.battleSpeed !== 1) {
+      speedEngineOk = false;
+      speedEngineDetails.push(`Ciclo de velocidad 3->1 falló: ${game.battleSpeed}`);
+    }
+
+    // Restaurar
+    game.battleSpeed = origSpeed;
+  } catch (e) {
+    speedEngineOk = false;
+    speedEngineDetails.push(`Error en test de motor de velocidad: ${e.message}`);
+  }
+  add('Motor de Partidas Rápidas (Velocidad Dinámica 1x, 2x Rápido ~15 min, 3x Turbo)', speedEngineOk,
+    speedEngineOk ? 'OK: getDelay escala proporcionalmente a 1x/2x/3x; cycleBattleSpeed alterna cíclicamente; mote rápido y atajos disponibles' : `FALLO: ${speedEngineDetails.join(' | ')}`);
+
   // ── Salida ──
   const passed = checks.length - failed;
   console.group('%c🧪 testGame() — Integridad del juego', 'font-weight:bold;font-size:14px');
@@ -5122,15 +5249,120 @@ window.closeUITest = function closeUITest() {
   document.getElementById('test-modal').style.display = 'none';
 };
 
-// Atajo de teclado F9 para abrir/cerrar el test de integridad
+// ⌨️ Atajos de teclado ergonómicos para partidas rápidas de 15 minutos:
+// F9: Test de integridad
+// T: Conmutar Velocidad de Juego (1x ➔ 2x ➔ 3x)
+// 1 o Z: Ataque Físico
+// 2 o X: Ataque Elemental
+// 3 o C: Capturar (Pokéball)
+// 4 o V: Huir
+// Espacio / Enter: Confirmar modales / saltar diálogo de jefes
+// Escape: Cerrar modales abiertos
 window.addEventListener('keydown', (e) => {
   if (e.key === 'F9') {
     e.preventDefault();
     const modal = document.getElementById('test-modal');
-    if (modal.style.display === 'none') {
+    if (!modal || modal.style.display === 'none') {
       window.runUITest();
     } else {
       window.closeUITest();
+    }
+    return;
+  }
+
+  // Si el usuario está escribiendo en un input, permitir escritura normal salvo Enter
+  const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+  const isInputFocused = activeTag === 'input' || activeTag === 'textarea';
+
+  if (e.key === 'Enter') {
+    const nickModal = document.getElementById('nickname-modal');
+    if (nickModal && nickModal.style.display === 'flex') {
+      e.preventDefault();
+      if (window.game) game.confirmNickname();
+      return;
+    }
+  }
+
+  if (isInputFocused) return;
+
+  const k = e.key.toLowerCase();
+
+  // Conmutar velocidad con T
+  if (k === 't') {
+    e.preventDefault();
+    if (window.game) game.cycleBattleSpeed();
+    return;
+  }
+
+  // Descartar/Cerrar con Escape
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    const optModal = document.getElementById('optional-battle-modal');
+    if (optModal && optModal.style.display === 'flex') {
+      if (window.game) game.skipOptionalBattle();
+      return;
+    }
+    const modalsToClose = [
+      ['catch-modal', () => game.closeCatchModal()],
+      ['bag-modal', () => game.closeBag()],
+      ['team-modal', () => game.closeTeamModal()],
+      ['pokedex-modal', () => game.closePokedex()],
+      ['shop-modal', () => game.closeShopModal()],
+      ['relics-list-modal', () => game.closeRelicsModal()],
+      ['train-modal', () => game.closeTrainModal()],
+      ['test-modal', () => window.closeUITest()]
+    ];
+    for (const [id, closeFn] of modalsToClose) {
+      const el = document.getElementById(id);
+      if (el && el.style.display !== 'none') {
+        closeFn();
+        return;
+      }
+    }
+    return;
+  }
+
+  // Espacio o Enter para saltar diálogo o aceptar desafíos opcionales
+  if (e.key === ' ' || e.key === 'Enter') {
+    const bubble = document.getElementById('boss-speech-bubble');
+    if (bubble && bubble.style.display === 'block') {
+      e.preventDefault();
+      bubble.style.display = 'none';
+      if (window.game && game._bossQuoteTimer) clearTimeout(game._bossQuoteTimer);
+      return;
+    }
+    const optModal = document.getElementById('optional-battle-modal');
+    if (optModal && optModal.style.display === 'flex') {
+      e.preventDefault();
+      if (window.game) game.acceptOptionalBattle();
+      return;
+    }
+  }
+
+  // Atajos de combate (1/Z, 2/X, 3/C, 4/V)
+  if (k === '1' || k === 'z') {
+    const btn = document.getElementById('btn-atk-phys');
+    if (btn && !btn.disabled) {
+      e.preventDefault();
+      btn.click();
+    }
+  } else if (k === '2' || k === 'x') {
+    const btn = document.getElementById('btn-atk-spec');
+    if (btn && !btn.disabled) {
+      e.preventDefault();
+      btn.click();
+    }
+  } else if (k === '3' || k === 'c') {
+    const btn = document.getElementById('btn-catch');
+    if (btn && !btn.disabled) {
+      e.preventDefault();
+      btn.click();
+    }
+  } else if (k === '4' || k === 'v') {
+    const btn = document.getElementById('btn-run');
+    if (btn && !btn.disabled) {
+      e.preventDefault();
+      btn.click();
     }
   }
 });
